@@ -8,3 +8,8 @@
  */
 
 rootProject.name = 'Ice---Votacion'
+
+include 'mesaVotacion'
+include 'lugarVotacion'
+include 'departamento'
+include 'servidorCentral'
