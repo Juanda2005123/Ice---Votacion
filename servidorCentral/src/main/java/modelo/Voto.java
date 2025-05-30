@@ -20,6 +20,7 @@ public class Voto {
     public String getId() {
         return id;
     }
+    
     public String getCedula() {
         return cedula;
     }

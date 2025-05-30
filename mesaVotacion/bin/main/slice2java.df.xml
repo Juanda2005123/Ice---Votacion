@@ -1,0 +1,8 @@
+<state>
+  <timestamp value='1748626615657' />
+  <sourceSet name='default'>
+    <source name='C:\Users\user\Desktop\Ice---Votacion\ice---votacion.ice' />
+    <arg value='C:\Program Files\ZeroC\Ice-3.7.10\\bin\slice2java.exe' />
+    <arg value='-IC:\Program Files\ZeroC\Ice-3.7.10\\slice' />
+  </sourceSet>
+</state>
