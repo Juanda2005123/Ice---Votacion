@@ -4,7 +4,6 @@ import model.Candidato;
 import model.Votante;
 import java.util.Scanner;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Interfaz de Usuario para el sistema de votacion.

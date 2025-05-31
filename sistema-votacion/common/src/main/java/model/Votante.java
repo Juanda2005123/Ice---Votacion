@@ -11,16 +11,17 @@ public class Votante {
     private String lugarVotacion;
     private boolean yaVoto;
     
-    public Votante(String cedula, String nombre, String apellidos, String mesaId) {
+    // Constructor completo
+    public Votante(String cedula, String nombre, String apellidos, String mesaId, String lugarVotacion) {
         this.cedula = cedula;
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.mesaId = mesaId;
         this.yaVoto = false;
+        this.lugarVotacion = lugarVotacion;
     }
     
-    // Constructor completo
-    public Votante(String cedula, String nombre, String apellidos, String mesaId, String direccion) {
+    public Votante(String cedula, String nombre, String apellidos, String mesaId) {
         this.cedula = cedula;
         this.nombre = nombre;
         this.apellidos = apellidos;
@@ -82,6 +83,13 @@ public class Votante {
      */
     public void marcarComoVotado() {
         this.yaVoto = true;
+    }
+
+    /**
+     * Marca al votante como que no ha ejercido su derecho al voto
+     */
+    public void desmarcarVoto() {
+        this.yaVoto = false;
     }
     
     /**

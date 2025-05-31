@@ -4,6 +4,8 @@ import model.Voto;
 import model.Candidato;
 import model.Votante;
 import ui.VotacionUI;
+import votos.CoordinadorEnvioVotos;
+import votos.RepositorioMesaVotacion;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,9 +35,8 @@ public class ControllerVotacion {
     // ===== VARIABLES DE INSTANCIA =====
     private VotacionUI ui;                              // Manejador de interfaz de usuario
     private String idMesaVotacion;                      // Identificador unico para esta mesa de votacion
-    private List<Voto> votosRegistrados;                // Lista de todos los votos emitidos en esta mesa
-    private Map<String, Votante> votantesElegibles;     // Mapa por cedula para busqueda O(1) de votantes
-    private List<Candidato> candidatosDisponibles;      // Lista de candidatos disponibles para votar
+    private RepositorioMesaVotacion repositorio;        // Repositorio centralizado de datos de votacion
+    private CoordinadorEnvioVotos coordinadorEnvio;     // Encargado de coordinar envio de votos
     
     // ===== CONSTRUCTOR =====
     /**
@@ -47,11 +48,13 @@ public class ControllerVotacion {
     public ControllerVotacion(String idMesaVotacion) {
         this.ui = new VotacionUI();
         this.idMesaVotacion = idMesaVotacion;
-        this.votosRegistrados = new ArrayList<>();
-        this.votantesElegibles = new HashMap<>();
-        this.candidatosDisponibles = inicializarCandidatos();
         
-        // Cargar lista de votantes elegibles para esta mesa de votacion
+        // Inicializar repositorio centralizado y coordinador
+        this.repositorio = new RepositorioMesaVotacion(idMesaVotacion);
+        this.coordinadorEnvio = new CoordinadorEnvioVotos(repositorio);
+
+        // Cargar datos iniciales
+        cargarCandidatos();
         cargarVotantesElegibles();
     }
     
@@ -60,10 +63,8 @@ public class ControllerVotacion {
     /**
      * Inicializa la lista de candidatos disponibles para esta eleccion.
      * En una implementacion real, esto vendria de una base de datos central de elecciones.
-     * 
-     * @return Lista de candidatos disponibles para votar
      */
-    private List<Candidato> inicializarCandidatos() {
+    private void cargarCandidatos() {
         List<Candidato> candidatos = new ArrayList<>();
         
         // Candidatos principales con sus partidos politicos
@@ -76,7 +77,7 @@ public class ControllerVotacion {
         // Opciones especiales de votacion
         candidatos.add(new Candidato("BLANCO", "Voto en Blanco"));
         
-        return candidatos;
+        repositorio.cargarCandidatos(candidatos);
     }
     
     /**
@@ -102,11 +103,8 @@ public class ControllerVotacion {
         votantes.add(new Votante("90123456", "Elena", "Ruiz Mendoza", idMesaVotacion));
         votantes.add(new Votante("01234567", "Diego", "Jimenez Ortega", idMesaVotacion));
         
-        // Agregar al mapa para busqueda rapida por numero de cedula
-        for (Votante votante : votantes) {
-            votantesElegibles.put(votante.getCedula(), votante);
-        }
-        
+        // Cargar en el repositorio
+        repositorio.cargarVotantesElegibles(votantes);
         ui.mostrarMensajeInfo("Cargados " + votantes.size() + " votantes elegibles para mesa de votacion " + idMesaVotacion);
     }
     
@@ -160,7 +158,7 @@ public class ControllerVotacion {
      * @return Objeto Votante si es elegible, null si no se encuentra
      */
     private Votante validarElegibilidadVotante(String cedula) {
-        return votantesElegibles.get(cedula);
+        return repositorio.obtenerVotantePorCedula(cedula);
     }
     
     /**
@@ -175,15 +173,17 @@ public class ControllerVotacion {
     }
     
     /**
-     * Actualiza el estado del votante despues del registro exitoso del voto.
-     * Marca al votante como habiendo votado y registra el voto.
+     * Confirma y procesa el voto completo.
+     * Delega toda la responsabilidad al coordinador de envio.
      * 
      * @param votante El votante que emitio el voto
      * @param voto El voto que fue emitido
+     * @throws IllegalArgumentException si hay error de validacion
+     * @throws RuntimeException si hay error en el procesamiento
      */
-    private void actualizarEstadoVotante(Votante votante, Voto voto) {
-        votante.marcarComoVotado();
-        votosRegistrados.add(voto);
+    private void confirmarVoto(Votante votante, Voto voto) {
+        // El coordinador se encarga de TODO: marcar votante, guardar voto, enviar
+        coordinadorEnvio.procesarVotoCompleto(voto, votante);
     }
     
     // ===== PROCESAMIENTO DE VOTOS =====
@@ -228,14 +228,14 @@ public class ControllerVotacion {
             ui.mostrarMensajeInfo("Votante elegible: " + votante.getNombreCompleto());
             ui.mostrarMensajeInfo("Mesa asignada: " + votante.getMesaId());
             
-            // 5. Mostrar candidatos disponibles
-            ui.mostrarCandidatos(candidatosDisponibles);
+            // 5. Mostrar candidatos disponibles (desde repositorio)
+            ui.mostrarCandidatos(repositorio.getCandidatosDisponibles());
             
             // 6. Capturar seleccion de candidato
-            int seleccion = ui.capturarSeleccionCandidato(candidatosDisponibles.size());
+            int seleccion = ui.capturarSeleccionCandidato(repositorio.getCandidatosDisponibles().size());
             
             // 7. Obtener candidato seleccionado
-            Candidato candidatoSeleccionado = candidatosDisponibles.get(seleccion - 1);
+            Candidato candidatoSeleccionado = repositorio.getCandidatosDisponibles().get(seleccion - 1);
             
             // 8. Confirmar voto con informacion completa
             if (!ui.confirmarVoto(candidatoSeleccionado, votante)) {
@@ -247,7 +247,7 @@ public class ControllerVotacion {
             
             // 9. Registrar voto
             Voto nuevoVoto = new Voto(candidatoSeleccionado, LocalDateTime.now(), idMesaVotacion);
-            actualizarEstadoVotante(votante, nuevoVoto);
+            confirmarVoto(votante, nuevoVoto);
             
             // 10. Mostrar confirmacion de exito
             ui.mostrarMensajeExito("Voto registrado exitosamente.");
@@ -255,48 +255,16 @@ public class ControllerVotacion {
             ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombreCompleto());
             ui.mostrarMensajeInfo("Hora: " + nuevoVoto.getFechaHoraFormateada());
             
-            // TODO: Implementar envio a Servidor Central con Ice
-            // boolean ackRecibido = enviarVotoAServidor(nuevoVoto);
-            // if (!ackRecibido) {
-            //     ui.mostrarMensajeError("Error comunicandose con el servidor central");
-            // }
-            
         } catch (IllegalArgumentException e) {
             ui.mostrarMensajeError(e.getMessage());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             ui.mostrarMensajeError("Error durante el proceso de votacion: " + e.getMessage());
+        } catch (Exception e) {
+            ui.mostrarMensajeError("Error inesperado durante el proceso de votacion: " + e.getMessage());
         }
         
         ui.pausarEjecucion();
         ui.limpiarPantalla();
-    }
-    
-    // ===== METODOS DE COMUNICACION (Futura Implementacion Ice) =====
-    
-    /**
-     * Envia un voto al servidor central usando middleware Ice.
-     * Implementa el patron Mensaje Confiable con confirmacion.
-     * Este metodo sera implementado cuando se agregue comunicacion Ice.
-     * 
-     * @param voto El voto a enviar
-     * @return true si se recibio ACK del servidor, false en caso contrario
-     */
-    @SuppressWarnings("unused")
-    private boolean enviarVotoAServidor(Voto voto) {
-        // TODO: Implementar comunicacion Ice
-        // 1. Obtener proxy del servidor central
-        // 2. Enviar voto
-        // 3. Esperar ACK (Patron Mensaje Confiable)
-        // 4. Retornar resultado
-        
-        // Simulacion por ahora
-        try {
-            Thread.sleep(100); // Simular latencia de red
-            return true; // Simular ACK exitoso
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return false;
-        }
     }
     
     // ===== METODOS GETTER (Para pruebas y depuracion) =====
@@ -307,7 +275,7 @@ public class ControllerVotacion {
      * @return Total de votos emitidos en esta mesa de votacion
      */
     public int getTotalVotosRegistrados() {
-        return votosRegistrados.size();
+        return repositorio.getTotalVotos();
     }
     
     /**
@@ -317,7 +285,7 @@ public class ControllerVotacion {
      * @return true si el votante ya voto, false en caso contrario
      */
     public boolean yaVotoElVotante(String cedula) {
-        Votante votante = votantesElegibles.get(cedula);
+        Votante votante = repositorio.obtenerVotantePorCedula(cedula);
         return votante != null && votante.isYaVoto();
     }
     
@@ -328,7 +296,7 @@ public class ControllerVotacion {
      * @return true si el votante es elegible, false en caso contrario
      */
     public boolean esVotanteElegible(String cedula) {
-        return votantesElegibles.containsKey(cedula);
+        return repositorio.esVotanteElegible(cedula);
     }
     
     /**
@@ -338,7 +306,7 @@ public class ControllerVotacion {
      * @return Objeto Votante o null si no se encuentra
      */
     public Votante obtenerVotante(String cedula) {
-        return votantesElegibles.get(cedula);
+        return repositorio.obtenerVotantePorCedula(cedula);
     }
     
     /**
@@ -347,7 +315,7 @@ public class ControllerVotacion {
      * @return Total de votantes elegibles para esta mesa de votacion
      */
     public int getTotalVotantesElegibles() {
-        return votantesElegibles.size();
+        return repositorio.getTotalVotantesElegibles();
     }
     
     /**
@@ -356,9 +324,7 @@ public class ControllerVotacion {
      * @return Conteo de votantes que han emitido sus votos
      */
     public int getTotalVotantesQueYaVotaron() {
-        return (int) votantesElegibles.values().stream()
-                .filter(Votante::isYaVoto)
-                .count();
+        return repositorio.getTotalVotantesQueYaVotaron();
     }
     
     /**
@@ -367,7 +333,7 @@ public class ControllerVotacion {
      * @return Lista de candidatos disponibles
      */
     public List<Candidato> getCandidatosDisponibles() {
-        return new ArrayList<>(candidatosDisponibles);
+        return repositorio.getCandidatosDisponibles();
     }
     
     /**
@@ -377,27 +343,5 @@ public class ControllerVotacion {
      */
     public String getIdMesaVotacion() {
         return idMesaVotacion;
-    }
-    
-    /**
-     * Obtiene estadisticas de votacion para esta mesa de votacion.
-     * Util para reportes y monitoreo.
-     * 
-     * @return Cadena formateada con estadisticas de votacion
-     */
-    public String getEstadisticasVotacion() {
-        int totalElegibles = getTotalVotantesElegibles();
-        int totalVotaron = getTotalVotantesQueYaVotaron();
-        int restantes = totalElegibles - totalVotaron;
-        double porcentajeParticipacion = totalElegibles > 0 ? (double) totalVotaron / totalElegibles * 100 : 0;
-        
-        return String.format(
-            "Estadisticas de Votacion para Mesa %s:\n" +
-            "- Total votantes elegibles: %d\n" +
-            "- Votos emitidos: %d\n" +
-            "- Votantes restantes: %d\n" +
-            "- Participacion: %.2f%%",
-            idMesaVotacion, totalElegibles, totalVotaron, restantes, porcentajeParticipacion
-        );
     }
 }
