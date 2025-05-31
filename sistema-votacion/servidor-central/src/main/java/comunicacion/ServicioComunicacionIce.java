@@ -12,6 +12,9 @@ import java.util.concurrent.Future;
 
 
 /**
+ * Esta clase implementa el patrón Broker
+ * Actua como intermediario entre el cliente remoto y la lógica de negocio del servidor.
+ * 
  * Servant Ice que implementa el servicio de votación.
  * Recibe votos desde las mesas y los procesa.
  */
@@ -28,6 +31,12 @@ public class ServicioComunicacionIce implements VotingService {
     
     @Override
     public boolean enviarVotoVotante(String mesaId, Voto voto, Votante votante, Current current) {
+        //  Validación del broker antes de delegar (patrón Broker)
+        if (mesaId == null || mesaId.trim().isEmpty()) {
+            System.err.println("Broker: Mesa inválida");
+            return false;
+        }
+
         try {
             
             Future<Boolean> resultado = threadPool.submit(() -> {
