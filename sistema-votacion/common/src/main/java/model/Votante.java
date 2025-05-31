@@ -7,24 +7,44 @@ public class Votante {
     private String cedula;
     private String nombre;
     private String apellidos;
+    private String apellido; // For Ice compatibility
+    private String departamento;
+    private String ciudad;
     private String mesaId;
     private String lugarVotacion;
     private boolean yaVoto;
+      // Constructor completo
+    public Votante(String cedula, String nombre, String apellidos, String departamento, String ciudad, String mesaId, String lugarVotacion) {
+        this.cedula = cedula;
+        this.nombre = nombre;
+        this.apellidos = apellidos;
+        this.apellido = apellidos; // Use apellidos as apellido for Ice compatibility
+        this.departamento = departamento;
+        this.ciudad = ciudad;
+        this.mesaId = mesaId;
+        this.yaVoto = false;
+        this.lugarVotacion = lugarVotacion;
+    }
     
     // Constructor completo
     public Votante(String cedula, String nombre, String apellidos, String mesaId, String lugarVotacion) {
         this.cedula = cedula;
         this.nombre = nombre;
         this.apellidos = apellidos;
+        this.apellido = apellidos; // Use apellidos as apellido for Ice compatibility
+        this.departamento = ""; // Default empty
+        this.ciudad = ""; // Default empty
         this.mesaId = mesaId;
         this.yaVoto = false;
         this.lugarVotacion = lugarVotacion;
     }
-    
-    public Votante(String cedula, String nombre, String apellidos, String mesaId) {
+      public Votante(String cedula, String nombre, String apellidos, String mesaId) {
         this.cedula = cedula;
         this.nombre = nombre;
         this.apellidos = apellidos;
+        this.apellido = apellidos; // Use apellidos as apellido for Ice compatibility
+        this.departamento = ""; // Default empty
+        this.ciudad = ""; // Default empty
         this.mesaId = mesaId;
         this.yaVoto = false;
     }
@@ -37,9 +57,20 @@ public class Votante {
     public String getNombre() {
         return nombre;
     }
-    
-    public String getApellidos() {
+      public String getApellidos() {
         return apellidos;
+    }
+    
+    public String getApellido() {
+        return apellido;
+    }
+    
+    public String getDepartamento() {
+        return departamento;
+    }
+    
+    public String getCiudad() {
+        return ciudad;
     }
     
     public String getMesaId() {
@@ -58,9 +89,21 @@ public class Votante {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
-    public void setApellidos(String apellidos) {
+      public void setApellidos(String apellidos) {
         this.apellidos = apellidos;
+        this.apellido = apellidos; // Keep both in sync
+    }
+    
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+    
+    public void setDepartamento(String departamento) {
+        this.departamento = departamento;
+    }
+    
+    public void setCiudad(String ciudad) {
+        this.ciudad = ciudad;
     }
     
     public void setMesaId(String mesaId) {

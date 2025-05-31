@@ -91,4 +91,12 @@ public class ProcesadorVotos {
             return false;
         }
     }
+    /**
+     * Obtiene referencia al controlador para consultas.
+     * 
+     * @return ControllerServidor
+     */
+    public ControllerServidor getControllerServidor() {
+        return controllerServidor;
+    }
 }

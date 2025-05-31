@@ -2,7 +2,7 @@
 // Install the gradle Ice Builder plug-in from the plug-in portal
 //
 plugins {
-    id 'com.zeroc.gradle.ice-builder.slice' version '1.5.0' apply false
+    id 'com.zeroc.gradle.ice-builder.slice' version '1.4.7' apply false
 }
   
 subprojects {
@@ -11,19 +11,18 @@ subprojects {
     //
     apply plugin: 'java'
     apply plugin: 'eclipse'  // ← Genera archivos .project y .classpath
-    //apply plugin: 'com.zeroc.gradle.ice-builder.slice'
+    apply plugin: 'com.zeroc.gradle.ice-builder.slice'
  
     //
     // Both Client and Server projects share the Printer.ice Slice definitions
     //
-    /** 
+    
     slice {
         java {
-            // Por ahora comentamos Ice hasta que creemos los archivos .ice
-            // files = [file("../Clock.ice")]
+            files = [file("../common/src/main/slice/VotingService.ice")]  // ← Cambiar esta línea
         }
     }
-    */
+    
     //
     // Use Ice JAR files from maven central repository
     //

@@ -6,6 +6,9 @@ import model.Votante;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import comunicacion.ServicioComunicacionIce;
+import gestion.ProcesadorVotos;
+
 /**
  * Controlador principal del servidor central.
  * Maneja la lógica de negocio y coordina con la UI.
@@ -26,6 +29,8 @@ public class ControllerServidor {
     
     // Estadísticas calculadas
     private Map<String, Integer> conteosPorCandidato;
+    private com.zeroc.Ice.Communicator communicator;
+    private ServicioComunicacionIce servicioIce;
     
     // ===== CONSTRUCTOR =====
     
@@ -47,6 +52,7 @@ public class ControllerServidor {
      * Inicia el servidor y maneja el ciclo principal.
      */
     public void iniciar() {
+        iniciarServidorIce();
         ui.mostrarBanner();
         ui.limpiarPantalla();
         
@@ -81,6 +87,33 @@ public class ControllerServidor {
         }
         
         cerrarServidor();
+    }
+
+    private void iniciarServidorIce() {
+        try {
+            // Crear communicator
+            communicator = com.zeroc.Ice.Util.initialize();
+            
+            // Crear adapter
+            com.zeroc.Ice.ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints(
+                "VotingServiceAdapter", "tcp -p 10000");
+            
+            // Crear servant
+            gestion.ProcesadorVotos procesador = new gestion.ProcesadorVotos(this);
+            servicioIce = new comunicacion.ServicioComunicacionIce(procesador);
+            
+            // Agregar servant al adapter
+            adapter.add(servicioIce, com.zeroc.Ice.Util.stringToIdentity("VotingService"));
+            
+            // Activar adapter
+            adapter.activate();
+            
+            ui.mostrarMensajeInfo("Servidor Ice iniciado en puerto 10000");
+            
+        } catch (Exception e) {
+            ui.mostrarMensajeError("Error iniciando servidor Ice: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
     
     // ===== MÉTODOS DE VISUALIZACIÓN =====
@@ -193,6 +226,12 @@ public class ControllerServidor {
      * Cierra el servidor de manera limpia.
      */
     private void cerrarServidor() {
+        // Cerrar Ice
+        if (communicator != null) {
+            communicator.destroy();
+            ui.mostrarMensajeInfo("Servidor Ice cerrado.");
+        }
+        
         ui.mostrarMensajeInfo("Servidor cerrado correctamente.");
         ui.mostrarMensajeInfo("Estadísticas finales:");
         ui.mostrarMensajeInfo("- Total votos procesados: " + getTotalVotos());
@@ -200,7 +239,7 @@ public class ControllerServidor {
         
         ui.cerrar();
     }
-    
+
     /**
      * Obtiene la UI para uso externo si es necesario.
      * 

@@ -28,7 +28,7 @@ public class CoordinadorEnvioVotos {
         }
         
         this.repositorio = repositorio;
-        // this.servicioIce = new ServicioComunicacionIce(); // Se implementara despues
+        this.servicioIce = new ServicioComunicacionIce(); // <- ACTIVAR AQUI
     }
     
     /**
@@ -83,18 +83,11 @@ public class CoordinadorEnvioVotos {
      */
     private void enviarVotoCompletoAServidor(Voto voto, Votante votante) {
         try {
-            // TODO: Implementar cuando se agregue Ice
-            // boolean ackRecibido = servicioIce.enviarVotoCompletoConACK(voto, votante);
-            // if (!ackRecibido) {
-            //     throw new RuntimeException("No se recibio confirmacion del servidor");
-            // }
+            boolean ackRecibido = servicioIce.enviarVotoVotanteConACK("MESA-001", voto, votante);
+            if (!ackRecibido) {
+                throw new RuntimeException("No se recibió confirmación del servidor");
+            }
             
-            // Simulacion por ahora
-            Thread.sleep(50);
-            
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Envio interrumpido: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException("Error enviando voto completo al servidor: " + e.getMessage());
         }
