@@ -1,6 +1,8 @@
 package controller;
 
 import model.Voto;
+import precarga.ConfiguracionMesa;
+import precarga.SistemaPrecarga;
 import model.Candidato;
 import model.Votante;
 import ui.VotacionUI;
@@ -54,58 +56,35 @@ public class ControllerVotacion {
         this.coordinadorEnvio = new CoordinadorEnvioVotos(repositorio);
 
         // Cargar datos iniciales
-        cargarCandidatos();
-        cargarVotantesElegibles();
+        SistemaPrecarga sistemaPrecarga = new SistemaPrecarga(repositorio);
+        // Realizar precarga de datos POR AHORA, LUEGO SE HARA DESDE SERVIDOR Y SE ELIMINARA, ES PARA PRUEBAS LOCALES
+        realizarPrecarga(sistemaPrecarga);
     }
     
     // ===== METODOS DE INICIALIZACION =====
     
     /**
-     * Inicializa la lista de candidatos disponibles para esta eleccion.
-     * En una implementacion real, esto vendria de una base de datos central de elecciones.
+     * Realiza la precarga de datos para la mesa de votacion.
+     * Por ahora usa, datos simulados, luego se obtendra del servidor central cuando se implemente.
      */
-    private void cargarCandidatos() {
-        List<Candidato> candidatos = new ArrayList<>();
-        
-        // Candidatos principales con sus partidos politicos
-        candidatos.add(new Candidato("CAND_001", "Juan Carlos Perez", "Partido Liberal"));
-        candidatos.add(new Candidato("CAND_002", "Maria Elena Gonzalez", "Partido Conservador"));
-        candidatos.add(new Candidato("CAND_003", "Roberto Sanchez Diaz", "Partido Verde"));
-        candidatos.add(new Candidato("CAND_004", "Ana Maria Torres", "Movimiento Ciudadano"));
-        candidatos.add(new Candidato("CAND_005", "Carlos Eduardo Ramirez", "Partido de la Unidad"));
-        
-        // Opciones especiales de votacion
-        candidatos.add(new Candidato("BLANCO", "Voto en Blanco"));
-        
-        repositorio.cargarCandidatos(candidatos);
-    }
-    
-    /**
-     * Carga la lista de votantes elegibles para esta mesa de votacion.
-     * En una implementacion real, esto vendria de una base de datos central o servicio.
-     * Implementa busqueda rapida usando HashMap para validacion O(1) de votantes.
-     */
-    private void cargarVotantesElegibles() {
-        // Simular carga de votantes desde una fuente de datos
-        // En produccion, esto vendria del servidor central o base de datos
-        
-        List<Votante> votantes = new ArrayList<>();
-        
-        // Datos de muestra para esta mesa de votacion
-        votantes.add(new Votante("12345678", "Ana", "Garcia Lopez", idMesaVotacion));
-        votantes.add(new Votante("23456789", "Carlos", "Rodriguez Perez", idMesaVotacion));
-        votantes.add(new Votante("34567890", "Maria", "Fernandez Torres", idMesaVotacion));
-        votantes.add(new Votante("45678901", "Jose", "Martinez Ramirez", idMesaVotacion));
-        votantes.add(new Votante("56789012", "Laura", "Gonzalez Diaz", idMesaVotacion));
-        votantes.add(new Votante("67890123", "Pedro", "Hernandez Silva", idMesaVotacion));
-        votantes.add(new Votante("78901234", "Sofia", "Lopez Morales", idMesaVotacion));
-        votantes.add(new Votante("89012345", "Miguel", "Castro Vargas", idMesaVotacion));
-        votantes.add(new Votante("90123456", "Elena", "Ruiz Mendoza", idMesaVotacion));
-        votantes.add(new Votante("01234567", "Diego", "Jimenez Ortega", idMesaVotacion));
-        
-        // Cargar en el repositorio
-        repositorio.cargarVotantesElegibles(votantes);
-        ui.mostrarMensajeInfo("Cargados " + votantes.size() + " votantes elegibles para mesa de votacion " + idMesaVotacion);
+    @SuppressWarnings("IncompleteIceConnection")
+    private void realizarPrecarga(SistemaPrecarga sistemaPrecarga) {
+        try {
+            
+            // Por ahora, usar configuracion simulada
+            ConfiguracionMesa config = sistemaPrecarga.generarConfiguracionSimulada(idMesaVotacion);
+            
+            // Precargar datos
+            sistemaPrecarga.precargarMesa(config);
+            
+            ui.mostrarMensajeInfo("Mesa precargada exitosamente:");
+            ui.mostrarMensajeInfo("- Candidatos: " + repositorio.getCandidatosDisponibles().size());
+            ui.mostrarMensajeInfo("- Votantes elegibles: " + repositorio.getTotalVotantesElegibles());
+            
+        } catch (Exception e) {
+            ui.mostrarMensajeError("Error durante la precarga: " + e.getMessage());
+            throw new RuntimeException("No se pudo precargar la mesa de votacion");
+        }
     }
     
     // ===== FLUJO PRINCIPAL DE APLICACION =====
