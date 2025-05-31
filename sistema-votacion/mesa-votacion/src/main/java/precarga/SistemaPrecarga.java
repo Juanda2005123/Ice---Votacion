@@ -6,6 +6,7 @@ import votos.RepositorioMesaVotacion;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Sistema de precarga de datos para mesa de votacion.
  * Se encarga de procesar y validar datos de configuracion antes de cargarlos.
