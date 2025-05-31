@@ -1,28 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="output" path="bin/default"/>
-	<classpathentry output="bin/main" kind="src" path="src/main/java">
+	<classpathentry kind="src" output="bin/main" path="src/main/resources">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry output="bin/main" kind="src" path="src/main/resources">
+	<classpathentry kind="src" output="bin/main" path="src/main/java">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11/"/>
-	<classpathentry kind="src" path="/common"/>
-	<classpathentry sourcepath="C:/Users/User/.gradle/caches/modules-2/files-2.1/com.zeroc/ice/3.7.10/3ad1f6f7365b8866c795da8230fd05a5244f1dc9/ice-3.7.10-sources.jar" kind="lib" path="C:/Users/User/.gradle/caches/modules-2/files-2.1/com.zeroc/ice/3.7.10/ca45473c5e197ace9510c4718fe2dfa4d3fdba29/ice-3.7.10.jar">
+	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
+	<classpathentry kind="src" path="/common">
 		<attributes>
-			<attribute name="gradle_used_by_scope" value="main,test"/>
+			<attribute name="gradle.buildServer" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="C:/Users/User/.gradle/caches/modules-2/files-2.1/com.zeroc/icestorm/3.7.10/3113d2c960adf8d0ee36188e43a78e1e2a41c700/icestorm-3.7.10-sources.jar" kind="lib" path="C:/Users/User/.gradle/caches/modules-2/files-2.1/com.zeroc/icestorm/3.7.10/1509034ae736b26f562d49ecc2d87470e558e728/icestorm-3.7.10.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="main,test"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="output" path="bin/default"/>
 </classpath>

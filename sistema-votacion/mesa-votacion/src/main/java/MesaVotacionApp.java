@@ -1,36 +1,38 @@
 
-import java.util.Scanner;
+import controller.ControllerVotacion;
 
+/**
+ * Aplicación principal para Mesa de Votación
+ * Utiliza arquitectura MVC para separar responsabilidades
+ * 
+ * Esta aplicación:
+ * - Maneja la interfaz de usuario para registro de votos
+ * - Valida cédulas y evita votos duplicados
+ * - Registra votos localmente
+ * - Se comunicará con el Servidor Central via Ice (pendiente)
+ */
 public class MesaVotacionApp {
+    
+    /**
+     * Punto de entrada de la aplicación
+     * @param args Argumentos de línea de comandos
+     *             args[0] (opcional): ID de la mesa (por defecto: "MESA-001")
+     */
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        boolean continuar = true;
+        // Obtener ID de mesa desde argumentos o usar valor por defecto
+        String mesaId = "MESA-001";
         
-        System.out.println("=== MESA DE VOTACIÓN ===");
-        System.out.println("Sistema iniciado correctamente\n");
-        
-        while (continuar) {
-            System.out.println("1. Registrar voto");
-            System.out.println("2. Salir");
-            System.out.print("Seleccione una opcion: ");
+        try {
+            // Crear e iniciar el controlador principal
+            ControllerVotacion controller = new ControllerVotacion(mesaId);
+            controller.iniciar();
             
-            int opcion = scanner.nextInt();
-            
-            switch (opcion) {
-                case 1:
-                    System.out.println("Registrando voto...");
-                    // Aquí irá la lógica de votación
-                    break;
-                case 2:
-                    System.out.println("Saliendo del sistema...");
-                    continuar = false;
-                    break;
-                default:
-                    System.out.println("Opción inválida");
-            }
-            System.out.println();
+        } catch (Exception e) {
+            System.err.println("Error fatal en la aplicación: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
         }
         
-        scanner.close();
+        System.out.println("Aplicación Mesa de Votación finalizada correctamente.");
     }
 }

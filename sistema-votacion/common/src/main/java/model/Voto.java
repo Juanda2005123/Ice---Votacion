@@ -4,18 +4,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Voto {
-    private String candidato;
+    private Candidato candidato;
     private LocalDateTime fechaHora;
     private String mesaId;
     
-    public Voto(String candidato, LocalDateTime fechaHora, String mesaId) {
+    public Voto(Candidato candidato, LocalDateTime fechaHora, String mesaId) {
         this.candidato = candidato;
         this.fechaHora = fechaHora;
         this.mesaId = mesaId;
     }
     
     // Getters
-    public String getCandidato() {
+    public Candidato getCandidato() {
         return candidato;
     }
     
@@ -35,6 +35,6 @@ public class Voto {
     @Override
     public String toString() {
         return String.format("Voto{candidato='%s', fecha='%s', mesa='%s'}", 
-                           candidato, getFechaHoraFormateada(), mesaId);
+                           candidato.getNombreCompleto(), getFechaHoraFormateada(), mesaId);
     }
 }
