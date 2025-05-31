@@ -5,6 +5,11 @@ import gestion.ProcesadorVotos;
 
 import com.zeroc.Ice.Current;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+
 /**
  * Servant Ice que implementa el servicio de votación.
  * Recibe votos desde las mesas y los procesa.
@@ -12,28 +17,37 @@ import com.zeroc.Ice.Current;
 public class ServicioComunicacionIce implements VotingService {
     
     private ProcesadorVotos procesadorVotos;
-    
+    private ExecutorService threadPool;
+
+
     public ServicioComunicacionIce(ProcesadorVotos procesadorVotos) {
         this.procesadorVotos = procesadorVotos;
+        this.threadPool = Executors.newFixedThreadPool(10); 
     }
     
     @Override
     public boolean enviarVotoVotante(String mesaId, Voto voto, Votante votante, Current current) {
         try {
-            // Convertir de clases Ice a clases Java locales
-            model.Voto votoJava = convertirVotoIceAJava(voto);
-            model.Votante votanteJava = convertirVotanteIceAJava(votante);
             
-            // Procesar voto y votante
-            boolean votoOk = procesadorVotos.procesarVoto(votoJava, mesaId);
-            boolean votanteOk = procesadorVotos.procesarVotante(votanteJava, mesaId);
+            Future<Boolean> resultado = threadPool.submit(() -> {
+               
+                model.Voto votoJava = convertirVotoIceAJava(voto);
+                model.Votante votanteJava = convertirVotanteIceAJava(votante);
+
+                boolean votoOK = procesadorVotos.procesarVoto(votoJava, mesaId);
+                boolean votanteOK = procesadorVotos.procesarVotante(votanteJava, mesaId);
+                return votoOK && votanteOK;
+            });
+
             
-            return votoOk && votanteOk;
-            
+            return resultado.get();
+
         } catch (Exception e) {
-            System.err.println("Error procesando voto/votante: " + e.getMessage());
+            System.err.println("Error procesando voto con thread pool: " + e.getMessage());
             return false;
-        }    }
+        }
+    }
+
     
     // Métodos de conversión Ice ↔ Java
     private model.Voto convertirVotoIceAJava(Voto votoIce) {
@@ -74,4 +88,11 @@ public class ServicioComunicacionIce implements VotingService {
         // Return total votes processed
         return 0; // TODO: implement proper counting
     }
+
+    public void shutdownThreadPool() {
+        if (threadPool != null) {
+            threadPool.shutdown();
+        }
+    }
+
 }

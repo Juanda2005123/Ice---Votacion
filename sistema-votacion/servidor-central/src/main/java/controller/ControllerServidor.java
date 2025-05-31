@@ -226,6 +226,10 @@ public class ControllerServidor {
      * Cierra el servidor de manera limpia.
      */
     private void cerrarServidor() {
+        if (servicioIce != null) {
+            servicioIce.shutdownThreadPool();
+        }
+
         // Cerrar Ice
         if (communicator != null) {
             communicator.destroy();
