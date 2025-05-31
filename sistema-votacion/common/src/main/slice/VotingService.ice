@@ -9,6 +9,7 @@ module VotingSystem {
     };
     
     class Voto {
+        string votoId; 
         Candidato candidato;
         string timestamp;
         // Agregar otros campos que necesites

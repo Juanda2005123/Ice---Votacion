@@ -225,7 +225,9 @@ public class ControllerVotacion {
             }
             
             // 9. Registrar voto
-            Voto nuevoVoto = new Voto(candidatoSeleccionado, LocalDateTime.now(), idMesaVotacion);
+            String votoId = UUID.randomUUID().toString();
+            Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado, LocalDateTime.now(), idMesaVotacion);
+
             confirmarVoto(votante, nuevoVoto);
             
             // 10. Mostrar confirmacion de exito

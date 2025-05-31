@@ -58,6 +58,8 @@ public class ServicioComunicacionIce {
         
         // Crear Voto Ice
         VotingSystem.Voto votoIce = new VotingSystem.Voto();
+        
+        votoIce.votoId = votoJava.getVotoId();
         votoIce.candidato = candidatoIce;
         votoIce.timestamp = java.time.LocalDateTime.now().toString(); // O el timestamp del voto
         

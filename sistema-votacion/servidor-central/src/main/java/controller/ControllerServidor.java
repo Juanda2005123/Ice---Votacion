@@ -23,10 +23,13 @@ public class ControllerServidor {
     // ===== VARIABLES DE INSTANCIA =====
     private ServidorUI ui;
     
+    
     // Almacenamiento temporal en memoria (thread-safe para Ice)
     private List<Voto> votosRecibidos;
     private Map<String, Votante> votantesQueVotaron; // Key: cédula
-    
+    private Set<String> votosProcesadosIds = ConcurrentHashMap.newKeySet();
+
+
     // Estadísticas calculadas
     private Map<String, Integer> conteosPorCandidato;
     private com.zeroc.Ice.Communicator communicator;
@@ -145,27 +148,28 @@ public class ControllerServidor {
      * @param voto Voto recibido
      * @return true si el voto fue almacenado exitosamente
      */
-    public boolean almacenarVoto(Voto voto) {
+   public boolean almacenarVoto(Voto voto) {
         try {
-            if (voto == null) {
-                throw new IllegalArgumentException("El voto no puede ser null");
+            if (voto == null) throw new IllegalArgumentException("El voto no puede ser null");
+
+            if (!votosProcesadosIds.add(voto.getVotoId())) {
+                ui.mostrarMensajeError("Voto duplicado: " + voto.getVotoId());
+                return false;
             }
-            
-            // Almacenar voto
+
             votosRecibidos.add(voto);
-            
-            // Actualizar conteos por candidato
             String nombreCandidato = voto.getCandidato().getNombreCompleto();
-            conteosPorCandidato.put(nombreCandidato, 
+            conteosPorCandidato.put(nombreCandidato,
                 conteosPorCandidato.getOrDefault(nombreCandidato, 0) + 1);
-            
+
             return true;
-            
+
         } catch (Exception e) {
             ui.mostrarMensajeError("Error almacenando voto: " + e.getMessage());
             return false;
         }
     }
+
     
     /**
      * Recibe información de un votante procesado por ProcesadorVotos.

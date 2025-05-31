@@ -3,6 +3,7 @@ package comunicacion;
 import VotingSystem.*;
 import gestion.ProcesadorVotos;
 
+
 import com.zeroc.Ice.Current;
 
 import java.util.concurrent.ExecutorService;
@@ -61,8 +62,13 @@ public class ServicioComunicacionIce implements VotingService {
         );
         
         // Crear Voto Java (need to provide all required parameters)
-        model.Voto votoJava = new model.Voto(candidatoJava, 
-                                           java.time.LocalDateTime.now(),                                           "MESA_DEFAULT");
+        model.Voto votoJava = new model.Voto(
+                            votoIce.votoId,
+                            candidatoJava,
+                            java.time.LocalDateTime.parse(votoIce.timestamp)
+                            , "MESA_DEFAULT" // Default mesaId, can be changed later
+                        );
+                                      
         
         return votoJava;
     }

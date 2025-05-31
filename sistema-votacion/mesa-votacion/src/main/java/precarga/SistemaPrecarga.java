@@ -187,6 +187,7 @@ public class SistemaPrecarga {
         votantes.add(new Votante("56789012", "Laura", "Gonzalez Diaz", idMesa));
         votantes.add(new Votante("67890123", "Pedro", "Hernandez Silva", idMesa));
         votantes.add(new Votante("1058932648", "Juan David", "Quintero Peña", idMesa));
+        votantes.add(new Votante("1109663632", "Mariana", "De La Cruz Posso", idMesa));
         votantes.add(new Votante("89012345", "Miguel", "Castro Vargas", idMesa));
         votantes.add(new Votante("90123456", "Elena", "Ruiz Mendoza", idMesa));
         votantes.add(new Votante("01234567", "Diego", "Jimenez Ortega", idMesa));

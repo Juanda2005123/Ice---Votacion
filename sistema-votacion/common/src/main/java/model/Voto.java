@@ -7,14 +7,19 @@ public class Voto {
     private Candidato candidato;
     private LocalDateTime fechaHora;
     private String mesaId;
-    
-    public Voto(Candidato candidato, LocalDateTime fechaHora, String mesaId) {
+    private String votoId;
+
+    public Voto(String votoId, Candidato candidato, LocalDateTime fechaHora, String mesaId) {
+        this.votoId = votoId;
         this.candidato = candidato;
         this.fechaHora = fechaHora;
         this.mesaId = mesaId;
     }
+
+    public String getVotoId() {
+        return votoId;
+    }
     
-    // Getters
     public Candidato getCandidato() {
         return candidato;
     }
