@@ -61,9 +61,9 @@ Gradle 6.6
 ---
 
 ## Compilar y Ejecutar el Proyecto
-> 1. Clonar el repositorio
+> 1. Clonar el repositorio:
 > git clone https://github.com/Juanda2005123/Ice---Votacion.git
-> 2. Ruta donde deverias estar parado
+> 2. Ruta donde deberias estar:
 > cd ice---votacion/sistema-votacion
 
 
