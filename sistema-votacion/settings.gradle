@@ -1,0 +1,5 @@
+rootProject.name = 'sistema-votacion'
+
+include 'common'
+include 'mesa-votacion'
+include 'servidor-central'
