@@ -1,0 +1,98 @@
+[
+  {
+    "voto": {
+      "candidato": {
+        "id": "CAND_004",
+        "cedula": "CAND_004",
+        "nombre": "Ana Maria Torres",
+        "apellido": "",
+        "partidoPolitico": "Movimiento Ciudadano"
+      },
+      "fechaHora": "2025-06-01T23:27:48.5809212",
+      "mesaId": "MESA-001",
+      "votoId": "a399b90b-08a6-4129-bbab-78a083a5e4aa"
+    },
+    "votante": {
+      "cedula": "1058932648",
+      "nombre": "Juan David",
+      "apellidos": "Quintero Peña",
+      "apellido": "Quintero Peña",
+      "departamento": "",
+      "ciudad": "",
+      "mesaId": "MESA-001",
+      "yaVoto": true
+    },
+    "candidato": {
+      "id": "CAND_004",
+      "cedula": "CAND_004",
+      "nombre": "Ana Maria Torres",
+      "apellido": "",
+      "partidoPolitico": "Movimiento Ciudadano"
+    },
+    "timestamp": "2025-06-01T23:27:48.5809212"
+  },
+  {
+    "voto": {
+      "candidato": {
+        "id": "BLANCO",
+        "cedula": "BLANCO",
+        "nombre": "Voto en Blanco",
+        "apellido": "",
+        "partidoPolitico": "NA"
+      },
+      "fechaHora": "2025-06-01T23:29:10.846942",
+      "mesaId": "MESA-001",
+      "votoId": "c8bd94a2-158e-4827-bc85-d4e3f5bf9b22"
+    },
+    "votante": {
+      "cedula": "12345678",
+      "nombre": "Ana",
+      "apellidos": "Garcia Lopez",
+      "apellido": "Garcia Lopez",
+      "departamento": "",
+      "ciudad": "",
+      "mesaId": "MESA-001",
+      "yaVoto": true
+    },
+    "candidato": {
+      "id": "BLANCO",
+      "cedula": "BLANCO",
+      "nombre": "Voto en Blanco",
+      "apellido": "",
+      "partidoPolitico": "NA"
+    },
+    "timestamp": "2025-06-01T23:29:10.846942"
+  },
+  {
+    "voto": {
+      "candidato": {
+        "id": "CAND_001",
+        "cedula": "CAND_001",
+        "nombre": "Juan Carlos Perez",
+        "apellido": "",
+        "partidoPolitico": "Partido Liberal"
+      },
+      "fechaHora": "2025-06-01T23:29:33.3289736",
+      "mesaId": "MESA-001",
+      "votoId": "baa02767-40f2-4918-b61d-811938c8b5ea"
+    },
+    "votante": {
+      "cedula": "23456789",
+      "nombre": "Carlos",
+      "apellidos": "Rodriguez Perez",
+      "apellido": "Rodriguez Perez",
+      "departamento": "",
+      "ciudad": "",
+      "mesaId": "MESA-001",
+      "yaVoto": true
+    },
+    "candidato": {
+      "id": "CAND_001",
+      "cedula": "CAND_001",
+      "nombre": "Juan Carlos Perez",
+      "apellido": "",
+      "partidoPolitico": "Partido Liberal"
+    },
+    "timestamp": "2025-06-01T23:29:33.3289736"
+  }
+]

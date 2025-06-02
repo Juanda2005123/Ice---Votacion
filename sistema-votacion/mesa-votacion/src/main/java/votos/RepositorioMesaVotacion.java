@@ -28,6 +28,7 @@ public class RepositorioMesaVotacion {
     private List<Candidato> candidatosDisponibles;
     private String idMesaVotacion;
     private LocalDateTime inicioVotacion;
+    private PersistenciaVotos persistencia; // Nuevo campo para persistencia
     
     /**
      * Constructor del Repositorio de Mesa de Votacion.
@@ -44,6 +45,10 @@ public class RepositorioMesaVotacion {
         this.votantesElegibles = new HashMap<>();
         this.candidatosDisponibles = new ArrayList<>();
         this.inicioVotacion = LocalDateTime.now();
+        this.persistencia = new PersistenciaVotos(idMesaVotacion); // Inicializar persistencia
+        
+        // Cargar mensajes pendientes al inicializar
+        cargarMensajesPendientesAlIniciar();
     }
     
     // ===== GESTION DE CANDIDATOS =====
@@ -157,9 +162,47 @@ public class RepositorioMesaVotacion {
     }
     
     // ===== GESTION DE VOTOS =====
+      /**
+     * Registra un nuevo voto en el repositorio CON PERSISTENCIA.
+     * Guarda el voto tanto en memoria como en los archivos de persistencia.
+     * 
+     * @param voto El voto a registrar
+     * @param votante El votante que emitió el voto
+     * @throws IllegalArgumentException si el voto es null o invalido
+     * @throws RuntimeException si hay error en el almacenamiento
+     */
+    public void registrarVotoCompleto(Voto voto, Votante votante) {
+        if (voto == null) {
+            throw new IllegalArgumentException("El voto no puede ser null");
+        }
+        
+        if (votante == null) {
+            throw new IllegalArgumentException("El votante no puede ser null");
+        }
+        
+        if (voto.getCandidato() == null) {
+            throw new IllegalArgumentException("El voto debe tener un candidato valido");
+        }
+        
+        if (!idMesaVotacion.equals(voto.getMesaId())) {
+            throw new IllegalArgumentException("El voto no pertenece a esta mesa de votacion");
+        }
+          try {
+            // 1. Registrar en memoria
+            votosRegistrados.add(voto);
+            
+            // 2. Guardar en persistencia (auditoria + mensajes pendientes)
+            persistencia.guardarVotoCompleto(voto, votante, voto.getCandidato(), LocalDateTime.now());
+            
+        } catch (Exception e) {
+            // En caso de error, remover de memoria si se había agregado
+            votosRegistrados.removeIf(v -> v.getVotoId().equals(voto.getVotoId()));
+            throw new RuntimeException("Error almacenando voto en repositorio: " + e.getMessage());
+        }
+    }
     
     /**
-     * Registra un nuevo voto en el repositorio.
+     * Registra un nuevo voto en el repositorio (método original mantenido para compatibilidad).
      * 
      * @param voto El voto a registrar
      * @throws IllegalArgumentException si el voto es null o invalido
@@ -213,8 +256,7 @@ public class RepositorioMesaVotacion {
     public String getIdMesaVotacion() {
         return idMesaVotacion;
     }
-    
-    /**
+      /**
      * Obtiene la fecha y hora de inicio de votacion.
      * 
      * @return Fecha y hora de inicio
@@ -223,5 +265,78 @@ public class RepositorioMesaVotacion {
         return inicioVotacion;
     }
     
+    // ===== MÉTODOS DE PERSISTENCIA (RELIABLE MESSAGE) =====
+    
+    /**
+     * Confirma que un voto fue enviado exitosamente al servidor central.
+     * Lo elimina de los mensajes pendientes pero lo mantiene en auditoría.
+     * 
+     * @param votoId ID del voto confirmado
+     * @return true si se confirmó exitosamente
+     */
+    public boolean confirmarVotoEnviado(String votoId) {
+        return persistencia.confirmarVotoEnviado(votoId);
+    }
+    
+    /**
+     * Obtiene todos los mensajes pendientes de envío al servidor.
+     * Se usa para reenviar votos no confirmados.
+     * 
+     * @return Lista de votos y votantes pendientes
+     */
+    public List<PersistenciaVotos.EntradaVotoCompleta> obtenerMensajesPendientes() {
+        return persistencia.cargarMensajesPendientes();
+    }
+    
+    /**
+     * Obtiene todos los votos del archivo de auditoría.
+     * 
+     * @return Lista completa de auditoría
+     */
+    public List<PersistenciaVotos.EntradaVotoCompleta> obtenerAuditoria() {
+        return persistencia.cargarAuditoria();
+    }
+    
+    /**
+     * Obtiene estadísticas de persistencia.
+     * 
+     * @return Mapa con estadísticas
+     */
+    public Map<String, Integer> obtenerEstadisticasPersistencia() {
+        return persistencia.obtenerEstadisticas();
+    }
+    
+    /**
+     * Obtiene los nombres de los archivos de persistencia.
+     * 
+     * @return Mapa con nombres de archivos
+     */
+    public Map<String, String> obtenerArchivos() {
+        return persistencia.obtenerNombresArchivos();
+    }
+    
+    /**
+     * Carga mensajes pendientes al inicializar el repositorio.
+     * Esto permite recuperar votos no confirmados en caso de reinicio.
+     */
+    private void cargarMensajesPendientesAlIniciar() {
+        try {
+            List<PersistenciaVotos.EntradaVotoCompleta> pendientes = persistencia.cargarMensajesPendientes();
+            
+            if (!pendientes.isEmpty()) {
+                System.out.println("Recuperando " + pendientes.size() + " votos pendientes de confirmación...");
+                
+                // Los votos ya están en memoria a través de la auditoría,
+                // aquí solo mostramos información de recuperación
+                for (PersistenciaVotos.EntradaVotoCompleta entrada : pendientes) {
+                    System.out.println("- Voto pendiente: " + entrada.voto.getVotoId() + 
+                                     " (Votante: " + entrada.votante.getNombreCompleto() + ")");
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error cargando mensajes pendientes al iniciar: " + e.getMessage());
+        }
+    }
 
 }

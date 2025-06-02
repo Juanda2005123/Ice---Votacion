@@ -3,6 +3,8 @@ package votos;
 import model.Voto;
 import model.Votante;
 import comunicacion.ServicioComunicacionIce;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Coordinador de envio de votos que maneja la logica de envio al servidor central.
@@ -16,7 +18,6 @@ public class CoordinadorEnvioVotos {
     
     private RepositorioMesaVotacion repositorio;
     private ServicioComunicacionIce servicioIce;
-    private ColaMensajesConfiables colaConfiable;
     private String mesaId;
     private volatile boolean continuar = true;
     private Thread hiloReintento;
@@ -33,15 +34,14 @@ public class CoordinadorEnvioVotos {
         
         this.repositorio = repositorio;
         this.servicioIce = new ServicioComunicacionIce(); 
-        this.colaConfiable = new ColaMensajesConfiables();
         this.mesaId = repositorio.getIdMesaVotacion();
 
         iniciarHiloReintentos();
     }
-    
-    /**
-     * Procesa el registro de un voto completo (voto + votante).
+      /**
+     * Procesa el registro de un voto completo (voto + votante) CON PERSISTENCIA.
      * Esta operacion es atomica: o se completa todo o falla todo.
+     * Implementa el patrón Reliable Message.
      * 
      * @param voto El voto a procesar
      * @param votante El votante que emitio el voto
@@ -65,10 +65,10 @@ public class CoordinadorEnvioVotos {
             // 1. Marcar votante como votado (operacion local)
             votante.marcarComoVotado();
             
-            // 2. Registrar voto en repositorio
-            repositorio.registrarVoto(voto);
+            // 2. Registrar voto en repositorio CON PERSISTENCIA (auditoria + mensajes pendientes)
+            repositorio.registrarVotoCompleto(voto, votante);
             
-            // 3. Enviar al servidor (cuando Ice este implementado)
+            // 3. Enviar al servidor central
             enviarVotoCompletoAServidor(voto, votante);
             
         } catch (IllegalArgumentException e) {
@@ -81,9 +81,9 @@ public class CoordinadorEnvioVotos {
             throw new RuntimeException("Error procesando voto completo: " + e.getMessage());
         }
     }
-    
-    /**
+      /**
      * Envia un voto completo (voto + votante) al servidor central.
+     * Si recibe confirmación, elimina el voto de mensajes pendientes.
      * 
      * @param voto El voto a enviar
      * @param votante El votante que voto
@@ -92,13 +92,21 @@ public class CoordinadorEnvioVotos {
     private void enviarVotoCompletoAServidor(Voto voto, Votante votante) {
         try {
             boolean ackRecibido = servicioIce.enviarVotoVotanteConACK(mesaId, voto, votante);
-            if (!ackRecibido) {
-                System.err.println("No se recibió confirmación del servidor. Encolando voto.");
-                colaConfiable.encolar(voto, votante);
+            if (ackRecibido) {
+                // Confirmación recibida: eliminar de mensajes pendientes
+                boolean confirmado = repositorio.confirmarVotoEnviado(voto.getVotoId());
+                if (confirmado) {
+                    System.out.println("Voto confirmado y enviado exitosamente: " + voto.getVotoId());
+                } else {
+                    System.err.println("Voto enviado pero no se pudo confirmar en persistencia: " + voto.getVotoId());
+                }
+            } else {
+                System.err.println("No se recibió confirmación del servidor para voto: " + voto.getVotoId());
+                // El voto ya está en mensajes pendientes, será reintentado
             }
         } catch (Exception e) {
-            System.err.println("Error enviando voto: " + e.getMessage() + " - Encolando para reintento.");
-            colaConfiable.encolar(voto, votante);
+            System.err.println("Error enviando voto " + voto.getVotoId() + ": " + e.getMessage());
+            // El voto ya está en mensajes pendientes, será reintentado
         }
     }
 
@@ -110,36 +118,45 @@ public class CoordinadorEnvioVotos {
      */
     public RepositorioMesaVotacion getRepositorio() {
         return repositorio;
-    }
-
-    private void iniciarHiloReintentos() {
+    }    private void iniciarHiloReintentos() {
         hiloReintento = new Thread(() -> {
             while (continuar) {
                 try {
                     Thread.sleep(5000); // cada 5 segundos
-                    ColaMensajesConfiables.EntradaVoto entrada = colaConfiable.obtenerSiguiente();
-                    if (entrada != null) {
-                        boolean exito = servicioIce.enviarVotoVotanteConACK(mesaId, entrada.voto, entrada.votante);
-                        if (!exito) {
-                            colaConfiable.encolar(entrada.voto, entrada.votante);
-                        } else {
-                            System.out.println("Reintento exitoso del voto: " + entrada.voto.getVotoId());
+                    
+                    // Obtener mensajes pendientes desde persistencia
+                    List<PersistenciaVotos.EntradaVotoCompleta> pendientes = repositorio.obtenerMensajesPendientes();
+                    
+                    for (PersistenciaVotos.EntradaVotoCompleta entrada : pendientes) {
+                        try {
+                            boolean exito = servicioIce.enviarVotoVotanteConACK(mesaId, entrada.voto, entrada.votante);
+                            if (exito) {
+                                // Confirmación recibida: eliminar de mensajes pendientes
+                                boolean confirmado = repositorio.confirmarVotoEnviado(entrada.voto.getVotoId());
+                                if (confirmado) {
+                                    System.out.println("Reintento exitoso del voto: " + entrada.voto.getVotoId());
+                                }
+                            }
+                            // Si no hay éxito, el voto permanece en mensajes pendientes para próximo reintento
+                            
+                        } catch (Exception e) {
+                            System.err.println("Error en reintento del voto " + entrada.voto.getVotoId() + ": " + e.getMessage());
+                            // El voto permanece en mensajes pendientes para próximo reintento
                         }
                     }
+                    
                 } catch (InterruptedException e) {
                     System.err.println("Hilo de reintento interrumpido.");
                     Thread.currentThread().interrupt();
                     break;
                 } catch (Exception e) {
-                    System.err.println("Error en reintento: " + e.getMessage());
+                    System.err.println("Error en hilo de reintento: " + e.getMessage());
                 }
             }
         }, "HiloReintentoReliableMessaging");
 
         hiloReintento.start();
     }
-
-
     public void detener() {
         continuar = false;
         if (hiloReintento != null) {
@@ -147,7 +164,45 @@ public class CoordinadorEnvioVotos {
         }
         System.out.println("Hilo de reintento detenido.");
     }
-
     
+    /**
+     * Obtiene estadísticas de persistencia para monitoreo.
+     * 
+     * @return Mapa con estadísticas
+     */
+    public Map<String, Integer> obtenerEstadisticasPersistencia() {
+        return repositorio.obtenerEstadisticasPersistencia();
+    }
+    
+    /**
+     * Obtiene información de los archivos de persistencia.
+     * 
+     * @return Mapa con nombres de archivos
+     */
+    public Map<String, String> obtenerArchivos() {
+        return repositorio.obtenerArchivos();
+    }
+    
+    /**
+     * Fuerza el reintento de todos los mensajes pendientes.
+     * Útil para pruebas o situaciones especiales.
+     */
+    public void forzarReintentoMensajes() {
+        List<PersistenciaVotos.EntradaVotoCompleta> pendientes = repositorio.obtenerMensajesPendientes();
+        
+        System.out.println("Forzando reintento de " + pendientes.size() + " mensajes pendientes...");
+        
+        for (PersistenciaVotos.EntradaVotoCompleta entrada : pendientes) {
+            try {
+                boolean exito = servicioIce.enviarVotoVotanteConACK(mesaId, entrada.voto, entrada.votante);
+                if (exito) {
+                    repositorio.confirmarVotoEnviado(entrada.voto.getVotoId());
+                    System.out.println("Reintento manual exitoso: " + entrada.voto.getVotoId());
+                }
+            } catch (Exception e) {
+                System.err.println("Error en reintento manual del voto " + entrada.voto.getVotoId() + ": " + e.getMessage());
+            }
+        }
+    }
 
 }

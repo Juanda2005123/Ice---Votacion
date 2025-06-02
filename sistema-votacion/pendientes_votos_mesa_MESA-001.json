@@ -1,0 +1,34 @@
+[
+  {
+    "voto": {
+      "candidato": {
+        "id": "CAND_001",
+        "cedula": "CAND_001",
+        "nombre": "Juan Carlos Perez",
+        "apellido": "",
+        "partidoPolitico": "Partido Liberal"
+      },
+      "fechaHora": "2025-06-01T23:29:33.3289736",
+      "mesaId": "MESA-001",
+      "votoId": "baa02767-40f2-4918-b61d-811938c8b5ea"
+    },
+    "votante": {
+      "cedula": "23456789",
+      "nombre": "Carlos",
+      "apellidos": "Rodriguez Perez",
+      "apellido": "Rodriguez Perez",
+      "departamento": "",
+      "ciudad": "",
+      "mesaId": "MESA-001",
+      "yaVoto": true
+    },
+    "candidato": {
+      "id": "CAND_001",
+      "cedula": "CAND_001",
+      "nombre": "Juan Carlos Perez",
+      "apellido": "",
+      "partidoPolitico": "Partido Liberal"
+    },
+    "timestamp": "2025-06-01T23:29:33.3289736"
+  }
+]
