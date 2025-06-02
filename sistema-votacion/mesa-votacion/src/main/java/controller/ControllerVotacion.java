@@ -123,7 +123,8 @@ public class ControllerVotacion {
                 ui.limpiarPantalla();
             }
         }
-        
+
+        coordinadorEnvio.detener();
         ui.cerrar();
     }
     

@@ -16,6 +16,10 @@ public class CoordinadorEnvioVotos {
     
     private RepositorioMesaVotacion repositorio;
     private ServicioComunicacionIce servicioIce;
+    private ColaMensajesConfiables colaConfiable;
+    private String mesaId;
+    private volatile boolean continuar = true;
+    private Thread hiloReintento;
     
     /**
      * Constructor del Coordinador de Envio de Votos.
@@ -28,7 +32,11 @@ public class CoordinadorEnvioVotos {
         }
         
         this.repositorio = repositorio;
-        this.servicioIce = new ServicioComunicacionIce(); // <- ACTIVAR AQUI
+        this.servicioIce = new ServicioComunicacionIce(); 
+        this.colaConfiable = new ColaMensajesConfiables();
+        this.mesaId = repositorio.getIdMesaVotacion();
+
+        iniciarHiloReintentos();
     }
     
     /**
@@ -83,15 +91,17 @@ public class CoordinadorEnvioVotos {
      */
     private void enviarVotoCompletoAServidor(Voto voto, Votante votante) {
         try {
-            boolean ackRecibido = servicioIce.enviarVotoVotanteConACK("MESA-001", voto, votante);
+            boolean ackRecibido = servicioIce.enviarVotoVotanteConACK(mesaId, voto, votante);
             if (!ackRecibido) {
-                throw new RuntimeException("No se recibió confirmación del servidor");
+                System.err.println("No se recibió confirmación del servidor. Encolando voto.");
+                colaConfiable.encolar(voto, votante);
             }
-            
         } catch (Exception e) {
-            throw new RuntimeException("Error enviando voto completo al servidor: " + e.getMessage());
+            System.err.println("Error enviando voto: " + e.getMessage() + " - Encolando para reintento.");
+            colaConfiable.encolar(voto, votante);
         }
     }
+
     
     /**
      * Obtiene el repositorio de mesa de votacion asociado.
@@ -101,4 +111,43 @@ public class CoordinadorEnvioVotos {
     public RepositorioMesaVotacion getRepositorio() {
         return repositorio;
     }
+
+    private void iniciarHiloReintentos() {
+        hiloReintento = new Thread(() -> {
+            while (continuar) {
+                try {
+                    Thread.sleep(5000); // cada 5 segundos
+                    ColaMensajesConfiables.EntradaVoto entrada = colaConfiable.obtenerSiguiente();
+                    if (entrada != null) {
+                        boolean exito = servicioIce.enviarVotoVotanteConACK(mesaId, entrada.voto, entrada.votante);
+                        if (!exito) {
+                            colaConfiable.encolar(entrada.voto, entrada.votante);
+                        } else {
+                            System.out.println("Reintento exitoso del voto: " + entrada.voto.getVotoId());
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    System.err.println("Hilo de reintento interrumpido.");
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (Exception e) {
+                    System.err.println("Error en reintento: " + e.getMessage());
+                }
+            }
+        }, "HiloReintentoReliableMessaging");
+
+        hiloReintento.start();
+    }
+
+
+    public void detener() {
+        continuar = false;
+        if (hiloReintento != null) {
+            hiloReintento.interrupt();
+        }
+        System.out.println("Hilo de reintento detenido.");
+    }
+
+    
+
 }

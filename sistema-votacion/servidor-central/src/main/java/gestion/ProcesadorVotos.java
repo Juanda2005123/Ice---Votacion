@@ -80,8 +80,8 @@ public class ProcesadorVotos {
             
             // Log del votante recibido
             controllerServidor.getUI().mostrarMensajeInfo(
-                String.format("Votante recibido de mesa %s - %s", 
-                    mesaId, votante.getNombreCompleto()));
+                String.format("Votante recibido de mesa %s", 
+                    mesaId));
             
             // Enviar al controlador para almacenar
             return controllerServidor.almacenarVotante(votante);
