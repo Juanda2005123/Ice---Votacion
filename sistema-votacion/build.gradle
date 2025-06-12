@@ -38,7 +38,7 @@ subprojects {
     }
     
     // Solo mesa-votacion y servidor-central dependen de common
-    if (project.name in ['mesa-votacion', 'servidor-central']) {
+    if (project.name in ['mesa-votacion', 'servidor-central', 'departamento', 'lugar-votacion']) {
         dependencies {
             implementation project(':common')
         }

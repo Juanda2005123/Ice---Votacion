@@ -1,20 +1,21 @@
 module VotingSystem {
-    
-    // Definir las clases que se van a transmitir
+
+    // Secuencia para listas de strings
+    sequence<string> ListaString;
+
     class Candidato {
         string cedula;
         string nombre;
         string apellido;
         string partidoPolitico;
     };
-    
+
     class Voto {
-        string votoId; 
+        string votoId;
         Candidato candidato;
         string timestamp;
-        // Agregar otros campos que necesites
     };
-    
+
     class Votante {
         string cedula;
         string nombre;
@@ -22,15 +23,30 @@ module VotingSystem {
         string departamento;
         string ciudad;
         bool yaVoto;
-        // Agregar otros campos que necesites
     };
-    
-    // Interfaz del servicio
+
+    class ConsultaLugarResponse {
+        string departamento;
+        string ciudad;
+        string lugarNombre;
+        string direccion;
+        string mesaId;
+        bool encontrado;
+        string mensaje;
+    };
+
     interface VotingService {
-        // Enviar voto completo (voto + votante)
         bool enviarVotoVotante(string mesaId, Voto voto, Votante votante);
-        
-        // Método para testing - obtener total de votos
         int getTotalVotos();
+    };
+
+    interface LugarVotacionService {
+        ConsultaLugarResponse consultarLugarVotacion(string cedula);
+    };
+
+    interface DepartamentoService {
+        void registrarLugarVotacion(string lugarId, LugarVotacionService* proxy);
+        ListaString obtenerLugaresRegistrados();
+        string asignarLugarParaConsulta(string cedula);
     };
 };
