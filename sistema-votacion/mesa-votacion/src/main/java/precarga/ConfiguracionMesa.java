@@ -1,7 +1,7 @@
 package precarga;
 
 import model.Candidato;
-import model.Votante;
+import model.Ciudadano;
 import java.util.List;
 
 /**
@@ -16,7 +16,7 @@ public class ConfiguracionMesa {
     
     private String idMesa;
     private List<Candidato> candidatos;
-    private List<Votante> votantesElegibles;
+    private List<Ciudadano> votantesElegibles;
     
     /**
      * Constructor para configuracion de mesa.
@@ -25,7 +25,7 @@ public class ConfiguracionMesa {
      * @param candidatos Lista de candidatos disponibles
      * @param votantesElegibles Lista de votantes asignados a esta mesa
      */
-    public ConfiguracionMesa(String idMesa, List<Candidato> candidatos, List<Votante> votantesElegibles) {
+    public ConfiguracionMesa(String idMesa, List<Candidato> candidatos, List<Ciudadano> votantesElegibles) {
         this.idMesa = idMesa;
         this.candidatos = candidatos;
         this.votantesElegibles = votantesElegibles;
@@ -38,8 +38,8 @@ public class ConfiguracionMesa {
     public List<Candidato> getCandidatos() { return candidatos; }
     public void setCandidatos(List<Candidato> candidatos) { this.candidatos = candidatos; }
     
-    public List<Votante> getVotantesElegibles() { return votantesElegibles; }
-    public void setVotantesElegibles(List<Votante> votantesElegibles) { this.votantesElegibles = votantesElegibles; }
+    public List<Ciudadano> getVotantesElegibles() { return votantesElegibles; }
+    public void setVotantesElegibles(List<Ciudadano> votantesElegibles) { this.votantesElegibles = votantesElegibles; }
     
     /**
      * Valida que la configuracion sea correcta.
@@ -60,7 +60,7 @@ public class ConfiguracionMesa {
         }
         
         // Validar que todos los votantes pertenezcan a esta mesa
-        for (Votante votante : votantesElegibles) {
+        for (Ciudadano votante : votantesElegibles) {
             if (!idMesa.equals(votante.getMesaId())) {
                 throw new IllegalArgumentException("Votante " + votante.getCedula() + " no pertenece a la mesa " + idMesa);
             }

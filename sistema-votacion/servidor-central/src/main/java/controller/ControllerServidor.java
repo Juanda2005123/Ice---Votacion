@@ -2,7 +2,7 @@ package controller;
 
 import ui.ServidorUI;
 import model.Voto;
-import model.Votante;
+import model.Ciudadano;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,7 +26,7 @@ public class ControllerServidor {
     
     // Almacenamiento temporal en memoria (thread-safe para Ice)
     private List<Voto> votosRecibidos;
-    private Map<String, Votante> votantesQueVotaron; // Key: cédula
+    private Map<String, Ciudadano> votantesQueVotaron; // Key: cédula
     private Set<String> votosProcesadosIds = ConcurrentHashMap.newKeySet();
 
 
@@ -177,7 +177,7 @@ public class ControllerServidor {
      * @param votante Votante que ha emitido su voto
      * @return true si la información fue almacenada exitosamente
      */
-    public boolean almacenarVotante(Votante votante) {
+    public boolean almacenarVotante(Ciudadano votante) {
         try {
             if (votante == null) {
                 throw new IllegalArgumentException("El votante no puede ser null");

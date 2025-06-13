@@ -1,7 +1,7 @@
 package votos;
 
 import model.Voto;
-import model.Votante;
+import model.Ciudadano;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -10,9 +10,9 @@ public class ColaMensajesConfiables {
 
     public static class EntradaVoto {
         public final Voto voto;
-        public final Votante votante;
+        public final Ciudadano votante;
 
-        public EntradaVoto(Voto voto, Votante votante) {
+        public EntradaVoto(Voto voto, Ciudadano votante) {
             this.voto = voto;
             this.votante = votante;
         }
@@ -20,7 +20,7 @@ public class ColaMensajesConfiables {
 
     private final Queue<EntradaVoto> cola = new LinkedList<>();
 
-    public synchronized void encolar(Voto voto, Votante votante) {
+    public synchronized void encolar(Voto voto, Ciudadano votante) {
         cola.add(new EntradaVoto(voto, votante));
     }
 

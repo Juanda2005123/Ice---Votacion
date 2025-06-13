@@ -2,7 +2,7 @@ package gestion;
 
 import controller.ControllerServidor;
 import model.Voto;
-import model.Votante;
+import model.Ciudadano;
 
 /**
  * Procesador de votos que maneja la lógica de procesamiento antes del almacenamiento.
@@ -67,7 +67,7 @@ public class ProcesadorVotos {
      * @param mesaId ID de la mesa que envía la información
      * @return true si el votante fue procesado exitosamente
      */
-    public boolean procesarVotante(Votante votante, String mesaId) {
+    public boolean procesarVotante(Ciudadano votante, String mesaId) {
         try {
             // Validaciones básicas
             if (votante == null) {

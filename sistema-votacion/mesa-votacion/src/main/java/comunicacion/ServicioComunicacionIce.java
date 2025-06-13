@@ -2,7 +2,7 @@ package comunicacion;
 
 import VotingSystem.*;
 import model.Voto;
-import model.Votante;
+import model.Ciudadano;
 
 /**
  * Cliente Ice para enviar votos al servidor central.
@@ -32,11 +32,11 @@ public class ServicioComunicacionIce {
         }
     }
     
-    public boolean enviarVotoVotanteConACK(String mesaId, Voto voto, Votante votante) {
+    public boolean enviarVotoVotanteConACK(String mesaId, Voto voto, Ciudadano votante) {
         try {
             // Convertir de clases Java a clases Ice
             VotingSystem.Voto votoIce = convertirVotoJavaAIce(voto);
-            VotingSystem.Votante votanteIce = convertirVotanteJavaAIce(votante);
+            Ciudadano.Votante votanteIce = convertirVotanteJavaAIce(votante);
             
             // Enviar al servidor
             return votingServicePrx.enviarVotoVotante(mesaId, votoIce, votanteIce);
@@ -66,8 +66,8 @@ public class ServicioComunicacionIce {
         return votoIce;
     }
 
-    private VotingSystem.Votante convertirVotanteJavaAIce(Votante votanteJava) {
-        VotingSystem.Votante votanteIce = new VotingSystem.Votante();
+    private VotingSystem.Ciudadano convertirVotanteJavaAIce(Ciudadano votanteJava) {
+        Ciudadano.Votante votanteIce = new Ciudadano.Votante();
         votanteIce.cedula = votanteJava.getCedula();
         votanteIce.nombre = votanteJava.getNombre();
         votanteIce.apellido = votanteJava.getApellido();

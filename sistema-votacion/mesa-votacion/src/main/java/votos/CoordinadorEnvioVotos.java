@@ -1,7 +1,7 @@
 package votos;
 
 import model.Voto;
-import model.Votante;
+import model.Ciudadano;
 import comunicacion.ServicioComunicacionIce;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +48,7 @@ public class CoordinadorEnvioVotos {
      * @throws IllegalArgumentException si los datos son invalidos
      * @throws RuntimeException si hay error en el procesamiento
      */
-    public void procesarVotoCompleto(Voto voto, Votante votante) {
+    public void procesarVotoCompleto(Voto voto, Ciudadano votante) {
         if (voto == null) {
             throw new IllegalArgumentException("El voto no puede ser null");
         }
@@ -89,7 +89,7 @@ public class CoordinadorEnvioVotos {
      * @param votante El votante que voto
      * @throws RuntimeException si hay error en el envio
      */
-    private void enviarVotoCompletoAServidor(Voto voto, Votante votante) {
+    private void enviarVotoCompletoAServidor(Voto voto, Ciudadano votante) {
         try {
             boolean ackRecibido = servicioIce.enviarVotoVotanteConACK(mesaId, voto, votante);
             if (ackRecibido) {

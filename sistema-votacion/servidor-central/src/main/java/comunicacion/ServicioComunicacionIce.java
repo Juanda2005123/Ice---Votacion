@@ -30,7 +30,7 @@ public class ServicioComunicacionIce implements VotingService {
     }
     
     @Override
-    public boolean enviarVotoVotante(String mesaId, Voto voto, Votante votante, Current current) {
+    public boolean enviarVotoVotante(String mesaId, Voto voto, Ciudadano votante, Current current) {
         //  Validación del broker antes de delegar (patrón Broker)
         if (mesaId == null || mesaId.trim().isEmpty()) {
             System.err.println("Broker: Mesa inválida");
@@ -42,7 +42,7 @@ public class ServicioComunicacionIce implements VotingService {
             Future<Boolean> resultado = threadPool.submit(() -> {
                
                 model.Voto votoJava = convertirVotoIceAJava(voto);
-                model.Votante votanteJava = convertirVotanteIceAJava(votante);
+                model.Ciudadano votanteJava = convertirVotanteIceAJava(votante);
 
                 boolean votoOK = procesadorVotos.procesarVoto(votoJava, mesaId);
                 boolean votanteOK = procesadorVotos.procesarVotante(votanteJava, mesaId);
@@ -82,8 +82,8 @@ public class ServicioComunicacionIce implements VotingService {
         return votoJava;
     }
 
-    private model.Votante convertirVotanteIceAJava(Votante votanteIce) {
-        model.Votante votanteJava = new model.Votante(
+    private model.Ciudadano convertirVotanteIceAJava(Ciudadano votanteIce) {
+        model.Ciudadano votanteJava = new model.Ciudadano(
             votanteIce.cedula,
             votanteIce.nombre,
             votanteIce.apellido,

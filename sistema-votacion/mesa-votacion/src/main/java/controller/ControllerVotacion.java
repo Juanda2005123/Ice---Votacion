@@ -4,7 +4,7 @@ import model.Voto;
 import precarga.ConfiguracionMesa;
 import precarga.SistemaPrecarga;
 import model.Candidato;
-import model.Votante;
+import model.Ciudadano;
 import ui.VotacionUI;
 import votos.CoordinadorEnvioVotos;
 import votos.RepositorioMesaVotacion;
@@ -137,7 +137,7 @@ public class ControllerVotacion {
      * @param cedula El numero de cedula del votante
      * @return Objeto Votante si es elegible, null si no se encuentra
      */
-    private Votante validarElegibilidadVotante(String cedula) {
+    private Ciudadano validarElegibilidadVotante(String cedula) {
         return repositorio.obtenerVotantePorCedula(cedula);
     }
     
@@ -148,7 +148,7 @@ public class ControllerVotacion {
      * @param votante El votante a validar
      * @return true si el votante puede votar, false si ya voto
      */
-    private boolean validarEstadoVotacion(Votante votante) {
+    private boolean validarEstadoVotacion(Ciudadano votante) {
         return !votante.isYaVoto();
     }
     
@@ -161,7 +161,7 @@ public class ControllerVotacion {
      * @throws IllegalArgumentException si hay error de validacion
      * @throws RuntimeException si hay error en el procesamiento
      */
-    private void confirmarVoto(Votante votante, Voto voto) {
+    private void confirmarVoto(Ciudadano votante, Voto voto) {
         // El coordinador se encarga de TODO: marcar votante, guardar voto, enviar
         coordinadorEnvio.procesarVotoCompleto(voto, votante);
     }
@@ -188,7 +188,7 @@ public class ControllerVotacion {
             String cedula = ui.capturarCedula();
             
             // 2. Validar elegibilidad del votante
-            Votante votante = validarElegibilidadVotante(cedula);
+            Ciudadano votante = validarElegibilidadVotante(cedula);
             if (votante == null) {
                 ui.mostrarMensajeError("La cedula " + cedula + " no es elegible para votar en esta mesa de votacion.");
                 ui.pausarEjecucion();
@@ -267,7 +267,7 @@ public class ControllerVotacion {
      * @return true si el votante ya voto, false en caso contrario
      */
     public boolean yaVotoElVotante(String cedula) {
-        Votante votante = repositorio.obtenerVotantePorCedula(cedula);
+        Ciudadano votante = repositorio.obtenerVotantePorCedula(cedula);
         return votante != null && votante.isYaVoto();
     }
     
@@ -287,7 +287,7 @@ public class ControllerVotacion {
      * @param cedula Numero de cedula del votante
      * @return Objeto Votante o null si no se encuentra
      */
-    public Votante obtenerVotante(String cedula) {
+    public Ciudadano obtenerVotante(String cedula) {
         return repositorio.obtenerVotantePorCedula(cedula);
     }
     

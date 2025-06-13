@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
  * Implementa el patrón Reliable Message con ACK inmediato.
  */
 public class VotoResponse {
-    private String id;           // ID único del voto
+    private Integer id;           // ID único del voto
     private boolean received;    // Confirmación de recepción
     private long timestamp;      // Timestamp del ACK
     private String message;      // Mensaje descriptivo
     
-    public VotoResponse(String id, boolean received, String message) {
+    public VotoResponse(Integer id, boolean received, String message) {
         this.id = id;
         this.received = received;
         this.timestamp = System.currentTimeMillis();

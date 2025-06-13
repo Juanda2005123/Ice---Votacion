@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import model.Candidato;
-import model.Votante;
+import model.Ciudadano;
 import model.Voto;
 
 import java.io.*;
@@ -54,7 +54,7 @@ public class PersistenciaVotos {
      * @param candidato El candidato por quien se votó
      * @param timestamp Momento en que se registró el voto
      */
-    public synchronized void guardarVotoCompleto(Voto voto, Votante votante, Candidato candidato, LocalDateTime timestamp) {
+    public synchronized void guardarVotoCompleto(Voto voto, Ciudadano votante, Candidato candidato, LocalDateTime timestamp) {
         EntradaVotoCompleta entrada = new EntradaVotoCompleta(voto, votante, candidato, timestamp);
         
         // Guardar en archivo de auditoría (permanente)
@@ -185,11 +185,11 @@ public class PersistenciaVotos {
      */
     public static class EntradaVotoCompleta {
         public final Voto voto;
-        public final Votante votante;
+        public final Ciudadano votante;
         public final Candidato candidato;
         public final LocalDateTime timestamp;
         
-        public EntradaVotoCompleta(Voto voto, Votante votante, Candidato candidato, LocalDateTime timestamp) {
+        public EntradaVotoCompleta(Voto voto, Ciudadano votante, Candidato candidato, LocalDateTime timestamp) {
             this.voto = voto;
             this.votante = votante;
             this.candidato = candidato;

@@ -2,7 +2,7 @@ package votos;
 
 import model.Voto;
 import model.Candidato;
-import model.Votante;
+import model.Ciudadano;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -24,7 +24,7 @@ import java.util.*;
 public class RepositorioMesaVotacion {
     
     private List<Voto> votosRegistrados;
-    private Map<String, Votante> votantesElegibles;     // Mapa por cedula para busqueda O(1)
+    private Map<String, Ciudadano> votantesElegibles;     // Mapa por cedula para busqueda O(1)
     private List<Candidato> candidatosDisponibles;
     private String idMesaVotacion;
     private LocalDateTime inicioVotacion;
@@ -98,13 +98,13 @@ public class RepositorioMesaVotacion {
      * @param votantes Lista de votantes elegibles
      * @throws IllegalArgumentException si la lista es null o vacia
      */
-    public void cargarVotantesElegibles(List<Votante> votantes) {
+    public void cargarVotantesElegibles(List<Ciudadano> votantes) {
         if (votantes == null || votantes.isEmpty()) {
             throw new IllegalArgumentException("La lista de votantes no puede ser null o vacia");
         }
         
         this.votantesElegibles.clear();
-        for (Votante votante : votantes) {
+        for (Ciudadano votante : votantes) {
             if (votante.getCedula() == null) {
                 throw new IllegalArgumentException("Votante con cedula null encontrado");
             }
@@ -118,7 +118,7 @@ public class RepositorioMesaVotacion {
      * @param cedula Numero de cedula del votante
      * @return Votante encontrado o null
      */
-    public Votante obtenerVotantePorCedula(String cedula) {
+    public Ciudadano obtenerVotantePorCedula(String cedula) {
         return votantesElegibles.get(cedula);
     }
     
@@ -148,7 +148,7 @@ public class RepositorioMesaVotacion {
      */
     public int getTotalVotantesQueYaVotaron() {
         return (int) votantesElegibles.values().stream()
-                .filter(Votante::isYaVoto)
+                .filter(Ciudadano::isYaVoto)
                 .count();
     }
     
@@ -157,7 +157,7 @@ public class RepositorioMesaVotacion {
      * 
      * @return Coleccion inmutable de votantes elegibles
      */
-    public Collection<Votante> getVotantesElegibles() {
+    public Collection<Ciudadano> getVotantesElegibles() {
         return Collections.unmodifiableCollection(votantesElegibles.values());
     }
     
@@ -171,7 +171,7 @@ public class RepositorioMesaVotacion {
      * @throws IllegalArgumentException si el voto es null o invalido
      * @throws RuntimeException si hay error en el almacenamiento
      */
-    public void registrarVotoCompleto(Voto voto, Votante votante) {
+    public void registrarVotoCompleto(Voto voto, Ciudadano votante) {
         if (voto == null) {
             throw new IllegalArgumentException("El voto no puede ser null");
         }

@@ -1,7 +1,7 @@
 package precarga;
 
 import model.Candidato;
-import model.Votante;
+import model.Ciudadano;
 import votos.RepositorioMesaVotacion;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,11 +129,11 @@ public class SistemaPrecarga {
      * @param votantes Lista de votantes a precargar
      * @throws IllegalArgumentException si hay votantes invalidos
      */
-    private void precargarVotantes(List<Votante> votantes) {
+    private void precargarVotantes(List<Ciudadano> votantes) {
         // Validaciones adicionales especificas para votantes
         List<String> cedulasUnicas = new ArrayList<>();
         
-        for (Votante votante : votantes) {
+        for (Ciudadano votante : votantes) {
             if (votante.getCedula() == null || votante.getCedula().trim().isEmpty()) {
                 throw new IllegalArgumentException("Votante con cedula invalida encontrado");
             }
@@ -179,18 +179,18 @@ public class SistemaPrecarga {
         candidatos.add(new Candidato("BLANCO", "Voto en Blanco"));
         
         // Generar votantes simulados para esta mesa
-        List<Votante> votantes = new ArrayList<>();
-        votantes.add(new Votante("12345678", "Ana", "Garcia Lopez", idMesa));
-        votantes.add(new Votante("23456789", "Carlos", "Rodriguez Perez", idMesa));
-        votantes.add(new Votante("34567890", "Maria", "Fernandez Torres", idMesa));
-        votantes.add(new Votante("45678901", "Jose", "Martinez Ramirez", idMesa));
-        votantes.add(new Votante("56789012", "Laura", "Gonzalez Diaz", idMesa));
-        votantes.add(new Votante("67890123", "Pedro", "Hernandez Silva", idMesa));
-        votantes.add(new Votante("1058932648", "Juan David", "Quintero Peña", idMesa));
-        votantes.add(new Votante("1109663632", "Mariana", "De La Cruz Posso", idMesa));
-        votantes.add(new Votante("89012345", "Miguel", "Castro Vargas", idMesa));
-        votantes.add(new Votante("90123456", "Elena", "Ruiz Mendoza", idMesa));
-        votantes.add(new Votante("01234567", "Diego", "Jimenez Ortega", idMesa));
+        List<Ciudadano> votantes = new ArrayList<>();
+        votantes.add(new Ciudadano("12345678", "Ana", "Garcia Lopez", idMesa));
+        votantes.add(new Ciudadano("23456789", "Carlos", "Rodriguez Perez", idMesa));
+        votantes.add(new Ciudadano("34567890", "Maria", "Fernandez Torres", idMesa));
+        votantes.add(new Ciudadano("45678901", "Jose", "Martinez Ramirez", idMesa));
+        votantes.add(new Ciudadano("56789012", "Laura", "Gonzalez Diaz", idMesa));
+        votantes.add(new Ciudadano("67890123", "Pedro", "Hernandez Silva", idMesa));
+        votantes.add(new Ciudadano("1058932648", "Juan David", "Quintero Peña", idMesa));
+        votantes.add(new Ciudadano("1109663632", "Mariana", "De La Cruz Posso", idMesa));
+        votantes.add(new Ciudadano("89012345", "Miguel", "Castro Vargas", idMesa));
+        votantes.add(new Ciudadano("90123456", "Elena", "Ruiz Mendoza", idMesa));
+        votantes.add(new Ciudadano("01234567", "Diego", "Jimenez Ortega", idMesa));
         
         return new ConfiguracionMesa(idMesa, candidatos, votantes);
     }

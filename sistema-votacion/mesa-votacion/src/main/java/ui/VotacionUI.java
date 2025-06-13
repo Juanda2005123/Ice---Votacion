@@ -1,7 +1,7 @@
 package ui;
 
 import model.Candidato;
-import model.Votante;
+import model.Ciudadano;
 import java.util.Scanner;
 import java.util.List;
 
@@ -118,7 +118,7 @@ public class VotacionUI {
      * @param votante El votante que emite el voto
      * @return true si el voto es confirmado, false si es cancelado
      */
-    public boolean confirmarVoto(Candidato candidatoSeleccionado, Votante votante) {
+    public boolean confirmarVoto(Candidato candidatoSeleccionado, Ciudadano votante) {
         System.out.println("\n=== CONFIRMACION DE VOTO ===");
         System.out.println("Votante: " + votante.getNombreCompleto());
         System.out.println("Cedula: " + votante.getCedula());
