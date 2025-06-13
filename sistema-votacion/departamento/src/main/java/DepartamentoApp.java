@@ -1,5 +1,3 @@
-package main.java;
-
 import controller.ControllerDepartamento;
 
 public class DepartamentoApp {
