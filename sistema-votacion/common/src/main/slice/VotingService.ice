@@ -44,6 +44,10 @@ module VotingSystem {
         ConsultaLugarResponse consultarLugarVotacion(string cedula);
     };
 
+    interface ObserverCiudadano {
+        void notificarConsulta(string cedula);
+    };
+
     interface DepartamentoService {
         void registrarLugarVotacion(string lugarId, LugarVotacionService* proxy);
         ListaString obtenerLugaresRegistrados();
