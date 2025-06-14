@@ -8,24 +8,12 @@ public class Candidato {
     private String nombre;
     private String partidoPolitico;
     
-    public Candidato(String id, String cedula, String nombre, String apellido, String partidoPolitico) {
+    public Candidato(Integer id, String nombre, String partidoPolitico) {
         this.id = id;
         this.nombre = nombre;
         this.partidoPolitico = partidoPolitico;
     }
-    
-    public Candidato(String id, String nombre, String partidoPolitico) {
-        this.id = id;
-        this.nombre = nombre;
-        this.partidoPolitico = partidoPolitico;
-    }
-      // Constructor para voto en blanco o candidatos especiales
-    public Candidato(String id, String nombre) {
-        this(id, id, nombre, "", "NA"); // Use id as cedula, empty apellido
-    }
-    
-    // Getters
-    public String getId() {
+    public Integer getId() {
         return id;
     }
     
@@ -36,7 +24,7 @@ public class Candidato {
     public String getPartidoPolitico() {
         return partidoPolitico;
     }    // Setters
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     
@@ -53,32 +41,5 @@ public class Candidato {
      */
     public String getNombreCompleto() {
         return nombre;
-    }
-    
-    /**
-     * Verifica si es un voto especial (en blanco, nulo, etc.)
-     */
-    public boolean esVotoEspecial() {
-        return id.equals("BLANCO");
-    }
-    
-    @Override
-    public String toString() {
-        return String.format("Candidato{id='%s', nombre='%s', partido='%s'}", 
-                           id, nombre, partidoPolitico);
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        
-        Candidato candidato = (Candidato) obj;
-        return id != null ? id.equals(candidato.id) : candidato.id == null;
-    }
-    
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
     }
 }

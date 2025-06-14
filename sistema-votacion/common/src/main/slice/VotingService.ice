@@ -1,52 +1,27 @@
 module VotingSystem {
 
-    // Secuencia para listas de strings
-    sequence<string> ListaString;
-
+    // Clase Candidato
     class Candidato {
-        string cedula;
+        int id;
         string nombre;
-        string apellido;
         string partidoPolitico;
     };
 
+    // Clase Voto (adaptada a tu clase Java)
     class Voto {
-        string votoId;
+        int id;                   
         Candidato candidato;
-        string timestamp;
     };
 
-    class Votante {
-        string cedula;
-        string nombre;
-        string apellido;
-        string departamento;
-        string ciudad;
-        bool yaVoto;
+   // Interface para enviar votos al Broker
+    interface BrokerService {
+        bool recibirVoto(Voto voto);
+        bool ping();
     };
 
-    class ConsultaLugarResponse {
-        string departamento;
-        string ciudad;
-        string lugarNombre;
-        string direccion;
-        string mesaId;
-        bool encontrado;
-        string mensaje;
-    };
-
-    interface VotingService {
-        bool enviarVotoVotante(string mesaId, Voto voto, Votante votante);
-        int getTotalVotos();
-    };
-
-    interface LugarVotacionService {
-        ConsultaLugarResponse consultarLugarVotacion(string cedula);
-    };
-
-    interface DepartamentoService {
-        void registrarLugarVotacion(string lugarId, LugarVotacionService* proxy);
-        ListaString obtenerLugaresRegistrados();
-        string asignarLugarParaConsulta(string cedula);
+    // Interface para que Broker envíe votos
+    interface ReceptorVotos {
+        bool recibirVoto(Voto voto);
+        bool ping();
     };
 };

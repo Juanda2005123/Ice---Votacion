@@ -1,0 +1,14 @@
+// Este build.gradle es específico para el módulo broker
+// Solo define configuraciones particulares de este módulo
+
+jar {
+    manifest {        
+        attributes(
+            "Main-Class": "BrokerApp"
+        )
+    }
+}
+
+// Plugin de aplicación para poder ejecutar con 'gradle run'
+apply plugin: 'application'
+mainClassName = 'BrokerApp'

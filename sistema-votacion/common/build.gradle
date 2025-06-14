@@ -1,0 +1,11 @@
+// Configuración específica para el módulo common
+
+// Este módulo NO es ejecutable, es una librería
+// No necesita plugin 'application'
+
+// Configurar el JAR para que sea consumible por otros módulos
+jar {
+    // No necesita Main-Class porque es una librería
+    archiveBaseName = 'common'
+    archiveVersion = '1.0'
+}

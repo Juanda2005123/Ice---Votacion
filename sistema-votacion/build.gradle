@@ -19,7 +19,7 @@ subprojects {
     
     slice {
         java {
-            files = [file("../common/src/main/slice/VotingService.ice")]  // ← Cambiar esta línea
+            files = [file("../common/src/main/slice/VotingService.ice")]  
         }
     }
     
@@ -27,8 +27,7 @@ subprojects {
     repositories {
         mavenCentral()
     }
-    
-    //
+      //
     // Both Client and Server depend only on Ice JAR
     //
     dependencies {
@@ -37,23 +36,35 @@ subprojects {
         implementation 'com.google.code.gson:gson:2.10.1'
         implementation 'org.postgresql:postgresql:42.6.0'
     }
-    
-    // Solo mesa-votacion y servidor-central dependen de common
-    if (project.name in ['mesa-votacion', 'servidor-central', 'departamento', 'lugar-votacion']) {
-        dependencies {
-            implementation project(':common')
-        }
+}
+
+// Configure project-specific dependencies OUTSIDE of subprojects block
+project(':mesa-votacion') {
+    dependencies {
+        implementation project(':common')
     }
- 
-    //
-    // Create a JAR file with the appropriate Main-Class and Class-Path attributes
-    //
-    jar {
-        manifest {
-            attributes(
-                "Main-Class": project.name.capitalize(),
-                "Class-Path": configurations.runtimeClasspath.resolve().collect { it.toURI() }.join(' ')
-            )
-        }
+}
+
+project(':servidor-central') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(':departamento') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(':lugar-votacion') {
+    dependencies {
+        implementation project(':common')
+    }
+}
+
+project(':broker') {
+    dependencies {
+        implementation project(':common')
     }
 }

@@ -226,8 +226,8 @@ public class ControllerVotacion {
             }
             
             // 9. Registrar voto
-            String votoId = UUID.randomUUID().toString();
-            Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado, LocalDateTime.now(), idMesaVotacion);
+            Integer votoId = UUID.randomUUID().hashCode();
+            Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);
 
             confirmarVoto(votante, nuevoVoto);
             
@@ -235,7 +235,6 @@ public class ControllerVotacion {
             ui.mostrarMensajeExito("Voto registrado exitosamente.");
             ui.mostrarMensajeInfo("Votante: " + votante.getNombreCompleto());
             ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombreCompleto());
-            ui.mostrarMensajeInfo("Hora: " + nuevoVoto.getFechaHoraFormateada());
             
         } catch (IllegalArgumentException e) {
             ui.mostrarMensajeError(e.getMessage());
