@@ -2,87 +2,122 @@ package comunicacion;
 
 import VotingSystem.*;
 import model.Voto;
-import model.Ciudadano;
+import config.ConfiguracionMesa;
 
 /**
- * Cliente Ice para enviar votos al servidor central.
+ * Cliente Ice para enviar votos al BROKER.
+ * La mesa envía votos al broker, quien los reenvía a los destinos finales.
  */
 public class ServicioComunicacionIce {
     
     private com.zeroc.Ice.Communicator communicator;
-    private VotingServicePrx votingServicePrx;
+    private BrokerServicePrx brokerProxy;
+    private ConfiguracionMesa config;
     
-    public ServicioComunicacionIce() {
-        try {
-            // Inicializar communicator
-            communicator = com.zeroc.Ice.Util.initialize();
-            
-            // Crear proxy al servidor
-            com.zeroc.Ice.ObjectPrx proxy = communicator.stringToProxy(
-                "VotingService:tcp -h localhost -p 10000");
-            
-            votingServicePrx = VotingServicePrx.checkedCast(proxy);
-            
-            if (votingServicePrx == null) {
-                throw new RuntimeException("No se pudo conectar al servidor Ice");
+    /**
+     * Constructor del servicio de comunicación Ice.
+     * Inicializa conexión con el broker usando configuración externa.
+     */
+    public ServicioComunicacionIce() {        try {
+            // Cargar configuración externa (buscar archivo externo primero)
+            String rutaConfig;
+            java.io.File archivoExterno = new java.io.File("mesa-votacion.properties");
+            if (archivoExterno.exists()) {
+                rutaConfig = "mesa-votacion.properties";
+            } else {
+                rutaConfig = "src/main/resources/mesa-votacion.properties";
             }
             
+            config = new ConfiguracionMesa(rutaConfig);
+            
+            // Inicializar Ice communicator
+            communicator = com.zeroc.Ice.Util.initialize();
+            
+            // Crear proxy al broker usando configuración
+            String proxyString = String.format("BrokerService:tcp -h %s -p %d", 
+                                             config.getBrokerHost(), config.getBrokerPuerto());
+            com.zeroc.Ice.ObjectPrx proxy = communicator.stringToProxy(proxyString);
+            brokerProxy = BrokerServicePrx.checkedCast(proxy);
+            
+            if (brokerProxy == null) {
+                throw new RuntimeException("No se pudo conectar al broker en " + 
+                                         config.getBrokerHost() + ":" + config.getBrokerPuerto());
+            }
+            
+            System.out.println("ServicioComunicacionIce: Conectado al broker " + 
+                             config.getBrokerHost() + ":" + config.getBrokerPuerto());
+            
         } catch (Exception e) {
-            throw new RuntimeException("Error inicializando cliente Ice: " + e.getMessage());
+            System.err.println("Error inicializando conexión al broker: " + e.getMessage());
+            throw new RuntimeException("No se pudo inicializar conexión al broker");
+        }    }
+    
+    /**
+     * Envía un voto al broker de forma simple y directa.
+     * Solo envía el voto, sin información adicional del votante.
+     * 
+     * @param voto El voto a enviar
+     * @return true si se envió exitosamente
+     */
+    public boolean enviarVoto(Voto voto) {
+        try {
+            // Convertir voto Java a Ice
+            VotingSystem.Voto votoIce = convertirVotoJavaAIce(voto);
+            
+            // Enviar al broker de forma simple
+            brokerProxy.recibirVoto(votoIce);
+            
+            return true; // Siempre exitoso si llega al broker
+            
+        } catch (Exception e) {
+            return false;
+        }
+    }
+      /**
+     * Cierra la conexión con el broker Ice.
+     */
+    public void cerrarConexion() {
+        if (communicator != null) {
+            communicator.destroy();
+            System.out.println("Conexión al broker cerrada");
         }
     }
     
-    public boolean enviarVotoVotanteConACK(String mesaId, Voto voto, Ciudadano votante) {
+    /**
+     * Verifica la conectividad con el broker.
+     * 
+     * @return true si el broker responde
+     */
+    public boolean verificarConectividad() {
         try {
-            // Convertir de clases Java a clases Ice
-            VotingSystem.Voto votoIce = convertirVotoJavaAIce(voto);
-            Ciudadano.Votante votanteIce = convertirVotanteJavaAIce(votante);
-            
-            // Enviar al servidor
-            return votingServicePrx.enviarVotoVotante(mesaId, votoIce, votanteIce);
-            
+            return brokerProxy != null && brokerProxy.ping();
         } catch (Exception e) {
-            System.err.println("Error enviando voto/votante: " + e.getMessage());
             return false;
         }
     }
     
-    // Métodos de conversión Java ↔ Ice
+    /**
+     * Realiza un ping al broker para verificar disponibilidad.
+     * 
+     * @return true si el broker está disponible
+     */
+    public boolean ping() {
+        return verificarConectividad();
+    }
+    
+    /**
+     * Convertir Voto Java a Ice - MANTIENE Integer IDs
+     */
     private VotingSystem.Voto convertirVotoJavaAIce(Voto votoJava) {
-        // Convertir Candidato
         VotingSystem.Candidato candidatoIce = new VotingSystem.Candidato();
-        candidatoIce.cedula = votoJava.getCandidato().getCedula();
+        candidatoIce.id = votoJava.getCandidato().getId(); // Integer directo
         candidatoIce.nombre = votoJava.getCandidato().getNombre();
-        candidatoIce.apellido = votoJava.getCandidato().getApellido();
         candidatoIce.partidoPolitico = votoJava.getCandidato().getPartidoPolitico();
         
-        // Crear Voto Ice
         VotingSystem.Voto votoIce = new VotingSystem.Voto();
-        
-        votoIce.votoId = votoJava.getVotoId();
+        votoIce.id = votoJava.getId(); // Integer directo
         votoIce.candidato = candidatoIce;
-        votoIce.timestamp = java.time.LocalDateTime.now().toString(); // O el timestamp del voto
         
         return votoIce;
-    }
-
-    private VotingSystem.Ciudadano convertirVotanteJavaAIce(Ciudadano votanteJava) {
-        Ciudadano.Votante votanteIce = new Ciudadano.Votante();
-        votanteIce.cedula = votanteJava.getCedula();
-        votanteIce.nombre = votanteJava.getNombre();
-        votanteIce.apellido = votanteJava.getApellido();
-        votanteIce.departamento = votanteJava.getDepartamento();
-        votanteIce.ciudad = votanteJava.getCiudad();
-        votanteIce.yaVoto = votanteJava.isYaVoto();
-        
-        return votanteIce;
-    }
-    
-   
-    
-    public void cerrarConexion() {
-        if (communicator != null) {
-            communicator.destroy();
-        }
     }
 }

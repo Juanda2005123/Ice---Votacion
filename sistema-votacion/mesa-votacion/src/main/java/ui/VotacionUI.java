@@ -11,7 +11,7 @@ import java.util.List;
  * 
  * Esta clase proporciona:
  * - Visualizacion del menu principal y captura de opciones
- * - Captura de cedulas con validacion
+ * - Captura de documentos con validacion
  * - Interfaz de seleccion de candidatos
  * - Flujo de confirmacion de votos
  * - Mensajes de retroalimentacion (exito, error, informacion)
@@ -51,27 +51,36 @@ public class VotacionUI {
     }
     
     /**
-     * Captura el numero de cedula del votante con validacion basica.
+     * Captura el numero de documento del votante con validacion basica.
      * Valida longitud (6-15 digitos) y formato numerico.
      * 
-     * @return El numero de cedula validado
-     * @throws IllegalArgumentException si el formato de la cedula es invalido
+     * @return El numero de documento validado
+     * @throws IllegalArgumentException si el formato del documento es invalido
      */
-    public String capturarCedula() {
-        System.out.print("Ingrese numero de cedula: ");
-        String cedula = scanner.nextLine().trim();
+    public String capturarDocumento() {
+        System.out.print("Ingrese numero de documento: ");
+        String documento = scanner.nextLine().trim();
         
         // Validacion basica
-        if (cedula.length() < 6 || cedula.length() > 15) {
-            throw new IllegalArgumentException("La cedula debe tener entre 6 y 15 digitos");
+        if (documento.length() < 6 || documento.length() > 15) {
+            throw new IllegalArgumentException("El documento debe tener entre 6 y 15 digitos");
         }
         
         // Verificar que contenga solo numeros
-        if (!cedula.matches("\\d+")) {
-            throw new IllegalArgumentException("La cedula debe contener solo numeros");
+        if (!documento.matches("\\d+")) {
+            throw new IllegalArgumentException("El documento debe contener solo numeros");
         }
         
-        return cedula;
+        return documento;
+    }
+    
+    /**
+     * Método de compatibilidad - redirige a capturarDocumento()
+     * @deprecated Usar capturarDocumento() en su lugar
+     */
+    @Deprecated
+    public String capturarCedula() {
+        return capturarDocumento();
     }
     
     /**
@@ -84,7 +93,8 @@ public class VotacionUI {
         System.out.println("\n=== CANDIDATOS DISPONIBLES ===");
         for (int i = 0; i < candidatos.size(); i++) {
             Candidato candidato = candidatos.get(i);
-            System.out.println((i + 1) + ". " + candidato.getNombre());
+            System.out.println((i + 1) + ". " + candidato.getNombre() + 
+                             " (" + candidato.getPartidoPolitico() + ")");
         }
     }
     
@@ -108,29 +118,17 @@ public class VotacionUI {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Debe ingresar un numero valido");
         }
-    }
-    
-    /**
-     * Confirma el voto antes de registrarlo.
-     * Muestra informacion completa del voto y solicita confirmacion.
+    }      /**
+     * Confirma el voto automaticamente sin interaccion del usuario.
+     * Proceso silencioso - solo confirma el voto sin mostrar detalles.
      * 
      * @param candidatoSeleccionado El candidato seleccionado por el votante
      * @param votante El votante que emite el voto
-     * @return true si el voto es confirmado, false si es cancelado
+     * @return true siempre (confirmacion automatica)
      */
     public boolean confirmarVoto(Candidato candidatoSeleccionado, Ciudadano votante) {
-        System.out.println("\n=== CONFIRMACION DE VOTO ===");
-        System.out.println("Votante: " + votante.getNombreCompleto());
-        System.out.println("Cedula: " + votante.getCedula());
-        System.out.println("Mesa de Votacion: " + votante.getMesaId());
-        System.out.println("Candidato: " + candidatoSeleccionado.getNombreCompleto());
-        if (!candidatoSeleccionado.esVotoEspecial()) {
-            System.out.println("Partido Politico: " + candidatoSeleccionado.getPartidoPolitico());
-        }
-        System.out.print("Confirma su voto? (S/N): ");
-        
-        String respuesta = scanner.nextLine().trim().toLowerCase();
-        return respuesta.equals("s") || respuesta.equals("si");
+        System.out.println("Voto confirmado para: " + candidatoSeleccionado.getNombre());
+        return true; // Confirmacion automatica y silenciosa
     }
     
     /**

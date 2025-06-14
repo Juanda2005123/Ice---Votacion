@@ -9,7 +9,6 @@ import ui.VotacionUI;
 import votos.CoordinadorEnvioVotos;
 import votos.RepositorioMesaVotacion;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -18,16 +17,14 @@ import java.util.*;
  * 
  * Este controlador maneja:
  * - Validacion de elegibilidad de votantes usando busquedas rapidas HashMap (complejidad O(1))
- * - Procesamiento y registro de votos con trazabilidad completa de auditoria
- * - Comunicacion con servidor central (futura implementacion Ice)
- * - Patron de mensaje confiable para confirmaciones de votos
+ * - Procesamiento y registro de votos
+ * - Comunicacion con servidor central via Ice
  * - Manejo comprehensivo de errores y retroalimentacion al usuario
  * 
  * Arquitectura:
  * - Sigue patron MVC separando UI, logica de negocio y datos
  * - Usa Cadena de Responsabilidad para pasos de validacion
- * - Implementa patron Mensaje Confiable para comunicacion con servidor
- * - Disenado para escenarios de votacion de alto rendimiento (millones de votos en <3 segundos)
+ * - Disenado para escenarios de votacion de alto rendimiento
  * 
  * @author Sistema de Votacion
  * @version 1.0
@@ -134,11 +131,11 @@ public class ControllerVotacion {
      * Valida la elegibilidad del votante para esta mesa de votacion.
      * Verifica si el votante esta registrado y asignado a esta mesa.
      * 
-     * @param cedula El numero de cedula del votante
+     * @param documento El numero de documento del votante
      * @return Objeto Votante si es elegible, null si no se encuentra
      */
-    private Ciudadano validarElegibilidadVotante(String cedula) {
-        return repositorio.obtenerVotantePorCedula(cedula);
+    private Ciudadano validarElegibilidadVotante(String documento) {
+        return repositorio.obtenerVotantePorDocumento(documento);
     }
     
     /**
@@ -151,8 +148,7 @@ public class ControllerVotacion {
     private boolean validarEstadoVotacion(Ciudadano votante) {
         return !votante.isYaVoto();
     }
-    
-    /**
+      /**
      * Confirma y procesa el voto completo.
      * Delega toda la responsabilidad al coordinador de envio.
      * 
@@ -163,7 +159,7 @@ public class ControllerVotacion {
      */
     private void confirmarVoto(Ciudadano votante, Voto voto) {
         // El coordinador se encarga de TODO: marcar votante, guardar voto, enviar
-        coordinadorEnvio.procesarVotoCompleto(voto, votante);
+        coordinadorEnvio.procesarVoto(voto, votante);
     }
     
     // ===== PROCESAMIENTO DE VOTOS =====
@@ -173,24 +169,24 @@ public class ControllerVotacion {
      * Implementa el flujo completo de votacion con validacion y confirmacion.
      * 
      * Flujo de trabajo:
-     * 1. Capturar cedula del votante
+     * 1. Capturar documento del votante
      * 2. Validar elegibilidad del votante
      * 3. Validar estado de votacion
      * 4. Mostrar opciones de candidatos
      * 5. Capturar seleccion de voto
      * 6. Confirmar voto con votante
      * 7. Registrar voto y actualizar estado del votante
-     * 8. Enviar a servidor central (implementacion futura)
+     * 8. Enviar a servidor central
      */
     private void procesarVoto() {
         try {
-            // 1. Capturar cedula
-            String cedula = ui.capturarCedula();
+            // 1. Capturar documento
+            String documento = ui.capturarDocumento();
             
             // 2. Validar elegibilidad del votante
-            Ciudadano votante = validarElegibilidadVotante(cedula);
+            Ciudadano votante = validarElegibilidadVotante(documento);
             if (votante == null) {
-                ui.mostrarMensajeError("La cedula " + cedula + " no es elegible para votar en esta mesa de votacion.");
+                ui.mostrarMensajeError("El documento " + documento + " no es elegible para votar en esta mesa de votacion.");
                 ui.pausarEjecucion();
                 ui.limpiarPantalla();
                 return;
@@ -198,14 +194,14 @@ public class ControllerVotacion {
             
             // 3. Validar estado de votacion
             if (!validarEstadoVotacion(votante)) {
-                ui.mostrarMensajeError("El votante " + votante.getNombreCompleto() + " ya ha ejercido su derecho al voto.");
+                ui.mostrarMensajeError("El votante " + votante.getNombre() + " " + votante.getApellido() + " ya ha ejercido su derecho al voto.");
                 ui.pausarEjecucion();
                 ui.limpiarPantalla();
                 return;
             }
             
             // 4. Mostrar informacion del votante
-            ui.mostrarMensajeInfo("Votante elegible: " + votante.getNombreCompleto());
+            ui.mostrarMensajeInfo("Votante elegible: " + votante.getNombre() + " " + votante.getApellido());
             ui.mostrarMensajeInfo("Mesa asignada: " + votante.getMesaId());
             
             // 5. Mostrar candidatos disponibles (desde repositorio)
@@ -233,8 +229,8 @@ public class ControllerVotacion {
             
             // 10. Mostrar confirmacion de exito
             ui.mostrarMensajeExito("Voto registrado exitosamente.");
-            ui.mostrarMensajeInfo("Votante: " + votante.getNombreCompleto());
-            ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombreCompleto());
+            ui.mostrarMensajeInfo("Votante: " + votante.getNombre() + " " + votante.getApellido());
+            ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombre());
             
         } catch (IllegalArgumentException e) {
             ui.mostrarMensajeError(e.getMessage());
@@ -262,32 +258,32 @@ public class ControllerVotacion {
     /**
      * Verifica si un votante ya ha votado.
      * 
-     * @param cedula Numero de cedula del votante
+     * @param documento Numero de documento del votante
      * @return true si el votante ya voto, false en caso contrario
      */
-    public boolean yaVotoElVotante(String cedula) {
-        Ciudadano votante = repositorio.obtenerVotantePorCedula(cedula);
+    public boolean yaVotoElVotante(String documento) {
+        Ciudadano votante = repositorio.obtenerVotantePorDocumento(documento);
         return votante != null && votante.isYaVoto();
     }
     
     /**
      * Verifica si un votante es elegible para esta mesa de votacion.
      * 
-     * @param cedula Numero de cedula del votante
+     * @param documento Numero de documento del votante
      * @return true si el votante es elegible, false en caso contrario
      */
-    public boolean esVotanteElegible(String cedula) {
-        return repositorio.esVotanteElegible(cedula);
+    public boolean esVotanteElegible(String documento) {
+        return repositorio.esVotanteElegible(documento);
     }
     
     /**
-     * Obtiene un votante por su numero de cedula.
+     * Obtiene un votante por su numero de documento.
      * 
-     * @param cedula Numero de cedula del votante
+     * @param documento Numero de documento del votante
      * @return Objeto Votante o null si no se encuentra
      */
-    public Ciudadano obtenerVotante(String cedula) {
-        return repositorio.obtenerVotantePorCedula(cedula);
+    public Ciudadano obtenerVotante(String documento) {
+        return repositorio.obtenerVotantePorDocumento(documento);
     }
     
     /**

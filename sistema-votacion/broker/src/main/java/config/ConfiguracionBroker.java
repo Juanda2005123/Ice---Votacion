@@ -20,28 +20,26 @@ public class ConfiguracionBroker {
         cargarConfiguracion(rutaArchivo);
         cargarDestinos();
     }
-    
-    private void cargarConfiguracion(String rutaArchivo) {
+      private void cargarConfiguracion(String rutaArchivo) {
         try (FileInputStream fis = new FileInputStream(rutaArchivo)) {
             properties.load(fis);
-            System.out.println("Configuración cargada desde: " + rutaArchivo);
         } catch (IOException e) {
             throw new RuntimeException("Error cargando configuración: " + e.getMessage());
         }
-    }
-    
-    private void cargarDestinos() {
+    }    private void cargarDestinos() {
         int cantidad = Integer.parseInt(properties.getProperty("destinos.cantidad", "0"));
         
         for (int i = 1; i <= cantidad; i++) {
             String id = properties.getProperty("destino." + i + ".id");
             String host = properties.getProperty("destino." + i + ".host");
-            int puerto = Integer.parseInt(properties.getProperty("destino." + i + ".puerto"));
-            boolean activo = Boolean.parseBoolean(properties.getProperty("destino." + i + ".activo", "true"));
+            String puertoStr = properties.getProperty("destino." + i + ".puerto");
+            String activoStr = properties.getProperty("destino." + i + ".activo", "true");
+            String tipo = properties.getProperty("destino." + i + ".tipo", "lugar-votacion");
             
-            if (id != null && host != null) {
-                destinos.add(new Destino(id, host, puerto, activo));
-                System.out.println("Destino cargado: " + id + " -> " + host + ":" + puerto + " (activo: " + activo + ")");
+            if (id != null && host != null && puertoStr != null) {
+                int puerto = Integer.parseInt(puertoStr);
+                boolean activo = Boolean.parseBoolean(activoStr);
+                destinos.add(new Destino(id, host, puerto, activo, tipo));
             }
         }
     }
@@ -62,13 +60,8 @@ public class ConfiguracionBroker {
     public int getPuerto() {
         return Integer.parseInt(properties.getProperty("broker.puerto", "9000"));
     }
-    
-    public int getTimeout() {
+      public int getTimeout() {
         return Integer.parseInt(properties.getProperty("broker.timeout", "5000"));
-    }
-    
-    public int getReintentos() {
-        return Integer.parseInt(properties.getProperty("enrutamiento.reintentos", "3"));
     }
     
     public int getEnrutamientoTimeout() {
@@ -96,8 +89,7 @@ public class ConfiguracionBroker {
                 .findFirst()
                 .orElse(null);
     }
-    
-    /**
+      /**
      * Clase interna que representa un destino de reenvío
      */
     public static class Destino {
@@ -105,12 +97,14 @@ public class ConfiguracionBroker {
         private String host;
         private int puerto;
         private boolean activo;
+        private String tipo;
         
-        public Destino(String id, String host, int puerto, boolean activo) {
+        public Destino(String id, String host, int puerto, boolean activo, String tipo) {
             this.id = id;
             this.host = host;
             this.puerto = puerto;
             this.activo = activo;
+            this.tipo = tipo;
         }
         
         // Getters
@@ -118,14 +112,15 @@ public class ConfiguracionBroker {
         public String getHost() { return host; }
         public int getPuerto() { return puerto; }
         public boolean isActivo() { return activo; }
+        public String getTipo() { return tipo; }
         
         // Setters
         public void setActivo(boolean activo) { this.activo = activo; }
         
         @Override
         public String toString() {
-            return String.format("Destino{id='%s', host='%s', puerto=%d, activo=%s}", 
-                               id, host, puerto, activo);
+            return String.format("Destino{id='%s', host='%s', puerto=%d, activo=%s, tipo='%s'}", 
+                               id, host, puerto, activo, tipo);
         }
     }
 }

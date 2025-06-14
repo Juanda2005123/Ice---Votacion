@@ -25,20 +25,13 @@ public class EstrategiaEnrutamiento {
      */
     public ConfiguracionBroker.Destino seleccionarDestino() {
         List<ConfiguracionBroker.Destino> destinosActivos = config.getDestinosActivos();
-        
-        if (destinosActivos.isEmpty()) {
-            System.err.println("No hay destinos activos disponibles para enrutamiento");
+          if (destinosActivos.isEmpty()) {
             return null;
         }
         
         // Seleccion aleatoria
         ConfiguracionBroker.Destino destinoSeleccionado = 
             destinosActivos.get(random.nextInt(destinosActivos.size()));
-        
-        System.out.println("Destino seleccionado por enrutamiento aleatorio: " + 
-                         destinoSeleccionado.getId() + " (" + 
-                         destinoSeleccionado.getHost() + ":" + 
-                         destinoSeleccionado.getPuerto() + ")");
         
         return destinoSeleccionado;
     }

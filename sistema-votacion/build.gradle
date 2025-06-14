@@ -36,6 +36,32 @@ subprojects {
         implementation 'com.google.code.gson:gson:2.10.1'
         implementation 'org.postgresql:postgresql:42.6.0'
     }
+      // Configuración Fat-JAR para proyectos ejecutables (no para common)
+    if (project.name != 'common') {
+        task fatJar(type: Jar) {
+            archiveClassifier = 'fat'
+            
+            // Copiar el manifest del jar normal al fatJar
+            manifest {
+                from jar.manifest
+            }
+            
+            from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+            with jar
+            
+            // Excluir archivos problemáticos de firmas
+            exclude 'META-INF/*.SF'
+            exclude 'META-INF/*.DSA'
+            exclude 'META-INF/*.RSA'
+            exclude 'META-INF/LICENSE*'
+            exclude 'META-INF/NOTICE*'
+            
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+        
+        // Hacer que fatJar se ejecute con build
+        build.dependsOn fatJar
+    }
 }
 
 // Configure project-specific dependencies OUTSIDE of subprojects block

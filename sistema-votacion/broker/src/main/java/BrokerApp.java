@@ -12,21 +12,26 @@ public class BrokerApp {
     private static ConfiguracionBroker config;
     private static BrokerController controller;
     
-    public static void main(String[] args) {
-        try {
-            System.out.println("=== INICIANDO BROKER DE VOTACION ===");
-            
-            // Determinar ruta del archivo de configuracion
-            String rutaConfig = args.length > 0 ? args[0] : 
-                               "src/main/resources/broker.properties";
+    public static void main(String[] args) {          try {
+            // Determinar ruta del archivo de configuracion (externo o interno)
+            String rutaConfig;
+            if (args.length > 0) {
+                rutaConfig = args[0];  // Archivo externo
+            } else {
+                // Buscar archivo externo en directorio actual
+                java.io.File archivoExterno = new java.io.File("broker.properties");
+                if (archivoExterno.exists()) {
+                    rutaConfig = "broker.properties";
+                } else {
+                    rutaConfig = "src/main/resources/broker.properties";  // Archivo interno
+                }
+            }
             
             // Cargar configuracion
             config = new ConfiguracionBroker(rutaConfig);
-            System.out.println("Configuracion cargada exitosamente");
             
             // Inicializar Ice communicator
             communicator = Util.initialize(args);
-            System.out.println("Ice communicator inicializado");
             
             // Crear controlador del broker
             controller = new BrokerController(config);
@@ -48,28 +53,17 @@ public class BrokerApp {
             // Activar el adaptador
             adapter.activate();
             
-            System.out.println("=== BROKER INICIADO EXITOSAMENTE ===");
-            System.out.println("ID: " + config.getBrokerId());
-            System.out.println("Nombre: " + config.getBrokerNombre());
-            System.out.println("Escuchando en: " + config.getHost() + ":" + config.getPuerto());
-            System.out.println("Destinos configurados: " + config.getTodosLosDestinos().size());
-            System.out.println("Destinos activos: " + config.getDestinosActivos().size());
-            
-            // Verificar estado inicial de destinos
-            controller.verificarEstadoDestinos();
-            
-            System.out.println("Presione Ctrl+C para detener el broker...");
+            // UNICO mensaje en consola durante ejecucion
+            System.out.println("Broker " + config.getBrokerId() + " iniciado en puerto " + config.getPuerto());
             
             // Configurar shutdown hook
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("\n=== DETENIENDO BROKER ===");
                 if (controller != null) {
                     controller.cerrar();
                 }
                 if (communicator != null) {
                     communicator.destroy();
                 }
-                System.out.println("Broker detenido correctamente");
             }));
             
             // Mantener el broker corriendo

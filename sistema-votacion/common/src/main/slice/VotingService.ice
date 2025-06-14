@@ -7,19 +7,29 @@ module VotingSystem {
         string partidoPolitico;
     };
 
+    // Clase Ciudadano (adaptada a tu clase Java)
+    class Ciudadano {
+        int id;
+        string documento;
+        string nombre;
+        string apellido;
+        string mesaId;
+        bool yaVoto;
+    };
+
     // Clase Voto (adaptada a tu clase Java)
     class Voto {
         int id;                   
         Candidato candidato;
     };
 
-   // Interface para enviar votos al Broker
+    // Interface para enviar votos al Broker
     interface BrokerService {
         bool recibirVoto(Voto voto);
         bool ping();
     };
 
-    // Interface para que Broker envíe votos
+    // Interface para que Broker envíe votos  
     interface ReceptorVotos {
         bool recibirVoto(Voto voto);
         bool ping();

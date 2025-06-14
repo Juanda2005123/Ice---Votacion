@@ -15,26 +15,18 @@ public class ServidorIceBroker implements BrokerService {
     public ServidorIceBroker(BrokerController controller) {
         this.controller = controller;
     }
-    
-    /**
+      /**
      * RECIBE un voto desde cualquier cliente y lo reenvía
      * SIN validaciones - SOLO conversión y reenvío
      */
     @Override
     public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
         try {
-            System.out.println("RECIBIDO: Voto ID " + votoIce.id + 
-                             " para candidato " + votoIce.candidato.nombre);
-            
             // Convertir Ice a Java y reenviar
             Voto votoJava = convertirVotoIceAJava(votoIce);
-            boolean resultado = controller.procesarVoto(votoJava);
-            
-            System.out.println("RESULTADO: " + (resultado ? "ENVIADO" : "ERROR"));
-            return resultado;
+            return controller.procesarVoto(votoJava);
             
         } catch (Exception e) {
-            System.err.println("ERROR recibiendo voto: " + e.getMessage());
             return false;
         }
     }
