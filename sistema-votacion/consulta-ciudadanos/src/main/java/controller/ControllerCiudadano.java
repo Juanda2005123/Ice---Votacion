@@ -1,25 +1,17 @@
 package controller;
 
-import VotingSystem.ConsultaLugarResponse;
-import VotingSystem.ObserverCiudadanoPrx;
-import VotingSystem.ObserverCiudadano;
-import cache.CiudadanoCache;
+import com.zeroc.Ice.Communicator;
+import com.zeroc.Ice.ObjectAdapter;
+import com.zeroc.Ice.Util;
 import comunicacion.ServicioConsultaCiudadanosIce;
 import dao.CiudadanoDAO;
-import observer.CiudadanoObserver;
+import modelo.CiudadanoCache;
 import ui.CiudadanoUI;
-import java.lang.Exception;
-import com.zeroc.Ice.*;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
 
 public class ControllerCiudadano {
 
     private CiudadanoUI ui;
     private CiudadanoCache cache;
-    private CiudadanoDAO dao;
-    private ServicioConsultaCiudadanosIce servicioIce;
     private Communicator communicator;
 
     public ControllerCiudadano() {
@@ -29,50 +21,21 @@ public class ControllerCiudadano {
 
     public void iniciar() {
         try {
-            Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/elecciones", "postgres", "tu_clave");
-            this.dao = new CiudadanoDAO(conn);
-
+            CiudadanoDAO dao = new CiudadanoDAO();
             communicator = Util.initialize();
-            ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("CiudadanoAdapter", "tcp -p 13000");
+            ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("CiudadanoAdapter", "tcp -p 12000");
+            ServicioConsultaCiudadanosIce servicio = new ServicioConsultaCiudadanosIce(dao, cache);
 
-            // Servicio de consulta
-            servicioIce = new ServicioConsultaCiudadanosIce(dao, cache);
-            adapter.add(servicioIce, Util.stringToIdentity("LugarVotacionService"));
-
-            // Observador
-            CiudadanoObserver observador = new CiudadanoObserver(this);
-            adapter.add(observador, Util.stringToIdentity("CiudadanoObserver"));
-
+            adapter.add(servicio, Util.stringToIdentity("LugarVotacionService"));
             adapter.activate();
 
-            // Registrar el observador en el servidor central (simulado, con proxy directo)
-            ObjectPrx base = communicator.stringToProxy("ServidorCentralObserver:tcp -h localhost -p 10000");
-            ObserverCiudadanoPrx proxyObservador = ObserverCiudadanoPrx.uncheckedCast(
-                    adapter.createProxy(Util.stringToIdentity("CiudadanoObserver"))
-            );
-            // TODO: Llamar a registrarObservador(proxyObservador) en el servidor central si ya lo tienes implementado
-
-            ui.mostrarInfo("ConsultaCiudadanos iniciado y observador registrado.");
-
-            while (true) {
-                Thread.sleep(5000);
-            }
+            ui.mostrarInfo("ConsultaCiudadanos iniciado y listo para responder.");
+            while (true) Thread.sleep(10000);
 
         } catch (Exception e) {
-            ui.mostrarError("Error al iniciar el módulo: " + e.getMessage());
+            ui.mostrarError("Error al iniciar: " + e.getMessage());
         } finally {
             if (communicator != null) communicator.destroy();
-        }
-    }
-
-    // Método invocado por el Observer cuando recibe una notificación desde el servidor
-    public void realizarConsultaDesdeServidor(String cedula) {
-        ConsultaLugarResponse resp = servicioIce.consultarLugarVotacion(cedula, null);
-        if (resp.encontrado) {
-            ui.mostrarInfo("Consulta recibida del servidor para cédula: " + cedula);
-            ui.mostrarInfo("→ Mesa: " + resp.mesaId + ", Lugar: " + resp.lugarNombre + ", Municipio: " + resp.ciudad);
-        } else {
-            ui.mostrarError("No se encontró información para cédula: " + cedula);
         }
     }
 }

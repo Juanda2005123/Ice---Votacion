@@ -2,13 +2,10 @@ package comunicacion;
 
 import VotingSystem.ConsultaLugarResponse;
 import VotingSystem.LugarVotacionService;
-import cache.CiudadanoCache;
+import VotingSystem.Votante;
 import dao.CiudadanoDAO;
-
+import modelo.CiudadanoCache;
 import com.zeroc.Ice.Current;
-
-import java.sql.SQLException;
-import java.util.Map;
 
 public class ServicioConsultaCiudadanosIce implements LugarVotacionService {
 
@@ -22,37 +19,25 @@ public class ServicioConsultaCiudadanosIce implements LugarVotacionService {
 
     @Override
     public ConsultaLugarResponse consultarLugarVotacion(String cedula, Current current) {
-        ConsultaLugarResponse response = new ConsultaLugarResponse();
-
+        ConsultaLugarResponse resp = new ConsultaLugarResponse();
         try {
-            Map<String, String> datos;
-
-            if (cache.contiene(cedula)) {
-                datos = cache.get(cedula);
-                response.mensaje = "Resultado obtenido de caché.";
-            } else {
-                datos = dao.consultarLugarPorCedula(cedula);
-                if (datos != null) cache.put(cedula, datos);
-                response.mensaje = "Resultado obtenido de base de datos.";
+            // Intentar primero por caché
+            if (cache.existe(cedula)) {
+                return cache.obtener(cedula);
             }
 
-            if (datos != null) {
-                response.departamento = datos.get("departamento");
-                response.ciudad = datos.get("municipio");
-                response.lugarNombre = datos.get("puesto");
-                response.direccion = datos.get("direccion");
-                response.mesaId = datos.get("mesa");
-                response.encontrado = true;
-            } else {
-                response.encontrado = false;
-                response.mensaje = "Ciudadano no encontrado.";
+            // Consultar desde BD
+            resp = dao.obtenerLugarPorCedula(cedula);
+
+            if (resp.encontrado) {
+                cache.guardar(cedula, resp);
             }
 
-        } catch (SQLException e) {
-            response.encontrado = false;
-            response.mensaje = "Error al consultar: " + e.getMessage();
+        } catch (Exception e) {
+            resp.encontrado = false;
+            resp.mensaje = "Error en la consulta: " + e.getMessage();
         }
 
-        return response;
+        return resp;
     }
 }
