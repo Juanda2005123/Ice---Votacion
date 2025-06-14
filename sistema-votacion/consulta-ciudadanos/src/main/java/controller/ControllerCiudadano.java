@@ -23,7 +23,7 @@ public class ControllerCiudadano {
         try {
             CiudadanoDAO dao = new CiudadanoDAO();
             communicator = Util.initialize();
-            ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("CiudadanoAdapter", "tcp -p 12000");
+            ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("CiudadanoAdapter", "tcp -p 10001");
             ServicioConsultaCiudadanosIce servicio = new ServicioConsultaCiudadanosIce(dao, cache);
 
             adapter.add(servicio, Util.stringToIdentity("LugarVotacionService"));

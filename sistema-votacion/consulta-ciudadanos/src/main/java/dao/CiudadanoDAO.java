@@ -8,7 +8,7 @@ public class CiudadanoDAO {
     private Connection conn;
 
     public CiudadanoDAO() throws Exception {
-        conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/elecciones", "postgres", "1234");
+        conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/elecciones", "postgres", "12345");
     }
 
     public ConsultaLugarResponse obtenerLugarPorCedula(String cedula) throws Exception {

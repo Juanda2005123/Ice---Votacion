@@ -8,7 +8,7 @@ public class ClienteCiudadanoIce {
     private LugarVotacionServicePrx proxy;
 
     public ClienteCiudadanoIce(Communicator communicator) {
-        ObjectPrx base = communicator.stringToProxy("LugarVotacionService:tcp -h localhost -p 12000");
+        ObjectPrx base = communicator.stringToProxy("LugarVotacionService:tcp -h localhost -p 10001");
         proxy = LugarVotacionServicePrx.checkedCast(base);
     }
 
