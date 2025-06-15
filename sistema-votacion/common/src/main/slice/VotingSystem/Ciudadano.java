@@ -15,35 +15,46 @@
 
 package VotingSystem;
 
-public class Candidato extends com.zeroc.Ice.Value
+public class Ciudadano extends com.zeroc.Ice.Value
 {
-    public Candidato()
+    public Ciudadano()
     {
+        this.documento = "";
         this.nombre = "";
-        this.partidoPolitico = "";
+        this.apellido = "";
+        this.mesaId = "";
     }
 
-    public Candidato(int id, String nombre, String partidoPolitico)
+    public Ciudadano(int id, String documento, String nombre, String apellido, String mesaId, boolean yaVoto)
     {
         this.id = id;
+        this.documento = documento;
         this.nombre = nombre;
-        this.partidoPolitico = partidoPolitico;
+        this.apellido = apellido;
+        this.mesaId = mesaId;
+        this.yaVoto = yaVoto;
     }
 
     public int id;
 
+    public String documento;
+
     public String nombre;
 
-    public String partidoPolitico;
+    public String apellido;
 
-    public Candidato clone()
+    public String mesaId;
+
+    public boolean yaVoto;
+
+    public Ciudadano clone()
     {
-        return (Candidato)super.clone();
+        return (Ciudadano)super.clone();
     }
 
     public static String ice_staticId()
     {
-        return "::VotingSystem::Candidato";
+        return "::VotingSystem::Ciudadano";
     }
 
     @Override
@@ -53,7 +64,7 @@ public class Candidato extends com.zeroc.Ice.Value
     }
 
     /** @hidden */
-    public static final long serialVersionUID = -275829973L;
+    public static final long serialVersionUID = -1204416120L;
 
     /** @hidden */
     @Override
@@ -61,8 +72,11 @@ public class Candidato extends com.zeroc.Ice.Value
     {
         ostr_.startSlice(ice_staticId(), -1, true);
         ostr_.writeInt(id);
+        ostr_.writeString(documento);
         ostr_.writeString(nombre);
-        ostr_.writeString(partidoPolitico);
+        ostr_.writeString(apellido);
+        ostr_.writeString(mesaId);
+        ostr_.writeBool(yaVoto);
         ostr_.endSlice();
     }
 
@@ -72,8 +86,11 @@ public class Candidato extends com.zeroc.Ice.Value
     {
         istr_.startSlice();
         id = istr_.readInt();
+        documento = istr_.readString();
         nombre = istr_.readString();
-        partidoPolitico = istr_.readString();
+        apellido = istr_.readString();
+        mesaId = istr_.readString();
+        yaVoto = istr_.readBool();
         istr_.endSlice();
     }
 }

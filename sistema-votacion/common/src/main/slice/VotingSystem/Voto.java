@@ -19,22 +19,17 @@ public class Voto extends com.zeroc.Ice.Value
 {
     public Voto()
     {
-        this.votoId = "";
-        this.timestamp = "";
     }
 
-    public Voto(String votoId, Candidato candidato, String timestamp)
+    public Voto(int id, Candidato candidato)
     {
-        this.votoId = votoId;
+        this.id = id;
         this.candidato = candidato;
-        this.timestamp = timestamp;
     }
 
-    public String votoId;
+    public int id;
 
     public Candidato candidato;
-
-    public String timestamp;
 
     public Voto clone()
     {
@@ -53,16 +48,15 @@ public class Voto extends com.zeroc.Ice.Value
     }
 
     /** @hidden */
-    public static final long serialVersionUID = 1882148034L;
+    public static final long serialVersionUID = -325478967L;
 
     /** @hidden */
     @Override
     protected void _iceWriteImpl(com.zeroc.Ice.OutputStream ostr_)
     {
         ostr_.startSlice(ice_staticId(), -1, true);
-        ostr_.writeString(votoId);
+        ostr_.writeInt(id);
         ostr_.writeValue(candidato);
-        ostr_.writeString(timestamp);
         ostr_.endSlice();
     }
 
@@ -71,9 +65,8 @@ public class Voto extends com.zeroc.Ice.Value
     protected void _iceReadImpl(com.zeroc.Ice.InputStream istr_)
     {
         istr_.startSlice();
-        votoId = istr_.readString();
+        id = istr_.readInt();
         istr_.readValue(v -> candidato = v, Candidato.class);
-        timestamp = istr_.readString();
         istr_.endSlice();
     }
 }
