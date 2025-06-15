@@ -17,7 +17,7 @@ package VotingSystem;
 
 public interface ObserverCiudadano extends com.zeroc.Ice.Object
 {
-    void notificarConsulta(String cedula, com.zeroc.Ice.Current current);
+    ConsultaLugarResponse notificarConsulta(String cedula, com.zeroc.Ice.Current current);
 
     /** @hidden */
     static final String[] _iceIds =
@@ -57,8 +57,12 @@ public interface ObserverCiudadano extends com.zeroc.Ice.Object
         String iceP_cedula;
         iceP_cedula = istr.readString();
         inS.endReadParams();
-        obj.notificarConsulta(iceP_cedula, current);
-        return inS.setResult(inS.writeEmptyParams());
+        ConsultaLugarResponse ret = obj.notificarConsulta(iceP_cedula, current);
+        com.zeroc.Ice.OutputStream ostr = inS.startWriteParams();
+        ostr.writeValue(ret);
+        ostr.writePendingValues();
+        inS.endWriteParams(ostr);
+        return inS.setResult(ostr);
     }
 
     /** @hidden */

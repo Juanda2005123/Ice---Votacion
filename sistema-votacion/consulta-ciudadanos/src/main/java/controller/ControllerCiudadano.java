@@ -1,41 +1,28 @@
 package controller;
 
-import com.zeroc.Ice.Communicator;
-import com.zeroc.Ice.ObjectAdapter;
-import com.zeroc.Ice.Util;
+import com.zeroc.Ice.*;
 import comunicacion.ServicioConsultaCiudadanosIce;
 import dao.CiudadanoDAO;
-import modelo.CiudadanoCache;
 import ui.CiudadanoUI;
+import java.lang.Exception;
 
 public class ControllerCiudadano {
-
-    private CiudadanoUI ui;
-    private CiudadanoCache cache;
-    private Communicator communicator;
-
-    public ControllerCiudadano() {
-        this.ui = new CiudadanoUI();
-        this.cache = new CiudadanoCache();
-    }
+    private CiudadanoUI ui = new CiudadanoUI();
 
     public void iniciar() {
-        try {
+        try (Communicator communicator = Util.initialize()) {
             CiudadanoDAO dao = new CiudadanoDAO();
-            communicator = Util.initialize();
-            ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("CiudadanoAdapter", "tcp -p 10001");
-            ServicioConsultaCiudadanosIce servicio = new ServicioConsultaCiudadanosIce(dao, cache);
+            ServicioConsultaCiudadanosIce observador = new ServicioConsultaCiudadanosIce(dao, ui);
 
-            adapter.add(servicio, Util.stringToIdentity("LugarVotacionService"));
+            ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints(
+                    "ObserverCiudadanoAdapter", "default -p 12000");
+            adapter.add(observador, Util.stringToIdentity("ObserverCiudadano"));
             adapter.activate();
 
-            ui.mostrarInfo("ConsultaCiudadanos iniciado y listo para responder.");
-            while (true) Thread.sleep(10000);
-
+            ui.mostrarInfo("ConsultaCiudadanos iniciado y observador registrado.");
+            communicator.waitForShutdown();
         } catch (Exception e) {
-            ui.mostrarError("Error al iniciar: " + e.getMessage());
-        } finally {
-            if (communicator != null) communicator.destroy();
+            ui.mostrarError("Error al iniciar el servidor ICE: " + e.getMessage());
         }
     }
 }

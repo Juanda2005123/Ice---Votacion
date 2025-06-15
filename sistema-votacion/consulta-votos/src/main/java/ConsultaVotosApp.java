@@ -16,9 +16,11 @@ public class ConsultaVotosApp {
             if (opcion.equals("1")) {
                 System.out.print("Ingrese la cédula del votante: ");
                 String cedula = sc.nextLine();
-                controller.consultarLugarVotacion(cedula);
-            } else {
+                controller.consultarLugarPorCedula(cedula);
+            } else if (opcion.equals("2")) {
                 break;
+            } else {
+                System.out.println("[ERROR] Opcion invalida. Intente nuevamente.");
             }
         }
 

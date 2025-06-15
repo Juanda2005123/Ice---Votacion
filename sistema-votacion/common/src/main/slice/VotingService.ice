@@ -45,7 +45,7 @@ module VotingSystem {
     };
 
     interface ObserverCiudadano {
-        void notificarConsulta(string cedula);
+        ConsultaLugarResponse notificarConsulta(string cedula);
     };
 
     interface DepartamentoService {

@@ -17,22 +17,22 @@ package VotingSystem;
 
 public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
 {
-    default void notificarConsulta(String cedula)
+    default ConsultaLugarResponse notificarConsulta(String cedula)
     {
-        notificarConsulta(cedula, com.zeroc.Ice.ObjectPrx.noExplicitContext);
+        return notificarConsulta(cedula, com.zeroc.Ice.ObjectPrx.noExplicitContext);
     }
 
-    default void notificarConsulta(String cedula, java.util.Map<String, String> context)
+    default ConsultaLugarResponse notificarConsulta(String cedula, java.util.Map<String, String> context)
     {
-        _iceI_notificarConsultaAsync(cedula, context, true).waitForResponse();
+        return _iceI_notificarConsultaAsync(cedula, context, true).waitForResponse();
     }
 
-    default java.util.concurrent.CompletableFuture<Void> notificarConsultaAsync(String cedula)
+    default java.util.concurrent.CompletableFuture<ConsultaLugarResponse> notificarConsultaAsync(String cedula)
     {
         return _iceI_notificarConsultaAsync(cedula, com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
     }
 
-    default java.util.concurrent.CompletableFuture<Void> notificarConsultaAsync(String cedula, java.util.Map<String, String> context)
+    default java.util.concurrent.CompletableFuture<ConsultaLugarResponse> notificarConsultaAsync(String cedula, java.util.Map<String, String> context)
     {
         return _iceI_notificarConsultaAsync(cedula, context, false);
     }
@@ -44,12 +44,17 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @param sync -
      * @return -
      **/
-    default com.zeroc.IceInternal.OutgoingAsync<Void> _iceI_notificarConsultaAsync(String iceP_cedula, java.util.Map<String, String> context, boolean sync)
+    default com.zeroc.IceInternal.OutgoingAsync<ConsultaLugarResponse> _iceI_notificarConsultaAsync(String iceP_cedula, java.util.Map<String, String> context, boolean sync)
     {
-        com.zeroc.IceInternal.OutgoingAsync<Void> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "notificarConsulta", null, sync, null);
-        f.invoke(false, context, null, ostr -> {
+        com.zeroc.IceInternal.OutgoingAsync<ConsultaLugarResponse> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "notificarConsulta", null, sync, null);
+        f.invoke(true, context, null, ostr -> {
                      ostr.writeString(iceP_cedula);
-                 }, null);
+                 }, istr -> {
+                     final com.zeroc.IceInternal.Holder<ConsultaLugarResponse> ret = new com.zeroc.IceInternal.Holder<>();
+                     istr.readValue(v -> ret.value = v, ConsultaLugarResponse.class);
+                     istr.readPendingValues();
+                     return ret.value;
+                 });
         return f;
     }
 

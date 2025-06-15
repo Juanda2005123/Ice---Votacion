@@ -1,18 +1,21 @@
 package comunicacion;
 
-import VotingSystem.ConsultaLugarResponse;
-import VotingSystem.LugarVotacionServicePrx;
+import VotingSystem.ObserverCiudadanoPrx;
 import com.zeroc.Ice.*;
+import VotingSystem.ConsultaLugarResponse;
 
 public class ClienteCiudadanoIce {
-    private LugarVotacionServicePrx proxy;
+    private ObserverCiudadanoPrx proxy;
 
     public ClienteCiudadanoIce(Communicator communicator) {
-        ObjectPrx base = communicator.stringToProxy("LugarVotacionService:tcp -h localhost -p 10001");
-        proxy = LugarVotacionServicePrx.checkedCast(base);
+        ObjectPrx base = communicator.stringToProxy("ObserverCiudadano:tcp -h localhost -p 12000");
+        proxy = ObserverCiudadanoPrx.checkedCast(base);
+        if (proxy == null) {
+            throw new RuntimeException("Proxy no inicializado correctamente.");
+        }
     }
 
-    public ConsultaLugarResponse consultarLugar(String cedula) {
-        return proxy.consultarLugarVotacion(cedula);
+    public ConsultaLugarResponse enviarCedula(String cedula) {
+        return proxy.notificarConsulta(cedula);
     }
 }

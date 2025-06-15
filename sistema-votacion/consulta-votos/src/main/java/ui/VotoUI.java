@@ -1,11 +1,12 @@
 package ui;
 
 public class VotoUI {
-    public void mostrarInfo(String msg) {
-        System.out.println("[INFO] " + msg);
+
+    public void mostrarInfo(String mensaje) {
+        System.out.println(mensaje);
     }
 
-    public void mostrarError(String msg) {
-        System.err.println("[ERROR] " + msg);
+    public void mostrarError(String mensaje) {
+        System.err.println("[ERROR] " + mensaje);
     }
 }

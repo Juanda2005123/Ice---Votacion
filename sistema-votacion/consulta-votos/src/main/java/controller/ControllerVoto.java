@@ -1,16 +1,15 @@
 package controller;
 
-import VotingSystem.ConsultaLugarResponse;
 import comunicacion.ClienteCiudadanoIce;
 import com.zeroc.Ice.Communicator;
+import VotingSystem.ConsultaLugarResponse;
 import com.zeroc.Ice.Util;
 import ui.VotoUI;
 
 public class ControllerVoto {
-
-    private Communicator communicator;
-    private ClienteCiudadanoIce cliente;
     private VotoUI ui;
+    private ClienteCiudadanoIce cliente;
+    private Communicator communicator;
 
     public ControllerVoto() {
         this.ui = new VotoUI();
@@ -22,30 +21,29 @@ public class ControllerVoto {
             cliente = new ClienteCiudadanoIce(communicator);
             ui.mostrarInfo("ConsultaVotos iniciado correctamente.");
         } catch (Exception e) {
-            ui.mostrarError("Error al iniciar: " + e.getMessage());
+            ui.mostrarError("Falló la conexión con ObserverCiudadano: " + e.getMessage());
         }
     }
 
-    public void consultarLugarVotacion(String cedula) {
+    public void consultarLugarPorCedula(String cedula) {
         try {
-            ConsultaLugarResponse resp = cliente.consultarLugar(cedula);
+            ConsultaLugarResponse resp = cliente.enviarCedula(cedula);
             if (resp.encontrado) {
-                ui.mostrarInfo("Mesa: " + resp.mesaId);
-                ui.mostrarInfo("Puesto: " + resp.lugarNombre);
-                ui.mostrarInfo("Municipio: " + resp.ciudad);
-                ui.mostrarInfo("Departamento: " + resp.departamento);
-                ui.mostrarInfo("Dirección: " + resp.direccion);
+                ui.mostrarInfo("→ Nombre: " + resp.mensaje);
+                ui.mostrarInfo("→ Mesa: " + resp.mesaId);
+                ui.mostrarInfo("→ Lugar: " + resp.lugarNombre);
+                ui.mostrarInfo("→ Municipio: " + resp.ciudad);
+                ui.mostrarInfo("→ Departamento: " + resp.departamento);
             } else {
                 ui.mostrarError("No se encontró información para la cédula: " + cedula);
             }
         } catch (Exception e) {
-            ui.mostrarError("Error en la consulta: " + e.getMessage());
+            ui.mostrarError("Error al enviar la cédula: " + e.getMessage());
         }
     }
 
+
     public void cerrar() {
-        if (communicator != null) {
-            communicator.destroy();
-        }
+        if (communicator != null) communicator.destroy();
     }
 }
