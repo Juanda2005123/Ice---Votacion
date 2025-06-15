@@ -36,4 +36,9 @@ module VotingSystem {
         int recibirValidacionVotante(string documento, int candidatoId);
         bool ping();
     };
+
+    interface QueryStation {
+        string query(string document);
+    }
+
 };

@@ -25,6 +25,7 @@ public class Candidato {
         return partidoPolitico;
     }    // Setters
     public void setId(Integer id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     
