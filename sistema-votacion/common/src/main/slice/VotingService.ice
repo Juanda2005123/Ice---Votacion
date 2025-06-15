@@ -21,12 +21,25 @@ module VotingSystem {
     class Voto {
         int id;                   
         Candidato candidato;
-    };    
+    };  
+
+
+    class ConsultaLugarResponse {
+        string departamento;
+        string ciudad;
+        string lugarNombre;
+        string direccion;
+        string mesaId;
+        bool encontrado;
+        string mensaje;
+    };
+ 
     
     // Interface para enviar votos al Broker
     interface BrokerService {
         bool recibirVoto(Voto voto);
         int recibirValidacionVotante(string documento, int candidatoId);
+        string query(string document);
         bool ping();
     };
 

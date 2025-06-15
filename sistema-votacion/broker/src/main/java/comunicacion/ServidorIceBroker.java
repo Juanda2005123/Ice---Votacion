@@ -103,4 +103,14 @@ public class ServidorIceBroker implements BrokerService {
         
         return votoJava;
     }
+
+    @Override
+    public String query(String document, com.zeroc.Ice.Current current) {
+        try {
+            return controller.consultarLugar(document);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }

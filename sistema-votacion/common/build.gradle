@@ -1,9 +1,23 @@
-// Configuración específica para el módulo common
+// build.gradle del módulo 'common'
+
+plugins {
+    id 'java'
+}
 
 // Este módulo NO es ejecutable, es una librería
 // No necesita plugin 'application'
 
-// Configurar el JAR para que sea consumible por otros módulos
+group = 'org.elecciones'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Dependencias comunes (si las tienes)
+}
+
 jar {
     // No necesita Main-Class porque es una librería
     archiveBaseName = 'common'

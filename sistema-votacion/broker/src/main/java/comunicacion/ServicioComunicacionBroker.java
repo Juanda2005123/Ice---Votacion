@@ -128,4 +128,28 @@ public class ServicioComunicacionBroker {
             communicator.destroy();
         }
     }
+
+    public String reenviarConsultaLugar(String cedula) {
+        ConfiguracionBroker.Destino destino = seleccionarDestino();
+
+        if (destino == null) {
+            return null;
+        }
+
+        try {
+            String proxyString = String.format("QueryStation:tcp -h %s -p %d",
+                                            destino.getHost(), destino.getPuerto());
+
+            com.zeroc.Ice.ObjectPrx base = communicator.stringToProxy(proxyString);
+            QueryStationPrx prx = QueryStationPrx.checkedCast(base);
+
+            if (prx == null) return null;
+
+            return prx.query(cedula);
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }

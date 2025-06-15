@@ -19,7 +19,7 @@ subprojects {
     
     slice {
         java {
-            files = [file("../common/src/main/slice/VotingService.ice")]  
+            files = [file("../common/src/main/slice/VotingService.ice")]  // ← Cambiar esta línea
         }
     }
     
@@ -27,7 +27,8 @@ subprojects {
     repositories {
         mavenCentral()
     }
-      //
+    
+    //
     // Both Client and Server depend only on Ice JAR
     //
     dependencies {
@@ -38,7 +39,7 @@ subprojects {
     }
     
     // Solo mesa-votacion y servidor-central dependen de common
-    if (project.name in ['mesa-votacion', 'servidor-central', 'departamento', 'lugar-votacion', 'consulta-ciudadanos', 'consulta-votos','broker']) {
+    if (project.name in ['mesa-votacion', 'servidor-central', 'departamento', 'lugar-votacion', 'consulta-ciudadanos', 'consulta-votos']) {
         dependencies {
             implementation project(':common')
         }
