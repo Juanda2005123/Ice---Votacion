@@ -4,6 +4,7 @@ import model.Voto;
 import config.ConfiguracionBroker;
 import comunicacion.ServicioComunicacionBroker;
 import comunicacion.ServicioVerificacionConectividad;
+import enrutamiento.EstrategiaEnrutamiento;
 
 /**
  * Controlador principal del broker que maneja el reenvio de votos.
@@ -20,11 +21,11 @@ import comunicacion.ServicioVerificacionConectividad;
  * @version 1.0
  * @since 2025-06-14
  */
-public class BrokerController {
-    
+public class BrokerController {    
     private ServicioComunicacionBroker comunicacion;
     private ServicioVerificacionConectividad verificador;
     private ConfiguracionBroker config;
+    private EstrategiaEnrutamiento estrategia;
 
     /**
      * Constructor que inicializa el controlador con la configuracion del broker.
@@ -35,9 +36,8 @@ public class BrokerController {
         this.config = config;
         this.comunicacion = new ServicioComunicacionBroker(config);
         this.verificador = new ServicioVerificacionConectividad();
-    }
-    
-    /**
+        this.estrategia = new EstrategiaEnrutamiento(config);
+    }    /**
      * Verifica la conectividad con todos los destinos al iniciar el broker.
      * Muestra informacion detallada de cada destino verificado.
      */
@@ -45,7 +45,8 @@ public class BrokerController {
         System.out.println("=== VERIFICANDO CONECTIVIDAD CON DESTINOS ===");
         
         for (ConfiguracionBroker.Destino destino : config.getDestinosActivos()) {
-            boolean conectado = verificador.verificarConectividad(destino);            if (conectado) {
+            boolean conectado = verificador.verificarConectividad(destino);
+            if (conectado) {
                 // Mostrar informacion detallada del destino conectado
                 System.out.println("[OK] Conexion exitosa con " + destino.getId() + 
                                  " (" + destino.getTipo() + ") en " + 
@@ -70,6 +71,7 @@ public class BrokerController {
      * @return true si el voto fue reenviado exitosamente, false en caso contrario
      */
     public boolean procesarVoto(Voto voto) {
+        System.out.println(voto.getCandidato().getNombre());
         // Solo reenviar el voto
         return comunicacion.reenviarVoto(voto);
     }    /**
@@ -112,19 +114,18 @@ public class BrokerController {
      */
     public void verificarEstadoDestinos() {
         verificador.verificarConectividadDestinos(config);
-    }
-    
-    /**
+    }    /**
      * Cierra todas las conexiones y libera recursos.
-     * Debe llamarse al finalizar el uso del controlador.
      */
     public void cerrar() {
         if (verificador != null) {
             verificador.cerrar();
         }
+        if (estrategia != null) {
+            estrategia.cerrar();
+        }
         if (comunicacion != null) {
             comunicacion.cerrarConexion();
         }
-        System.out.println("BrokerController cerrado");
     }
 }

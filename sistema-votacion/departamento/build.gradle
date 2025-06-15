@@ -1,0 +1,14 @@
+// Este build.gradle es específico para el módulo mesa-votacion
+// Solo define configuraciones particulares de este módulo
+
+jar {
+    manifest {        
+        attributes(
+            "Main-Class": "DepartamentoVotacionApp" 
+        )
+    }
+}
+
+// Plugin de aplicación para poder ejecutar con 'gradle run'
+apply plugin: 'application'
+mainClassName = 'DepartamentoVotacionApp'
