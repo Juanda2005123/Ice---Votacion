@@ -62,7 +62,7 @@ public class ConfiguracionMesa {
         // Validar que todos los votantes pertenezcan a esta mesa
         for (Ciudadano votante : votantesElegibles) {
             if (!idMesa.equals(votante.getMesaId())) {
-                throw new IllegalArgumentException("Votante " + votante.getCedula() + " no pertenece a la mesa " + idMesa);
+                throw new IllegalArgumentException("Votante " + votante.getDocumento() + " no pertenece a la mesa " + idMesa);
             }
         }
     }

@@ -20,7 +20,7 @@ public class VotoResponse {
     }
     
     // Constructor para respuesta exitosa
-    public static VotoResponse success(String votoId) {
+    public static VotoResponse success(Integer votoId) {
         return new VotoResponse(votoId, true, "Voto recibido exitosamente");
     }
     
@@ -28,9 +28,8 @@ public class VotoResponse {
     public static VotoResponse error(String errorMessage) {
         return new VotoResponse(null, false, errorMessage);
     }
-    
-    // Getters
-    public String getId() {
+      // Getters
+    public Integer getId() {
         return id;
     }
     

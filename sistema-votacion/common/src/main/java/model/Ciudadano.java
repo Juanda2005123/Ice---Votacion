@@ -20,6 +20,19 @@ public class Ciudadano {
         this.yaVoto = false; // Por defecto, el votante no ha votado
     }
 
+    public Integer getId() {
+        return id;
+    }
+    public String getDocumento() {
+        return documento;
+    }
+    public void setDocumento(String documento) {
+        this.documento = documento;
+    }
+    public void setId(Integer id) {
+        this.id = id;
+    }
+    
     public String getNombre() {
         return nombre;
     }
@@ -89,5 +102,9 @@ public class Ciudadano {
         } else {
             return "HABILITADO";
         }
+    }
+
+    public String getNombreCompleto() {
+        return nombre + " " + apellido;
     }
 }

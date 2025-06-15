@@ -1,7 +1,5 @@
 package model;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class Voto {
     private Candidato candidato;
@@ -12,8 +10,20 @@ public class Voto {
         this.candidato = candidato;
     }
     
+    public Integer getId() {
+        return id;
+    }
+
     public Candidato getCandidato() {
         return candidato;
+    }
+
+    public void setCandidato(Candidato candidato) {
+        this.candidato = candidato;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
     
 }

@@ -2,112 +2,114 @@ package comunicacion;
 
 import VotingSystem.*;
 import gestion.ProcesadorVotos;
-
-
 import com.zeroc.Ice.Current;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-
 /**
+ * Servant Ice que implementa el servicio de votación.
+ * NOTA: Implementación temporalmente deshabilitada.
+ * Los métodos lanzan UnsupportedOperationException hasta que se implemente completamente.
+ * 
  * Esta clase implementa el patrón Broker
  * Actua como intermediario entre el cliente remoto y la lógica de negocio del servidor.
- * 
- * Servant Ice que implementa el servicio de votación.
- * Recibe votos desde las mesas y los procesa.
  */
-public class ServicioComunicacionIce implements VotingService {
+public class ServicioComunicacionIce implements VotingSystem.ReceptorVotos {
     
     private ProcesadorVotos procesadorVotos;
     private ExecutorService threadPool;
 
-
     public ServicioComunicacionIce(ProcesadorVotos procesadorVotos) {
         this.procesadorVotos = procesadorVotos;
-        this.threadPool = Executors.newFixedThreadPool(10); 
+        this.threadPool = Executors.newFixedThreadPool(10);
+        System.out.println("ServicioComunicacionIce (servidor-central): Implementación temporalmente deshabilitada");
     }
     
     @Override
-    public boolean enviarVotoVotante(String mesaId, Voto voto, Ciudadano votante, Current current) {
-        //  Validación del broker antes de delegar (patrón Broker)
-        if (mesaId == null || mesaId.trim().isEmpty()) {
-            System.err.println("Broker: Mesa inválida");
-            return false;
-        }
-
-        try {
-            
-            Future<Boolean> resultado = threadPool.submit(() -> {
-               
-                model.Voto votoJava = convertirVotoIceAJava(voto);
-                model.Ciudadano votanteJava = convertirVotanteIceAJava(votante);
-
-                boolean votoOK = procesadorVotos.procesarVoto(votoJava, mesaId);
-                boolean votanteOK = procesadorVotos.procesarVotante(votanteJava, mesaId);
-                return votoOK && votanteOK;
-            });
-
-            
-            return resultado.get();
-
-        } catch (Exception e) {
-            System.err.println("Error procesando voto con thread pool: " + e.getMessage());
-            return false;
-        }
-    }
-
-    
-    // Métodos de conversión Ice ↔ Java
-    private model.Voto convertirVotoIceAJava(Voto votoIce) {
-        // Convertir Candidato (Ice classes have public fields)
-        model.Candidato candidatoJava = new model.Candidato(
-            votoIce.candidato.cedula,
-            votoIce.candidato.cedula,
-            votoIce.candidato.nombre,
-            votoIce.candidato.apellido,
-            votoIce.candidato.partidoPolitico
+    public boolean recibirVoto(Voto voto, Current current) {
+        throw new UnsupportedOperationException(
+            "ServicioComunicacionIce.recibirVoto() no está implementado aún. " +
+            "Voto ID: " + (voto != null ? voto.id : "null")
         );
-        
-        // Crear Voto Java (need to provide all required parameters)
-        model.Voto votoJava = new model.Voto(
-                            votoIce.votoId,
-                            candidatoJava,
-                            java.time.LocalDateTime.parse(votoIce.timestamp)
-                            , "MESA_DEFAULT" // Default mesaId, can be changed later
-                        );
-                                      
-        
-        return votoJava;
+    }
+    
+    @Override
+    public boolean ping(Current current) {
+        throw new UnsupportedOperationException(
+            "ServicioComunicacionIce.ping() no está implementado aún."
+        );
+    }
+    
+    /**
+     * Método para compatibilidad con versiones anteriores.
+     * NOTA: Temporalmente deshabilitado.
+     * 
+     * @throws UnsupportedOperationException Método no implementado aún
+     */
+    public boolean enviarVotoVotante(String mesaId, Voto voto, Ciudadano votante, Current current) {
+        throw new UnsupportedOperationException(
+            "ServicioComunicacionIce.enviarVotoVotante() no está implementado aún. " +
+            "Mesa: " + mesaId + ", Voto: " + (voto != null ? voto.id : "null") + 
+            ", Votante: " + (votante != null ? votante.documento : "null")
+        );
+    }
+    
+    /**
+     * Métodos de conversión Ice ↔ Java.
+     * NOTA: Temporalmente deshabilitados.
+     */
+    private model.Voto convertirVotoIceAJava(Voto votoIce) {
+        throw new UnsupportedOperationException(
+            "ServicioComunicacionIce.convertirVotoIceAJava() no está implementado aún."
+        );
     }
 
     private model.Ciudadano convertirVotanteIceAJava(Ciudadano votanteIce) {
-        model.Ciudadano votanteJava = new model.Ciudadano(
-            votanteIce.cedula,
-            votanteIce.nombre,
-            votanteIce.apellido,
-            votanteIce.departamento,
-            votanteIce.ciudad,
-            "MESA_DEFAULT",
-            "LUGAR_DEFAULT"
+        throw new UnsupportedOperationException(
+            "ServicioComunicacionIce.convertirVotanteIceAJava() no está implementado aún."
         );
-        
-        votanteJava.setYaVoto(votanteIce.yaVoto);
-        
-        return votanteJava;
     }
-
-    @Override
-    public int getTotalVotos(Current current) {
-        // Return total votes processed
-        return 0; // TODO: implement proper counting
-    }
-
+    
+    /**
+     * Cierra el thread pool de manera controlada.
+     * NOTA: Este método sí está implementado para evitar problemas de recursos.
+     */
     public void shutdownThreadPool() {
         if (threadPool != null) {
             threadPool.shutdown();
+            System.out.println("Thread pool del ServicioComunicacionIce cerrado");
         }
     }
+    
+    /**
+     * Obtiene el procesador de votos asociado.
+     * NOTA: Temporalmente deshabilitado.
+     * 
+     * @throws UnsupportedOperationException Método no implementado aún
+     */
+    public ProcesadorVotos getProcesadorVotos() {
+        throw new UnsupportedOperationException(
+            "ServicioComunicacionIce.getProcesadorVotos() no está implementado aún."
+        );
+    }
+    
+    /**
+     * Verifica el estado del servicio.
+     * NOTA: Temporalmente deshabilitado.
+     * 
+     * @throws UnsupportedOperationException Método no implementado aún
+     */
+    public boolean verificarEstado() {
+        throw new UnsupportedOperationException(
+            "ServicioComunicacionIce.verificarEstado() no está implementado aún."
+        );
+    }
 
+    @Override
+    public int recibirValidacionVotante(String documento, int candidatoId, Current current) {
+        // Por ahora retorna 1 (no es su mesa) - implementación temporal
+        // TODO: Implementar validación real cuando se conecte a la base de datos
+        return 1;
+    }
 }

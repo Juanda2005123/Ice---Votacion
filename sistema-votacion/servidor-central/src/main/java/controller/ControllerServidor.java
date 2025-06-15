@@ -23,13 +23,11 @@ public class ControllerServidor {
     // ===== VARIABLES DE INSTANCIA =====
     private ServidorUI ui;
     
-    
     // Almacenamiento temporal en memoria (thread-safe para Ice)
     private List<Voto> votosRecibidos;
-    private Map<String, Ciudadano> votantesQueVotaron; // Key: cédula
-    private Set<String> votosProcesadosIds = ConcurrentHashMap.newKeySet();
-
-
+    private Map<String, Ciudadano> votantesQueVotaron; // Key: documento
+    private Set<Integer> votosProcesadosIds = ConcurrentHashMap.newKeySet(); // Integer IDs
+    
     // Estadísticas calculadas
     private Map<String, Integer> conteosPorCandidato;
     private com.zeroc.Ice.Communicator communicator;
@@ -148,17 +146,19 @@ public class ControllerServidor {
      * @param voto Voto recibido
      * @return true si el voto fue almacenado exitosamente
      */
-   public boolean almacenarVoto(Voto voto) {
+    public boolean almacenarVoto(Voto voto) {
         try {
             if (voto == null) throw new IllegalArgumentException("El voto no puede ser null");
 
-            if (!votosProcesadosIds.add(voto.getVotoId())) {
-                ui.mostrarMensajeError("Voto duplicado: " + voto.getVotoId());
+            if (!votosProcesadosIds.add(voto.getId())) {
+                ui.mostrarMensajeError("Voto duplicado: " + voto.getId());
                 return false;
             }
 
             votosRecibidos.add(voto);
-            String nombreCandidato = voto.getCandidato().getNombreCompleto();
+            
+            // Usar nombre + partido en lugar de getNombreCompleto()
+            String nombreCandidato = voto.getCandidato().getNombre() + " (" + voto.getCandidato().getPartidoPolitico() + ")";
             conteosPorCandidato.put(nombreCandidato,
                 conteosPorCandidato.getOrDefault(nombreCandidato, 0) + 1);
 
@@ -169,7 +169,6 @@ public class ControllerServidor {
             return false;
         }
     }
-
     
     /**
      * Recibe información de un votante procesado por ProcesadorVotos.
@@ -183,8 +182,8 @@ public class ControllerServidor {
                 throw new IllegalArgumentException("El votante no puede ser null");
             }
             
-            // Almacenar votante (sobrescribe si ya existe)
-            votantesQueVotaron.put(votante.getCedula(), votante);
+            // Almacenar votante usando documento como key
+            votantesQueVotaron.put(votante.getDocumento(), votante);
             
             return true;
             
