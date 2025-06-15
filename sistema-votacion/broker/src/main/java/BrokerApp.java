@@ -46,16 +46,23 @@ public class BrokerApp {
             
             ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints(
                 "BrokerAdapter", endpoints
-            );
-            
+            );            
             // Registrar el servant
             adapter.add(servidor, Util.stringToIdentity("BrokerService"));
             
             // Activar el adaptador
             adapter.activate();
             
-            // UNICO mensaje en consola durante ejecucion
-            System.out.println("Broker " + config.getBrokerId() + " iniciado en puerto " + config.getPuerto());
+            // Mensaje de inicio del broker
+            System.out.println("=== BROKER " + config.getBrokerId() + " INICIADO ===");
+            System.out.println("- ID: " + config.getBrokerId());
+            System.out.println("- Nombre: " + config.getBrokerNombre());
+            System.out.println("- Puerto: " + config.getPuerto());
+            
+            // VERIFICAR CONECTIVIDAD CON DESTINOS
+            controller.verificarConectividadInicial();
+            
+            System.out.println("Broker listo para procesar votos...");
             
             // Configurar shutdown hook
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

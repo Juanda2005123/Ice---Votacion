@@ -23,14 +23,13 @@ public class ConfiguracionLugar {
             throw new RuntimeException("Error cargando configuración: " + e.getMessage());
         }
     }
-    
-    // Getters para propiedades del lugar de votación
+      // Getters para propiedades del lugar de votación (actualizados para usar nodo.id)
     public String getLugarId() {
-        return properties.getProperty("lugar.id", "LUGAR-DEFAULT");
+        return properties.getProperty("nodo.id", "LUGAR-DEFAULT");
     }
     
     public String getLugarNombre() {
-        return properties.getProperty("lugar.nombre", "Lugar Default");
+        return properties.getProperty("nodo.nombre", "Lugar Default");
     }
     
     public String getHost() {

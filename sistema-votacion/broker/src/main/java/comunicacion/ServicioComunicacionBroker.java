@@ -12,11 +12,9 @@ import enrutamiento.EstrategiaEnrutamiento;
 public class ServicioComunicacionBroker {
     
     private com.zeroc.Ice.Communicator communicator;
-    private ConfiguracionBroker config;
     private EstrategiaEnrutamiento estrategiaEnrutamiento;
       
     public ServicioComunicacionBroker(ConfiguracionBroker config) {
-        this.config = config;
         this.estrategiaEnrutamiento = new EstrategiaEnrutamiento(config);
         
         try {
@@ -25,10 +23,10 @@ public class ServicioComunicacionBroker {
             throw new RuntimeException("Error inicializando cliente Ice: " + e.getMessage());
         }
     }
-    
-    /**
+      /**
      * FUNCIÓN PRINCIPAL: Reenvía un voto al destino seleccionado
      * SIN validaciones - SOLO reenvío
+     * DIFERENCIA CON LUGAR: Verifica conectividad antes de enviar
      */    
     public boolean reenviarVoto(Voto voto) {
         ConfiguracionBroker.Destino destino = estrategiaEnrutamiento.seleccionarDestino();
@@ -56,34 +54,7 @@ public class ServicioComunicacionBroker {
             
             VotingSystem.Voto votoIce = convertirVotoJavaAIce(voto);
             return receptorPrx.recibirVoto(votoIce);
-            
-        } catch (Exception e) {
-            return false;
-        }
-    }
-      /**
-     * Verifica conectividad con todos los destinos
-     */
-    public void verificarConectividadDestinos() {
-        for (ConfiguracionBroker.Destino destino : config.getTodosLosDestinos()) {
-            verificarConectividadDestino(destino);
-        }
-    }
-    
-    /**
-     * Verifica conectividad con un destino específico
-     */
-    public boolean verificarConectividadDestino(ConfiguracionBroker.Destino destino) {
-        try {
-            String proxyString = String.format("ReceptorVotos:tcp -h %s -p %d", 
-                                             destino.getHost(), destino.getPuerto());
-            
-            com.zeroc.Ice.ObjectPrx proxy = communicator.stringToProxy(proxyString);
-            ReceptorVotosPrx receptorPrx = ReceptorVotosPrx.checkedCast(proxy);
-            
-            return receptorPrx != null && receptorPrx.ping();
-            
-        } catch (Exception e) {
+              } catch (Exception e) {
             return false;
         }
     }

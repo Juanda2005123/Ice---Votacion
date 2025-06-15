@@ -51,22 +51,21 @@ public class LugarVotacionApp {
             
             // Registrar el servant como ReceptorVotos (para recibir del broker)
             adapter.add(servidor, Util.stringToIdentity("ReceptorVotos"));
-            
-            // Activar el adaptador
+              // Activar el adaptador
             adapter.activate();
             
-            // Verificar conectividad con broker lugar-departamento
-            if (controller.verificarConectividadBroker()) {
-                System.out.println("Conectividad con broker lugar-departamento: OK");
-            } else {
-                System.out.println("ADVERTENCIA: No se pudo conectar con broker lugar-departamento");
-            }
-            
-            // Mensaje principal de inicio
+            // Mensaje de inicio del lugar de votación
             System.out.println("=== LUGAR DE VOTACIÓN " + config.getLugarId() + " INICIADO ===");
-            System.out.println("- Recibiendo votos en puerto: " + config.getPuerto());
-            System.out.println("- Reenviando votos a: " + config.getBrokerDestinoHost() + ":" + config.getBrokerDestinoPuerto());
+            System.out.println("- ID: " + config.getLugarId());
+            System.out.println("- Nombre: " + config.getLugarNombre());
+            System.out.println("- Puerto de recepción: " + config.getPuerto());
+            
+            // VERIFICAR CONECTIVIDAD CON BROKER DESTINO
+            controller.verificarConectividadInicial();
+            
             System.out.println("Lugar de votación listo para procesar votos...");
+            System.out.println("- Recibiendo votos del broker mesa-lugar");
+            System.out.println("- Reenviando votos al broker lugar-departamento");
             
             // Configurar shutdown hook
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

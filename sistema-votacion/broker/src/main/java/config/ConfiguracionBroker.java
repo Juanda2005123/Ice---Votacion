@@ -44,14 +44,13 @@ public class ConfiguracionBroker {
             }
         }
     }
-    
-    // Getters para propiedades del broker
+      // Getters para propiedades del broker (actualizados para usar nodo.id)
     public String getBrokerId() {
-        return properties.getProperty("broker.id", "BROKER-DEFAULT");
+        return properties.getProperty("nodo.id", "BROKER-DEFAULT");
     }
     
     public String getBrokerNombre() {
-        return properties.getProperty("broker.nombre", "Broker Default");
+        return properties.getProperty("nodo.nombre", "Broker Default");
     }
     
     public String getHost() {
