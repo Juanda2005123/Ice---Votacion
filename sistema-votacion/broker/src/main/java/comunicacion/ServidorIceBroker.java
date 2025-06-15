@@ -58,15 +58,28 @@ public class ServidorIceBroker implements BrokerService {
      * 
      * @param current Contexto de la llamada Ice (no utilizado)
      * @return Siempre true indicando que el broker esta operativo
-     */
+     */    
     @Override
     public boolean ping(com.zeroc.Ice.Current current) {
         return true;
     }
 
+    /**
+     * Recibe una validación de votante desde cualquier cliente y la procesa.
+     * No realiza validaciones locales, solo delegacion al controlador.
+     * 
+     * @param documento Documento del votante
+     * @param candidatoId ID del candidato elegido
+     * @param current Contexto de la llamada Ice (no utilizado)
+     * @return Código de validación del controlador (0-3)
+     */
     @Override
-    public int recibirValidacionVotante(String documento, Integer candidatoId, com.zeroc.Ice.Current current) {
-        return controller.validarVoto(documento, candidatoId);
+    public int recibirValidacionVotante(String documento, int candidatoId, com.zeroc.Ice.Current current) {
+        try {
+            return controller.validarVoto(documento, candidatoId);
+        } catch (Exception e) {
+            return 3; // Error de procesamiento
+        }
     }
     
     /**

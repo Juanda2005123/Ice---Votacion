@@ -77,21 +77,18 @@ public class ServicioComunicacionIce {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    /**
-     * Envía un voto al broker de forma simple y directa.
-     * Solo envía el voto, sin información adicional del votante.
+    }    /**
+     * Valida un voto enviando documento y candidato al broker.
      * 
-     * @param voto El voto a enviar
-     * @return true si se envió exitosamente
+     * @param documento Documento del votante
+     * @param candidatoId ID del candidato elegido
+     * @return Código de validación: 0=puede votar, 1=no es su mesa, 2=ya votó, 3=no existe
      */
     public Integer validarVoto(String documento, Integer candidatoId) {
         try {
-            
             return brokerProxy.recibirValidacionVotante(documento, candidatoId);
-            
         } catch (Exception e) {
+            return 3; // Error de conexión se considera como "no existe"
         }
     }
     

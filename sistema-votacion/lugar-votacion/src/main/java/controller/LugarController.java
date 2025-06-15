@@ -67,10 +67,16 @@ public class LugarController {
     public boolean procesarVoto(Voto voto) {
         // Solo reenviar el voto
         return comunicacion.reenviarVoto(voto);
-    }
-
+    }    /**
+     * Valida un voto reenviando la solicitud al broker destino.
+     * El lugar actua como intermediario sin validacion local.
+     * 
+     * @param documento Documento del votante como String
+     * @param candidatoId ID del candidato elegido
+     * @return Código de validación del broker destino (0-3)
+     */
     public int validarVoto(String documento, Integer candidatoId) {
-        // Solo reenviar el voto
+        // Solo reenviar la validación al broker destino
         return comunicacion.reenviarValidacionVotante(documento, candidatoId);
     }
     

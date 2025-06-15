@@ -29,13 +29,24 @@ public class ServicioComunicacionLugar {
      */
     public boolean reenviarVoto(Voto voto) {
         return enviarVotoADestino(voto);
-    }
-
+    }    /**
+     * Reenvia una validacion de votante al broker lugar-departamento.
+     * 
+     * @param documento Documento del votante
+     * @param candidatoId ID del candidato elegido
+     * @return Código de validación del broker destino (0-3)
+     */
     public int reenviarValidacionVotante(String documento, Integer candidatoId) {
-
         return enviarValidacionADestino(documento, candidatoId);
-    } 
-
+    }
+    
+    /**
+     * Envia una validacion de votante al broker destino.
+     * 
+     * @param documento Documento del votante
+     * @param candidatoId ID del candidato elegido
+     * @return Código de validación del broker destino (0-3)
+     */
     private int enviarValidacionADestino(String documento, Integer candidatoId) {
         try {
             String proxyString = String.format("BrokerService:tcp -h %s -p %d", 
@@ -45,9 +56,13 @@ public class ServicioComunicacionLugar {
             com.zeroc.Ice.ObjectPrx proxy = communicator.stringToProxy(proxyString);
             BrokerServicePrx brokerPrx = BrokerServicePrx.checkedCast(proxy);
             
+            if (brokerPrx == null) {
+                return 3; // No se pudo conectar
+            }
+            
             return brokerPrx.recibirValidacionVotante(documento, candidatoId);
         } catch (Exception e) {
-            return false;
+            return 3; // Error de conexión
         }
     }
     

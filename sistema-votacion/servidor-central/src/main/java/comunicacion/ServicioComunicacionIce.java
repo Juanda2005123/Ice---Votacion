@@ -105,4 +105,11 @@ public class ServicioComunicacionIce implements VotingSystem.ReceptorVotos {
             "ServicioComunicacionIce.verificarEstado() no está implementado aún."
         );
     }
+
+    @Override
+    public int recibirValidacionVotante(String documento, int candidatoId, Current current) {
+        // Por ahora retorna 1 (no es su mesa) - implementación temporal
+        // TODO: Implementar validación real cuando se conecte a la base de datos
+        return 1;
+    }
 }

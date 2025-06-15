@@ -23,7 +23,7 @@ public class ServicioComunicacionBroker {
             throw new RuntimeException("Error inicializando cliente Ice: " + e.getMessage());
         }
     }
-      /**
+    /**
      * Funcion principal: Reenvia un voto al destino seleccionado
      * Sin validaciones - solo reenvio
      * DIFERENCIA CON LUGAR: Verifica conectividad antes de enviar
@@ -36,18 +36,35 @@ public class ServicioComunicacionBroker {
         }
         
         return enviarVotoADestino(voto, destino);
-    }
-
+    }    
+    /**
+     * Reenvia una validacion de votante al destino seleccionado.
+     * 
+     * @param documento Documento del votante
+     * @param candidatoId ID del candidato elegido
+     * @return Código de validación del destino (0-3)
+     */
     public int reenviarValidacionVotante(String documento, Integer candidatoId) {
         ConfiguracionBroker.Destino destino = seleccionarDestino();
-
+        
+        if (destino == null) {
+            return 3; // No existe destino disponible
+        }
+        
         return enviarValidacionADestino(documento, candidatoId, destino);
-    } 
+    }
 
     private ConfiguracionBroker.Destino seleccionarDestino() {
         return estrategiaEnrutamiento.seleccionarDestino();
     }
-    
+    /**
+     * Envia una validacion de votante a un destino especifico.
+     * 
+     * @param documento Documento del votante
+     * @param candidatoId ID del candidato elegido
+     * @param destino Destino al cual enviar la validacion
+     * @return Código de validación del destino (0-3)
+     */
     private int enviarValidacionADestino(String documento, Integer candidatoId, ConfiguracionBroker.Destino destino) {
         try {
             String proxyString = String.format("ReceptorVotos:tcp -h %s -p %d", 
@@ -56,9 +73,13 @@ public class ServicioComunicacionBroker {
             com.zeroc.Ice.ObjectPrx proxy = communicator.stringToProxy(proxyString);
             ReceptorVotosPrx receptorPrx = ReceptorVotosPrx.checkedCast(proxy);
             
+            if (receptorPrx == null) {
+                return 3; // No se pudo conectar
+            }
+            
             return receptorPrx.recibirValidacionVotante(documento, candidatoId);
         } catch (Exception e) {
-            return false;
+            return 3; // Error de conexión
         }
     }
 

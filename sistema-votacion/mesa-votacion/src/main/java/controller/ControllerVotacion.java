@@ -193,27 +193,6 @@ public class ControllerVotacion {
             // 1. Capturar documento
             String documento = ui.capturarDocumento();
             
-            // 2. Validar elegibilidad del votante
-            Ciudadano votante = validarElegibilidadVotante(documento);
-            if (votante == null) {
-                ui.mostrarMensajeError("El documento " + documento + " no es elegible para votar en esta mesa de votacion.");
-                ui.pausarEjecucion();
-                ui.limpiarPantalla();
-                return;
-            }
-            
-            // 3. Validar estado de votacion
-            if (!validarEstadoVotacion(votante)) {
-                ui.mostrarMensajeError("El votante " + votante.getNombre() + " " + votante.getApellido() + " ya ha ejercido su derecho al voto.");
-                ui.pausarEjecucion();
-                ui.limpiarPantalla();
-                return;
-            }
-            
-            // 4. Mostrar informacion del votante
-            ui.mostrarMensajeInfo("Votante elegible: " + votante.getNombre() + " " + votante.getApellido());
-            ui.mostrarMensajeInfo("Mesa asignada: " + votante.getMesaId());
-            
             // 5. Mostrar candidatos disponibles (desde repositorio)
             ui.mostrarCandidatos(repositorio.getCandidatosDisponibles());
             
@@ -222,42 +201,39 @@ public class ControllerVotacion {
             
             // 7. Obtener candidato seleccionado
             Candidato candidatoSeleccionado = repositorio.getCandidatosDisponibles().get(seleccion - 1);
-            
-            int valid = validarVoto(votante.getDocumento(), candidatoSeleccionado.getId());
+              int valid = validarVoto(documento, candidatoSeleccionado.getId());
             switch (valid) {
                 case 0:
-                    // 9. Registrar voto
+                    // Puede votar - proceder con el registro
+
+                    Ciudadano votante = validarElegibilidadVotante(documento);
+
                     Integer votoId = UUID.randomUUID().hashCode();
                     Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);
 
                     confirmarVoto(votante, nuevoVoto);
                     
-                    // 10. Mostrar confirmacion de exito
+                    // Mostrar confirmacion de exito
                     ui.mostrarMensajeExito("Voto registrado exitosamente.");
                     ui.mostrarMensajeInfo("Votante: " + votante.getNombre() + " " + votante.getApellido());
                     ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombre());
-                    break;
-                case 1:
-                    //No es su mesa de votacion
+                    break;                case 1:
+                    // No es su mesa de votacion
+                    ui.mostrarMensajeError("ya no esta en la mesa que es");
                     break;
                 case 2:
-                    //Esta tratando de votar por segunda vez
+                    // Ya voto
+                    ui.mostrarMensajeError("ya voto");
+                    break;                case 3: 
+                    // No existe en la base de datos o error de conexion
+                    ui.mostrarMensajeError("no existe");
                     break;
-                case 3: 
-                    //No existe el candidato seleccionado
+                default:
+                    // Codigo de error no reconocido
+                    ui.mostrarMensajeError("Error inesperado en la validacion del voto (codigo: " + valid + ").");
+                    ui.mostrarMensajeInfo("Por favor, consulte con el personal electoral.");
                     break;
             }
-
-            // 9. Registrar voto
-            Integer votoId = UUID.randomUUID().hashCode();
-            Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);
-
-            confirmarVoto(votante, nuevoVoto);
-            
-            // 10. Mostrar confirmacion de exito
-            ui.mostrarMensajeExito("Voto registrado exitosamente.");
-            ui.mostrarMensajeInfo("Votante: " + votante.getNombre() + " " + votante.getApellido());
-            ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombre());
             
         } catch (IllegalArgumentException e) {
             ui.mostrarMensajeError(e.getMessage());

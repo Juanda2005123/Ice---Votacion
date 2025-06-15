@@ -64,9 +64,23 @@ public class ServidorIceLugar implements ReceptorVotos {
         return true;
     }
 
+    /**
+     * Recibe una validación de votante desde el broker y la reenvia.
+     * No realiza validaciones locales, solo reenvio al siguiente broker.
+     * 
+     * @param documento Documento del votante
+     * @param candidatoId ID del candidato elegido
+     * @param current Contexto de la llamada Ice (no utilizado)
+     * @return Código de validación del broker destino (0-3)
+     */
     @Override
-    public int recibirValidacionVotante(String documento, Integer candidatoId, com.zeroc.Ice.Current current) {
-        return controller.validarVoto(documento, candidatoId);
+    public int recibirValidacionVotante(String documento, int candidatoId, com.zeroc.Ice.Current current) {
+        try {
+            return controller.validarVoto(documento, candidatoId);
+        } catch (Exception e) {
+            System.err.println("Error procesando validacion en lugar de votacion: " + e.getMessage());
+            return 3; // Error de procesamiento
+        }
     }
     
     /**

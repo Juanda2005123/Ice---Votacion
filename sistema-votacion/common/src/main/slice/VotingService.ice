@@ -21,19 +21,19 @@ module VotingSystem {
     class Voto {
         int id;                   
         Candidato candidato;
-    };
-
+    };    
+    
     // Interface para enviar votos al Broker
     interface BrokerService {
         bool recibirVoto(Voto voto);
-        int recibirValidacionVotante(String documento, Integer candidatoId)
+        int recibirValidacionVotante(string documento, int candidatoId);
         bool ping();
     };
 
     // Interface para que Broker envíe votos  
     interface ReceptorVotos {
         bool recibirVoto(Voto voto);
-        int recibirValidacionVotante(String documento, Integer candidatoId)
+        int recibirValidacionVotante(string documento, int candidatoId);
         bool ping();
     };
 };

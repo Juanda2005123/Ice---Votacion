@@ -72,14 +72,26 @@ public class BrokerController {
     public boolean procesarVoto(Voto voto) {
         // Solo reenviar el voto
         return comunicacion.reenviarVoto(voto);
-    }
-
+    }    /**
+     * Valida un voto reenviando la solicitud al destino correspondiente.
+     * Por ahora retorna 1 temporalmente, pero el flujo esta preparado para
+     * recibir códigos 0-3 desde el servidor central.
+     * 
+     * @param documento Documento del votante como String
+     * @param candidatoId ID del candidato elegido
+     * @return Código de validación: 0=puede votar, 1=no es su mesa, 2=ya votó, 3=no existe
+     */
     public int validarVoto(String documento, Integer candidatoId) {
-        // Solo reenviar el voto
-        if(nodo.nombre().lowercase().contains("departamento")) {
-            //POR AHORA
-            return 1;
+        // Por ahora siempre retorna 1 (no es su mesa) temporalmente
+        // TODO: Cuando se conecte al servidor central, esto cambiará
+        
+        // Verificar si estamos en el broker final (departamento)
+        if (config.getBrokerNombre().toLowerCase().contains("departamento")) {
+            // Este es el broker final - por ahora retorna 1 temporalmente
+            return 1000;
         }
+        
+        // Si no es el broker final, reenviar la validación
         return comunicacion.reenviarValidacionVotante(documento, candidatoId);
     }
     
