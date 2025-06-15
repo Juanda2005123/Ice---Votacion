@@ -6,7 +6,7 @@ import config.ConfiguracionLugar;
 
 /**
  * Servicio para ENVIAR votos al broker lugar-departamento.
- * SIMPLE: solo reenvía votos, sin validaciones ni estadísticas.
+ * Solo reenvia votos, sin validaciones ni estadisticas.
  * (Consistente con ServicioComunicacionBroker)
  */
 public class ServicioComunicacionLugar {
@@ -24,16 +24,15 @@ public class ServicioComunicacionLugar {
         }
     }
     
-    /**
-     * FUNCIÓN PRINCIPAL: Reenvía un voto al broker lugar-departamento
-     * SIN validaciones - SOLO reenvío
+    /**     * Funcion principal: Reenvia un voto al broker lugar-departamento
+     * Sin validaciones - solo reenvio
      */
     public boolean reenviarVoto(Voto voto) {
         return enviarVotoADestino(voto);
     }
     
     /**
-     * Envía un voto al broker destino - UNA SOLA VEZ
+     * Envia un voto al broker destino - una sola vez
      */
     private boolean enviarVotoADestino(Voto voto) {
         try {
@@ -73,7 +72,7 @@ public class ServicioComunicacionLugar {
     }
     
     /**
-     * Cierra la conexión Ice
+     * Cierra la conexion Ice
      */
     public void cerrarConexion() {
         if (communicator != null) {

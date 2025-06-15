@@ -5,21 +5,42 @@ import model.Voto;
 import controller.BrokerController;
 
 /**
- * Servidor Ice que RECIBE votos en el broker.
- * SIMPLE: recibe el voto, lo convierte y lo pasa al controller para reenvío.
+ * Servidor Ice que recibe votos en el broker.
+ * 
+ * Este servidor es responsable de:
+ * - Recibir votos desde las mesas de votacion a traves de Ice
+ * - Convertir los votos del formato Ice al formato Java interno
+ * - Delegar el procesamiento (reenvio) al controlador del broker
+ * - Responder a solicitudes de ping para verificacion de conectividad
+ * 
+ * El servidor no realiza validaciones de negocio, solo conversion de datos
+ * y delegacion al controlador correspondiente.
+ * 
+ * @author Sistema de Votacion
+ * @version 1.0
+ * @since 2025-06-14
  */
 public class ServidorIceBroker implements BrokerService {
     
     private BrokerController controller;
     
+    /**
+     * Constructor que inicializa el servidor con el controlador del broker.
+     * 
+     * @param controller Controlador que procesara los votos recibidos
+     */
     public ServidorIceBroker(BrokerController controller) {
         this.controller = controller;
     }
-      /**
-     * RECIBE un voto desde cualquier cliente y lo reenvía
-     * SIN validaciones - SOLO conversión y reenvío
-     */
-    @Override
+    
+    /**
+     * Recibe un voto desde cualquier cliente y lo reenvia.
+     * No realiza validaciones, solo conversion y reenvio.
+     * 
+     * @param votoIce Voto en formato Ice recibido desde el cliente
+     * @param current Contexto de la llamada Ice (no utilizado)
+     * @return true si el voto fue procesado exitosamente, false en caso contrario
+     */    @Override
     public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
         try {
             // Convertir Ice a Java y reenviar
@@ -32,7 +53,10 @@ public class ServidorIceBroker implements BrokerService {
     }
     
     /**
-     * Ping para verificar que el broker está activo
+     * Responde a solicitudes de ping para verificar que el broker esta activo.
+     * 
+     * @param current Contexto de la llamada Ice (no utilizado)
+     * @return Siempre true indicando que el broker esta operativo
      */
     @Override
     public boolean ping(com.zeroc.Ice.Current current) {
@@ -40,7 +64,11 @@ public class ServidorIceBroker implements BrokerService {
     }
     
     /**
-     * Convertir Voto Ice a Java - MANTIENE Integer IDs
+     * Convierte un voto del formato Ice al formato Java interno.
+     * Mantiene los tipos Integer para los IDs sin conversion adicional.
+     * 
+     * @param votoIce Voto en formato Ice a convertir
+     * @return Voto en formato Java equivalente
      */
     private Voto convertirVotoIceAJava(VotingSystem.Voto votoIce) {
         model.Candidato candidatoJava = new model.Candidato(

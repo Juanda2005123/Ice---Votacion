@@ -5,22 +5,42 @@ import model.Voto;
 import controller.LugarController;
 
 /**
- * Servidor Ice que RECIBE votos en el lugar de votación.
- * FUNCIÓN: Recibe votos del broker mesa-lugar y los pasa al controlador
+ * Servidor Ice que recibe votos en el lugar de votacion.
+ * 
+ * Este servidor es responsable de:
+ * - Recibir votos desde el broker a traves de Ice
+ * - Convertir los votos del formato Ice al formato Java interno
+ * - Delegar el procesamiento (reenvio) al controlador del lugar
+ * - Responder a solicitudes de ping para verificacion de conectividad
+ * 
+ * El servidor no realiza validaciones de negocio, solo conversion de datos
+ * y delegacion al controlador correspondiente.
+ * 
+ * @author Sistema de Votacion
+ * @version 1.0
+ * @since 2025-06-14
  */
 public class ServidorIceLugar implements ReceptorVotos {
     
     private LugarController controller;
     
+    /**
+     * Constructor que inicializa el servidor con el controlador del lugar.
+     * 
+     * @param controller Controlador que procesara los votos recibidos
+     */
     public ServidorIceLugar(LugarController controller) {
         this.controller = controller;
     }
     
     /**
-     * RECIBE un voto desde el broker mesa-lugar y lo procesa
-     * SIN validaciones - SOLO conversión y reenvío al controlador
-     */
-    @Override
+     * Recibe un voto desde el broker y lo procesa.
+     * No realiza validaciones, solo conversion y reenvio al controlador.
+     * 
+     * @param votoIce Voto en formato Ice recibido desde el broker
+     * @param current Contexto de la llamada Ice (no utilizado)
+     * @return true si el voto fue procesado exitosamente, false en caso contrario
+     */    @Override
     public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
         try {
             // Convertir Ice a Java y procesar (reenviar)
@@ -28,13 +48,16 @@ public class ServidorIceLugar implements ReceptorVotos {
             return controller.procesarVoto(votoJava);
             
         } catch (Exception e) {
-            System.err.println("Error procesando voto en lugar de votación: " + e.getMessage());
+            System.err.println("Error procesando voto en lugar de votacion: " + e.getMessage());
             return false;
         }
     }
     
     /**
-     * Ping para verificar que el lugar de votación está activo
+     * Responde a solicitudes de ping para verificar que el lugar esta activo.
+     * 
+     * @param current Contexto de la llamada Ice (no utilizado)
+     * @return Siempre true indicando que el lugar esta operativo
      */
     @Override
     public boolean ping(com.zeroc.Ice.Current current) {
@@ -42,7 +65,11 @@ public class ServidorIceLugar implements ReceptorVotos {
     }
     
     /**
-     * Convertir Voto Ice a Java - MANTIENE Integer IDs
+     * Convierte un voto del formato Ice al formato Java interno.
+     * Mantiene los tipos Integer para los IDs sin conversion adicional.
+     * 
+     * @param votoIce Voto en formato Ice a convertir
+     * @return Voto en formato Java equivalente
      */
     private Voto convertirVotoIceAJava(VotingSystem.Voto votoIce) {
         model.Candidato candidatoJava = new model.Candidato(

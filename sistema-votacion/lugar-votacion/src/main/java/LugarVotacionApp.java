@@ -4,8 +4,21 @@ import comunicacion.ServidorIceLugar;
 import com.zeroc.Ice.*;
 
 /**
- * Aplicación principal del lugar de votación
- * FUNCIÓN: Actúa como intermediario entre broker mesa-lugar y broker lugar-departamento
+ * Aplicacion principal del lugar de votacion.
+ * 
+ * Esta clase es responsable de:
+ * - Inicializar la configuracion del lugar desde archivos externos o internos
+ * - Crear y configurar el servidor Ice para recibir votos
+ * - Inicializar el controlador del lugar
+ * - Verificar conectividad con el broker destino
+ * - Mantener el lugar en funcionamiento
+ * 
+ * El lugar actua como intermediario entre el broker mesa-lugar y el broker lugar-departamento,
+ * reenviando votos sin procesamiento adicional.
+ * 
+ * @author Sistema de Votacion
+ * @version 1.0
+ * @since 2025-06-14
  */
 public class LugarVotacionApp {
     
@@ -13,12 +26,17 @@ public class LugarVotacionApp {
     private static ConfiguracionLugar config;
     private static LugarController controller;
     
+    /**
+     * Metodo principal que inicia el lugar de votacion.
+     * 
+     * @param args Argumentos de linea de comandos, puede incluir la ruta del archivo de configuracion
+     */
     public static void main(String[] args) {          
         try {
-            // Determinar ruta del archivo de configuración (externo o interno)
+            // Determinar ruta del archivo de configuracion (externo o interno)
             String rutaConfig;
             if (args.length > 0) {
-                rutaConfig = args[0];  // Archivo externo pasado como parámetro
+                rutaConfig = args[0];  // Archivo externo pasado como parametro
             } else {
                 // Buscar archivo externo en directorio actual
                 java.io.File archivoExterno = new java.io.File("lugar-votacion.properties");
@@ -29,19 +47,19 @@ public class LugarVotacionApp {
                 }
             }
             
-            // Cargar configuración
+            // Cargar configuracion
             config = new ConfiguracionLugar(rutaConfig);
             
             // Inicializar Ice communicator
             communicator = Util.initialize(args);
             
-            // Crear controlador del lugar de votación
+            // Crear controlador del lugar de votacion
             controller = new LugarController(config);
             
-            // Crear servidor Ice para RECIBIR votos del broker mesa-lugar
+            // Crear servidor Ice para recibir votos del broker mesa-lugar
             ServidorIceLugar servidor = new ServidorIceLugar(controller);
             
-            // Configurar adaptador de objetos para RECIBIR votos
+            // Configurar adaptador de objetos para recibir votos
             String endpoints = String.format("tcp -h %s -p %d", 
                                            config.getHost(), config.getPuerto());
             
@@ -51,25 +69,24 @@ public class LugarVotacionApp {
             
             // Registrar el servant como ReceptorVotos (para recibir del broker)
             adapter.add(servidor, Util.stringToIdentity("ReceptorVotos"));
-              // Activar el adaptador
+            
+            // Activar el adaptador
             adapter.activate();
             
-            // Mensaje de inicio del lugar de votación
-            System.out.println("=== LUGAR DE VOTACIÓN " + config.getLugarId() + " INICIADO ===");
+            // Mensaje de inicio del lugar de votacion
+            System.out.println("=== LUGAR DE VOTACION " + config.getLugarId() + " INICIADO ===");
             System.out.println("- ID: " + config.getLugarId());
-            System.out.println("- Nombre: " + config.getLugarNombre());
-            System.out.println("- Puerto de recepción: " + config.getPuerto());
+            System.out.println("- Nombre: " + config.getLugarNombre());            System.out.println("- Puerto de recepcion: " + config.getPuerto());
             
-            // VERIFICAR CONECTIVIDAD CON BROKER DESTINO
+            // Verificar conectividad con broker destino
             controller.verificarConectividadInicial();
             
-            System.out.println("Lugar de votación listo para procesar votos...");
-            System.out.println("- Recibiendo votos del broker mesa-lugar");
-            System.out.println("- Reenviando votos al broker lugar-departamento");
+            System.out.println("\n");
+            System.out.println("Lugar de votacion listo para procesar votos...");
             
             // Configurar shutdown hook
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("Cerrando lugar de votación...");
+                System.out.println("Cerrando lugar de votacion...");
                 if (controller != null) {
                     controller.cerrar();
                 }
@@ -78,11 +95,11 @@ public class LugarVotacionApp {
                 }
             }));
             
-            // Mantener el lugar de votación corriendo
+            // Mantener el lugar de votacion corriendo
             communicator.waitForShutdown();
             
         } catch (java.lang.Exception e) {  // Especificar java.lang.Exception
-            System.err.println("Error iniciando lugar de votación: " + e.getMessage());
+            System.err.println("Error iniciando lugar de votacion: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }

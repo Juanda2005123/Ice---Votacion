@@ -6,12 +6,19 @@ import comunicacion.ServicioComunicacionLugar;
 import comunicacion.ServicioVerificacionConectividad;
 
 /**
- * Controlador principal del lugar de votación que maneja UNICAMENTE:
- * - Recibir votos (del broker mesa-lugar)
- * - Reenviar votos (al broker lugar-departamento)
- * - Verificar conectividad con broker destino al inicio
- * NO valida, NO guarda, NO procesa - SOLO REENVIA
- * FUNCIÓN: Actúa como intermediario en la cadena de comunicación
+ * Controlador principal del lugar de votacion que maneja el reenvio de votos.
+ * 
+ * Este controlador es responsable de:
+ * - Recibir votos desde el broker mesa-lugar
+ * - Verificar conectividad con el broker destino
+ * - Reenviar votos al broker lugar-departamento
+ * 
+ * El controlador no realiza validaciones de negocio ni almacenamiento,
+ * solo actua como intermediario en la cadena de comunicacion.
+ * 
+ * @author Sistema de Votacion
+ * @version 1.0
+ * @since 2025-06-14
  */
 public class LugarController {
     
@@ -19,6 +26,11 @@ public class LugarController {
     private ServicioVerificacionConectividad verificador;
     private ConfiguracionLugar config;
 
+    /**
+     * Constructor que inicializa el controlador con la configuracion del lugar.
+     * 
+     * @param config Configuracion del lugar con destino y parametros
+     */
     public LugarController(ConfiguracionLugar config) {
         this.config = config;
         this.comunicacion = new ServicioComunicacionLugar(config);
@@ -26,50 +38,58 @@ public class LugarController {
     }
     
     /**
-     * VERIFICA la conectividad con el broker destino al iniciar el lugar de votación.
-     * Muestra información detallada del broker destino (consistente con el broker).
+     * Verifica la conectividad con el broker destino al iniciar el lugar de votacion.
+     * Muestra informacion detallada del broker destino (consistente con el broker).
      */
     public void verificarConectividadInicial() {
         System.out.println("=== VERIFICANDO CONECTIVIDAD CON BROKER DESTINO ===");
         
-        boolean conectado = verificador.verificarConectividad(config);
-        
-        if (conectado) {
-            // Mostrar información detallada del broker destino conectado (consistente con broker)
-            System.out.println("✓ Conexión exitosa con broker lugar-departamento en " + 
+        boolean conectado = verificador.verificarConectividad(config);        if (conectado) {
+            // Mostrar informacion detallada del broker destino conectado (consistente con broker)
+            System.out.println("[OK] Conexion exitosa con broker lugar-departamento en " + 
                              config.getBrokerDestinoHost() + ":" + config.getBrokerDestinoPuerto());
         } else {
             // Mostrar advertencia para broker destino no conectado (consistente con broker)
-            System.out.println("✗ ADVERTENCIA: No se pudo conectar con broker lugar-departamento en " + 
+            System.out.println("[!] ADVERTENCIA: No se pudo conectar con broker lugar-departamento en " + 
                              config.getBrokerDestinoHost() + ":" + config.getBrokerDestinoPuerto());
         }
         
-        System.out.println("=== VERIFICACIÓN DE CONECTIVIDAD COMPLETADA ===");
-    }    /**
-     * UNICA FUNCION: Recibe un voto y lo reenvia al broker destino
-     * SIN validaciones, SIN guardar, SIN estadisticas
+        System.out.println("=== VERIFICACION DE CONECTIVIDAD COMPLETADA ===");
+    }
+    
+    /**
+     * Funcion principal que recibe un voto y lo reenvia al broker destino.
+     * No realiza validaciones de negocio ni almacenamiento, solo reenvio.
+     * 
+     * @param voto Voto a procesar y reenviar
+     * @return true si el voto fue reenviado exitosamente, false en caso contrario
      */
     public boolean procesarVoto(Voto voto) {
-        // SOLO reenviar - nada mas
+        // Solo reenviar el voto
         return comunicacion.reenviarVoto(voto);
     }
     
     /**
-     * Verifica conectividad con broker destino (esto si es util para diagnostico)
+     * Verifica conectividad con el broker destino.
+     * Util para diagnostico y monitoreo del estado de la conexion.
      */
     public void verificarEstadoDestinos() {
         verificador.verificarConectividadDestino(config);
     }
     
     /**
-     * Verifica conectividad con el broker destino (método de compatibilidad)
+     * Verifica conectividad con el broker destino.
+     * Metodo de compatibilidad para verificacion directa.
+     * 
+     * @return true si la conexion es exitosa, false en caso contrario
      */
     public boolean verificarConectividadBroker() {
         return verificador.verificarConectividad(config);
     }
     
     /**
-     * Cierra las conexiones
+     * Cierra todas las conexiones y libera recursos.
+     * Debe llamarse al finalizar el uso del controlador.
      */
     public void cerrar() {
         if (verificador != null) {

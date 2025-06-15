@@ -3,9 +3,8 @@ package comunicacion;
 import VotingSystem.*;
 import config.ConfiguracionLugar;
 
-/**
- * Servicio para verificar conectividad con el broker destino y obtener información de nodos.
- * FUNCIÓN: Verificar que el broker lugar-departamento esté activo y obtener su identificación.
+/** * Servicio para verificar conectividad con el broker destino y obtener informacion de nodos.
+ * Esta clase es responsable de verificar que el broker lugar-departamento este activo y obtener su identificacion.
  */
 public class ServicioVerificacionConectividad {
     
@@ -15,13 +14,12 @@ public class ServicioVerificacionConectividad {
         try {
             this.communicator = com.zeroc.Ice.Util.initialize();
         } catch (Exception e) {
-            throw new RuntimeException("Error inicializando communicator para verificación: " + e.getMessage());
+            throw new RuntimeException("Error inicializando communicator para verificacion: " + e.getMessage());
         }
-    }
-      /**
+    }    /**
      * Verifica la conectividad con el broker destino.
      * 
-     * @param config La configuración del lugar que contiene los datos del broker destino
+     * @param config La configuracion del lugar que contiene los datos del broker destino
      * @return true si el broker destino responde al ping
      */
     public boolean verificarConectividad(ConfiguracionLugar config) {
@@ -47,22 +45,21 @@ public class ServicioVerificacionConectividad {
     }
     
     /**
-     * Verifica conectividad con el broker destino específico (consistente con broker)
+     * Verifica conectividad con el broker destino especifico (consistente con broker)
      */
     public boolean verificarConectividadDestino(ConfiguracionLugar config) {
         return verificarConectividad(config);
     }
     
-    /**
-     * Obtiene información del broker destino si tiene una interfaz de información.
+    /**     * Obtiene informacion del broker destino si tiene una interfaz de informacion.
      * Por ahora solo verifica conectividad, pero se puede extender para obtener nodo.id y nodo.nombre.
      * 
-     * @param config La configuración del lugar que contiene los datos del broker destino
-     * @return Información del broker o null si no se puede obtener
+     * @param config La configuracion del lugar que contiene los datos del broker destino
+     * @return Informacion del broker o null si no se puede obtener
      */
     public InfoNodo obtenerInfoNodo(ConfiguracionLugar config) {
-        // Por ahora solo retornamos información básica si hay conectividad
-        // En el futuro se podría implementar una interfaz Ice para obtener nodo.id y nodo.nombre
+        // Por ahora solo retornamos informacion basica si hay conectividad
+        // En el futuro se podria implementar una interfaz Ice para obtener nodo.id y nodo.nombre
         if (verificarConectividad(config)) {
             String brokerInfo = config.getBrokerDestinoHost() + ":" + config.getBrokerDestinoPuerto();
             return new InfoNodo("BROKER-DESTINO", "Broker Lugar-Departamento", "broker", brokerInfo);
@@ -80,7 +77,7 @@ public class ServicioVerificacionConectividad {
     }
     
     /**
-     * Clase para almacenar información de un nodo (consistente con la del broker)
+     * Clase para almacenar informacion de un nodo (consistente con la del broker)
      */
     public static class InfoNodo {
         private String id;

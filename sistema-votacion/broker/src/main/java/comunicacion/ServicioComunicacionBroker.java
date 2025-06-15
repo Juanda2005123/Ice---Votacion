@@ -7,7 +7,7 @@ import enrutamiento.EstrategiaEnrutamiento;
 
 /**
  * Servicio para ENVIAR votos a destinos configurados.
- * SIMPLE: solo reenvía votos, sin validaciones ni estadísticas.
+ * Solo reenvia votos, sin validaciones ni estadisticas.
  */
 public class ServicioComunicacionBroker {
     
@@ -24,8 +24,8 @@ public class ServicioComunicacionBroker {
         }
     }
       /**
-     * FUNCIÓN PRINCIPAL: Reenvía un voto al destino seleccionado
-     * SIN validaciones - SOLO reenvío
+     * Funcion principal: Reenvia un voto al destino seleccionado
+     * Sin validaciones - solo reenvio
      * DIFERENCIA CON LUGAR: Verifica conectividad antes de enviar
      */    
     public boolean reenviarVoto(Voto voto) {
@@ -38,7 +38,7 @@ public class ServicioComunicacionBroker {
         return enviarVotoADestino(voto, destino);
     }
       /**
-     * Envía un voto a un destino específico - UNA SOLA VEZ
+     * Envia un voto a un destino especifico - una sola vez
      */
     private boolean enviarVotoADestino(Voto voto, ConfiguracionBroker.Destino destino) {
         try {
@@ -75,7 +75,7 @@ public class ServicioComunicacionBroker {
         return votoIce;
     }
       /**
-     * Cierra la conexión Ice
+     * Cierra la conexion Ice
      */
     public void cerrarConexion() {
         if (communicator != null) {
