@@ -22,8 +22,6 @@ public class BrokerController {
      * SIN validaciones, SIN guardar, SIN estadisticas
      */
     public boolean procesarVoto(Voto voto) {
-        System.out.println("Procesando voto ID: " + voto.getId() + 
-                       " para candidato: " + voto.getCandidato().getNombre());
         // SOLO reenviar - nada mas
         return comunicacion.reenviarVoto(voto);
     }

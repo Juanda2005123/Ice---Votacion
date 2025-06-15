@@ -26,7 +26,8 @@ public class ConfiguracionBroker {
         } catch (IOException e) {
             throw new RuntimeException("Error cargando configuración: " + e.getMessage());
         }
-    }    private void cargarDestinos() {
+    }    
+    private void cargarDestinos() {
         int cantidad = Integer.parseInt(properties.getProperty("destinos.cantidad", "0"));
         
         for (int i = 1; i <= cantidad; i++) {

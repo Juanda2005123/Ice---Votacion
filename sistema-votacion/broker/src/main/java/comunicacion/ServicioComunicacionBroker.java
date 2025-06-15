@@ -14,7 +14,8 @@ public class ServicioComunicacionBroker {
     private com.zeroc.Ice.Communicator communicator;
     private ConfiguracionBroker config;
     private EstrategiaEnrutamiento estrategiaEnrutamiento;
-      public ServicioComunicacionBroker(ConfiguracionBroker config) {
+      
+    public ServicioComunicacionBroker(ConfiguracionBroker config) {
         this.config = config;
         this.estrategiaEnrutamiento = new EstrategiaEnrutamiento(config);
         
@@ -28,7 +29,8 @@ public class ServicioComunicacionBroker {
     /**
      * FUNCIÓN PRINCIPAL: Reenvía un voto al destino seleccionado
      * SIN validaciones - SOLO reenvío
-     */    public boolean reenviarVoto(Voto voto) {
+     */    
+    public boolean reenviarVoto(Voto voto) {
         ConfiguracionBroker.Destino destino = estrategiaEnrutamiento.seleccionarDestino();
         
         if (destino == null) {

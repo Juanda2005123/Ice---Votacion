@@ -12,7 +12,8 @@ public class BrokerApp {
     private static ConfiguracionBroker config;
     private static BrokerController controller;
     
-    public static void main(String[] args) {          try {
+    public static void main(String[] args) {          
+        try {
             // Determinar ruta del archivo de configuracion (externo o interno)
             String rutaConfig;
             if (args.length > 0) {
