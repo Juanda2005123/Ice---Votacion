@@ -17,6 +17,43 @@ package VotingSystem;
 
 public interface QueryStationPrx extends com.zeroc.Ice.ObjectPrx
 {
+    default boolean ping()
+    {
+        return ping(com.zeroc.Ice.ObjectPrx.noExplicitContext);
+    }
+
+    default boolean ping(java.util.Map<String, String> context)
+    {
+        return _iceI_pingAsync(context, true).waitForResponse();
+    }
+
+    default java.util.concurrent.CompletableFuture<java.lang.Boolean> pingAsync()
+    {
+        return _iceI_pingAsync(com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
+    }
+
+    default java.util.concurrent.CompletableFuture<java.lang.Boolean> pingAsync(java.util.Map<String, String> context)
+    {
+        return _iceI_pingAsync(context, false);
+    }
+
+    /**
+     * @hidden
+     * @param context -
+     * @param sync -
+     * @return -
+     **/
+    default com.zeroc.IceInternal.OutgoingAsync<java.lang.Boolean> _iceI_pingAsync(java.util.Map<String, String> context, boolean sync)
+    {
+        com.zeroc.IceInternal.OutgoingAsync<java.lang.Boolean> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "ping", null, sync, null);
+        f.invoke(true, context, null, null, istr -> {
+                     boolean ret;
+                     ret = istr.readBool();
+                     return ret;
+                 });
+        return f;
+    }
+
     default String query(String document)
     {
         return query(document, com.zeroc.Ice.ObjectPrx.noExplicitContext);

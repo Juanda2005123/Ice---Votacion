@@ -15,7 +15,6 @@ public class QueryStationImpl implements QueryStation {
     @Override
     public String query(String document, Current current) {
         ConsultaLugarResponse response = dao.consultarLugarPorCedula(document);
-
         if (!response.encontrado) return null;
 
         return String.format("Usted debe votar en %s ubicado en %s en %s, %s en la mesa %s.",
@@ -25,5 +24,10 @@ public class QueryStationImpl implements QueryStation {
                 response.departamento,
                 response.mesaId
         );
+    }
+
+    @Override
+    public boolean ping(Current current) {
+        return true;
     }
 }

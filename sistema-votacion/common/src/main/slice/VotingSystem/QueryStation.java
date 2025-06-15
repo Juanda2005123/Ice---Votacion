@@ -17,6 +17,8 @@ package VotingSystem;
 
 public interface QueryStation extends com.zeroc.Ice.Object
 {
+    boolean ping(com.zeroc.Ice.Current current);
+
     String query(String document, com.zeroc.Ice.Current current);
 
     /** @hidden */
@@ -50,6 +52,24 @@ public interface QueryStation extends com.zeroc.Ice.Object
      * @param current -
      * @return -
     **/
+    static java.util.concurrent.CompletionStage<com.zeroc.Ice.OutputStream> _iceD_ping(QueryStation obj, final com.zeroc.IceInternal.Incoming inS, com.zeroc.Ice.Current current)
+    {
+        com.zeroc.Ice.Object._iceCheckMode(null, current.mode);
+        inS.readEmptyParams();
+        boolean ret = obj.ping(current);
+        com.zeroc.Ice.OutputStream ostr = inS.startWriteParams();
+        ostr.writeBool(ret);
+        inS.endWriteParams(ostr);
+        return inS.setResult(ostr);
+    }
+
+    /**
+     * @hidden
+     * @param obj -
+     * @param inS -
+     * @param current -
+     * @return -
+    **/
     static java.util.concurrent.CompletionStage<com.zeroc.Ice.OutputStream> _iceD_query(QueryStation obj, final com.zeroc.IceInternal.Incoming inS, com.zeroc.Ice.Current current)
     {
         com.zeroc.Ice.Object._iceCheckMode(null, current.mode);
@@ -71,6 +91,7 @@ public interface QueryStation extends com.zeroc.Ice.Object
         "ice_ids",
         "ice_isA",
         "ice_ping",
+        "ping",
         "query"
     };
 
@@ -104,6 +125,10 @@ public interface QueryStation extends com.zeroc.Ice.Object
                 return com.zeroc.Ice.Object._iceD_ice_ping(this, in, current);
             }
             case 4:
+            {
+                return _iceD_ping(this, in, current);
+            }
+            case 5:
             {
                 return _iceD_query(this, in, current);
             }

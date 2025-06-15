@@ -21,8 +21,6 @@ public interface BrokerService extends com.zeroc.Ice.Object
 
     int recibirValidacionVotante(String documento, int candidatoId, com.zeroc.Ice.Current current);
 
-    String query(String document, com.zeroc.Ice.Current current);
-
     boolean ping(com.zeroc.Ice.Current current);
 
     /** @hidden */
@@ -102,27 +100,6 @@ public interface BrokerService extends com.zeroc.Ice.Object
      * @param current -
      * @return -
     **/
-    static java.util.concurrent.CompletionStage<com.zeroc.Ice.OutputStream> _iceD_query(BrokerService obj, final com.zeroc.IceInternal.Incoming inS, com.zeroc.Ice.Current current)
-    {
-        com.zeroc.Ice.Object._iceCheckMode(null, current.mode);
-        com.zeroc.Ice.InputStream istr = inS.startReadParams();
-        String iceP_document;
-        iceP_document = istr.readString();
-        inS.endReadParams();
-        String ret = obj.query(iceP_document, current);
-        com.zeroc.Ice.OutputStream ostr = inS.startWriteParams();
-        ostr.writeString(ret);
-        inS.endWriteParams(ostr);
-        return inS.setResult(ostr);
-    }
-
-    /**
-     * @hidden
-     * @param obj -
-     * @param inS -
-     * @param current -
-     * @return -
-    **/
     static java.util.concurrent.CompletionStage<com.zeroc.Ice.OutputStream> _iceD_ping(BrokerService obj, final com.zeroc.IceInternal.Incoming inS, com.zeroc.Ice.Current current)
     {
         com.zeroc.Ice.Object._iceCheckMode(null, current.mode);
@@ -142,7 +119,6 @@ public interface BrokerService extends com.zeroc.Ice.Object
         "ice_isA",
         "ice_ping",
         "ping",
-        "query",
         "recibirValidacionVotante",
         "recibirVoto"
     };
@@ -182,13 +158,9 @@ public interface BrokerService extends com.zeroc.Ice.Object
             }
             case 5:
             {
-                return _iceD_query(this, in, current);
-            }
-            case 6:
-            {
                 return _iceD_recibirValidacionVotante(this, in, current);
             }
-            case 7:
+            case 6:
             {
                 return _iceD_recibirVoto(this, in, current);
             }

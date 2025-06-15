@@ -1,0 +1,18 @@
+<state>
+  <timestamp value='1749975566869' />
+  <sourceSet name='default'>
+    <source name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\common\src\main\slice\VotingService.ice'>
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\Candidato.java' />
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\Ciudadano.java' />
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\Voto.java' />
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\BrokerService.java' />
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\ReceptorVotos.java' />
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\BrokerServicePrx.java' />
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\_BrokerServicePrxI.java' />
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\ReceptorVotosPrx.java' />
+      <file name='C:\Users\User\Desktop\Ice---Votacion\sistema-votacion\broker-consulta\build\generated-src\VotingSystem\_ReceptorVotosPrxI.java' />
+    </source>
+    <arg value='C:\Program Files\ZeroC\Ice-3.7.10\\bin\slice2java.exe' />
+    <arg value='-IC:\Program Files\ZeroC\Ice-3.7.10\\slice' />
+  </sourceSet>
+</state>

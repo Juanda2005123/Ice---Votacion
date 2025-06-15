@@ -100,46 +100,6 @@ public interface BrokerServicePrx extends com.zeroc.Ice.ObjectPrx
         return f;
     }
 
-    default String query(String document)
-    {
-        return query(document, com.zeroc.Ice.ObjectPrx.noExplicitContext);
-    }
-
-    default String query(String document, java.util.Map<String, String> context)
-    {
-        return _iceI_queryAsync(document, context, true).waitForResponse();
-    }
-
-    default java.util.concurrent.CompletableFuture<java.lang.String> queryAsync(String document)
-    {
-        return _iceI_queryAsync(document, com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
-    }
-
-    default java.util.concurrent.CompletableFuture<java.lang.String> queryAsync(String document, java.util.Map<String, String> context)
-    {
-        return _iceI_queryAsync(document, context, false);
-    }
-
-    /**
-     * @hidden
-     * @param iceP_document -
-     * @param context -
-     * @param sync -
-     * @return -
-     **/
-    default com.zeroc.IceInternal.OutgoingAsync<java.lang.String> _iceI_queryAsync(String iceP_document, java.util.Map<String, String> context, boolean sync)
-    {
-        com.zeroc.IceInternal.OutgoingAsync<java.lang.String> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "query", null, sync, null);
-        f.invoke(true, context, null, ostr -> {
-                     ostr.writeString(iceP_document);
-                 }, istr -> {
-                     String ret;
-                     ret = istr.readString();
-                     return ret;
-                 });
-        return f;
-    }
-
     default boolean ping()
     {
         return ping(com.zeroc.Ice.ObjectPrx.noExplicitContext);

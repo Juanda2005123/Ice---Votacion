@@ -39,7 +39,6 @@ module VotingSystem {
     interface BrokerService {
         bool recibirVoto(Voto voto);
         int recibirValidacionVotante(string documento, int candidatoId);
-        string query(string document);
         bool ping();
     };
 
@@ -51,6 +50,7 @@ module VotingSystem {
     };
 
     interface QueryStation {
+        bool ping();
         string query(string document);
     }
 
