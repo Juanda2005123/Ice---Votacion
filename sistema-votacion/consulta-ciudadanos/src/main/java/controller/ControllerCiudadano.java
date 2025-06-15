@@ -11,7 +11,7 @@ public class ControllerCiudadano {
 
     public void iniciar() {
         try (Communicator communicator = Util.initialize()) {
-            CiudadanoDAO dao = new CiudadanoDAO();
+            CiudadanoDAO dao = CiudadanoDAO.getInstance();
             QueryStationImpl servicio = new QueryStationImpl(dao);
 
             ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints(

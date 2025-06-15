@@ -1,10 +1,17 @@
 package dao;
 
 import VotingSystem.ConsultaLugarResponse;
-
 import java.sql.*;
+import java.lang.Exception;
 
 public class CiudadanoDAO {
+    private static final CiudadanoDAO instance = new CiudadanoDAO();
+
+    private CiudadanoDAO() {}
+
+    public static CiudadanoDAO getInstance() {
+        return instance;
+    }
 
     public ConsultaLugarResponse consultarLugarPorCedula(String cedula) {
         ConsultaLugarResponse response = new ConsultaLugarResponse();
@@ -31,7 +38,7 @@ public class CiudadanoDAO {
                 String nombre = rs.getString("nombre");
                 String apellido = rs.getString("apellido");
                 response.encontrado = true;
-                response.mensaje = nombre + " " + apellido;;
+                response.mensaje = nombre + " " + apellido;
             } else {
                 response.encontrado = false;
                 response.mensaje = "No se encontró información";

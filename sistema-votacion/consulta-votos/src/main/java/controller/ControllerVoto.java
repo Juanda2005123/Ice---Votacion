@@ -1,6 +1,7 @@
 package controller;
 
 import comunicacion.ClienteCiudadanoIce;
+import comunicacion.ServiceLocator;
 import com.zeroc.Ice.Communicator;
 import com.zeroc.Ice.Util;
 import ui.VotoUI;
@@ -17,12 +18,14 @@ public class ControllerVoto {
     public void iniciar() {
         try {
             communicator = Util.initialize();
-            cliente = new ClienteCiudadanoIce(communicator);
+            ServiceLocator.inicializar(communicator); 
+            cliente = new ClienteCiudadanoIce();      
             ui.mostrarInfo("ConsultaVotos iniciado correctamente.");
         } catch (Exception e) {
             ui.mostrarError("Falló la conexión con QueryStation: " + e.getMessage());
         }
     }
+
 
     public void consultarLugarPorCedula(String cedula) {
         try {
