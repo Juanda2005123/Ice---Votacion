@@ -8,8 +8,11 @@ import model.Ciudadano;
 import ui.VotacionUI;
 import votos.CoordinadorEnvioVotos;
 import votos.RepositorioMesaVotacion;
+import votos.VerificacionVoto;
 
 import java.util.*;
+
+import comunicacion.ServicioComunicacionIce;
 
 /**
  * Controlador principal de votacion para gestion de mesa de votacion.
@@ -36,6 +39,7 @@ public class ControllerVotacion {
     private String idMesaVotacion;                      // Identificador unico para esta mesa de votacion
     private RepositorioMesaVotacion repositorio;        // Repositorio centralizado de datos de votacion
     private CoordinadorEnvioVotos coordinadorEnvio;     // Encargado de coordinar envio de votos
+    private VerificacionVoto verificacionVoto;          // Encargado de validar votos antes de enviar
     
     // ===== CONSTRUCTOR =====
     /**
@@ -49,8 +53,10 @@ public class ControllerVotacion {
         this.idMesaVotacion = idMesaVotacion;
         
         // Inicializar repositorio centralizado y coordinador
+        ServicioComunicacionIce servicioIce = new ServicioComunicacionIce();
         this.repositorio = new RepositorioMesaVotacion(idMesaVotacion);
-        this.coordinadorEnvio = new CoordinadorEnvioVotos(repositorio);
+        this.coordinadorEnvio = new CoordinadorEnvioVotos(repositorio, servicioIce);
+        this.verificacionVoto = new VerificacionVoto(repositorio, servicioIce);
 
         // Cargar datos iniciales
         SistemaPrecarga sistemaPrecarga = new SistemaPrecarga(repositorio);
@@ -162,6 +168,10 @@ public class ControllerVotacion {
         coordinadorEnvio.procesarVoto(voto, votante);
     }
     
+    private Integer validarVoto(String documento, Integer candidatoId) {
+        return verificacionVoto.validarVoto(documento, candidatoId);
+    }
+    
     // ===== PROCESAMIENTO DE VOTOS =====
     
     /**
@@ -213,14 +223,31 @@ public class ControllerVotacion {
             // 7. Obtener candidato seleccionado
             Candidato candidatoSeleccionado = repositorio.getCandidatosDisponibles().get(seleccion - 1);
             
-            // 8. Confirmar voto con informacion completa
-            if (!ui.confirmarVoto(candidatoSeleccionado, votante)) {
-                ui.mostrarMensajeInfo("Voto cancelado.");
-                ui.pausarEjecucion();
-                ui.limpiarPantalla();
-                return;
+            int valid = validarVoto(votante.getDocumento(), candidatoSeleccionado.getId());
+            switch (valid) {
+                case 0:
+                    // 9. Registrar voto
+                    Integer votoId = UUID.randomUUID().hashCode();
+                    Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);
+
+                    confirmarVoto(votante, nuevoVoto);
+                    
+                    // 10. Mostrar confirmacion de exito
+                    ui.mostrarMensajeExito("Voto registrado exitosamente.");
+                    ui.mostrarMensajeInfo("Votante: " + votante.getNombre() + " " + votante.getApellido());
+                    ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombre());
+                    break;
+                case 1:
+                    //No es su mesa de votacion
+                    break;
+                case 2:
+                    //Esta tratando de votar por segunda vez
+                    break;
+                case 3: 
+                    //No existe el candidato seleccionado
+                    break;
             }
-            
+
             // 9. Registrar voto
             Integer votoId = UUID.randomUUID().hashCode();
             Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);

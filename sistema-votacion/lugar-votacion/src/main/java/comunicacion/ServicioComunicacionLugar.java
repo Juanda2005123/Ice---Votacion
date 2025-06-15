@@ -30,6 +30,26 @@ public class ServicioComunicacionLugar {
     public boolean reenviarVoto(Voto voto) {
         return enviarVotoADestino(voto);
     }
+
+    public int reenviarValidacionVotante(String documento, Integer candidatoId) {
+
+        return enviarValidacionADestino(documento, candidatoId);
+    } 
+
+    private int enviarValidacionADestino(String documento, Integer candidatoId) {
+        try {
+            String proxyString = String.format("BrokerService:tcp -h %s -p %d", 
+                                             config.getBrokerDestinoHost(), 
+                                             config.getBrokerDestinoPuerto());
+            
+            com.zeroc.Ice.ObjectPrx proxy = communicator.stringToProxy(proxyString);
+            BrokerServicePrx brokerPrx = BrokerServicePrx.checkedCast(proxy);
+            
+            return brokerPrx.recibirValidacionVotante(documento, candidatoId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
     
     /**
      * Envia un voto al broker destino - una sola vez

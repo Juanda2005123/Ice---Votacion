@@ -26,11 +26,11 @@ public class ConfiguracionMesa {
     
     // Getters para propiedades de la mesa
     public String getMesaId() {
-        return properties.getProperty("mesa.id", "MESA-DEFAULT");
+        return properties.getProperty("node.id", "MESA-DEFAULT");
     }
     
     public String getMesaNombre() {
-        return properties.getProperty("mesa.nombre", "Mesa Default");
+        return properties.getProperty("node.nombre", "Mesa Default");
     }
     
     // Getters para configuración del broker

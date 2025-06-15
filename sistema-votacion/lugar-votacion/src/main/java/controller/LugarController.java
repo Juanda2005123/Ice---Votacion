@@ -68,6 +68,11 @@ public class LugarController {
         // Solo reenviar el voto
         return comunicacion.reenviarVoto(voto);
     }
+
+    public int validarVoto(String documento, Integer candidatoId) {
+        // Solo reenviar el voto
+        return comunicacion.reenviarValidacionVotante(documento, candidatoId);
+    }
     
     /**
      * Verifica conectividad con el broker destino.

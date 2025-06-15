@@ -63,6 +63,11 @@ public class ServidorIceLugar implements ReceptorVotos {
     public boolean ping(com.zeroc.Ice.Current current) {
         return true;
     }
+
+    @Override
+    public int recibirValidacionVotante(String documento, Integer candidatoId, com.zeroc.Ice.Current current) {
+        return controller.validarVoto(documento, candidatoId);
+    }
     
     /**
      * Convierte un voto del formato Ice al formato Java interno.

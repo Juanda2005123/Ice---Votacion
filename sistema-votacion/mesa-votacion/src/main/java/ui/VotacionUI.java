@@ -118,17 +118,25 @@ public class VotacionUI {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Debe ingresar un numero valido");
         }
-    }      /**
+    }
+      /**
      * Confirma el voto automaticamente sin interaccion del usuario.
-     * Proceso silencioso - solo confirma el voto sin mostrar detalles.
+     * Muestra informacion completa del voto y confirma automaticamente.
      * 
      * @param candidatoSeleccionado El candidato seleccionado por el votante
      * @param votante El votante que emite el voto
      * @return true siempre (confirmacion automatica)
      */
     public boolean confirmarVoto(Candidato candidatoSeleccionado, Ciudadano votante) {
-        System.out.println("Voto confirmado para: " + candidatoSeleccionado.getNombre());
-        return true; // Confirmacion automatica y silenciosa
+        System.out.println("\n=== CONFIRMACION DE VOTO ===");
+        System.out.println("Votante: " + votante.getNombreCompleto());
+        System.out.println("Documento: " + votante.getDocumento());
+        System.out.println("Mesa de Votacion: " + votante.getMesaId());
+        System.out.println("Candidato: " + candidatoSeleccionado.getNombre());
+        System.out.println("Partido Politico: " + candidatoSeleccionado.getPartidoPolitico());
+        System.out.println("Voto confirmado automaticamente.");
+        
+        return true; // Confirmacion automatica
     }
     
     /**

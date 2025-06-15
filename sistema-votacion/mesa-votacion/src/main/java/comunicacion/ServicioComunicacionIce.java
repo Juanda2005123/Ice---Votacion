@@ -5,20 +5,24 @@ import model.Voto;
 import config.ConfiguracionMesa;
 
 /**
- * Cliente Ice para enviar votos al BROKER.
+ * Cliente Ice para enviar votos al BROKER implementando patrón Singleton.
  * La mesa envía votos al broker, quien los reenvía a los destinos finales.
+ * Garantiza una única instancia de conexión por mesa de votación.
  */
 public class ServicioComunicacionIce {
     
+    
+    // Campos de la clase
     private com.zeroc.Ice.Communicator communicator;
     private BrokerServicePrx brokerProxy;
     private ConfiguracionMesa config;
     
     /**
-     * Constructor del servicio de comunicación Ice.
+     * Constructor privado para implementar Singleton.
      * Inicializa conexión con el broker usando configuración externa.
      */
-    public ServicioComunicacionIce() {        try {
+    public ServicioComunicacionIce() {        
+        try {
             // Cargar configuración externa (buscar archivo externo primero)
             String rutaConfig;
             java.io.File archivoExterno = new java.io.File("mesa-votacion.properties");
@@ -50,7 +54,8 @@ public class ServicioComunicacionIce {
         } catch (Exception e) {
             System.err.println("Error inicializando conexión al broker: " + e.getMessage());
             throw new RuntimeException("No se pudo inicializar conexión al broker");
-        }    }
+        }
+    }
     
     /**
      * Envía un voto al broker de forma simple y directa.
@@ -73,14 +78,33 @@ public class ServicioComunicacionIce {
             return false;
         }
     }
-      /**
+
+    /**
+     * Envía un voto al broker de forma simple y directa.
+     * Solo envía el voto, sin información adicional del votante.
+     * 
+     * @param voto El voto a enviar
+     * @return true si se envió exitosamente
+     */
+    public Integer validarVoto(String documento, Integer candidatoId) {
+        try {
+            
+            return brokerProxy.recibirValidacionVotante(documento, candidatoId);
+            
+        } catch (Exception e) {
+        }
+    }
+    
+    /**
      * Cierra la conexión con el broker Ice.
+     * También resetea la instancia Singleton para permitir reconexión.
      */
     public void cerrarConexion() {
         if (communicator != null) {
             communicator.destroy();
             System.out.println("Conexión al broker cerrada");
         }
+        
     }
     
     /**

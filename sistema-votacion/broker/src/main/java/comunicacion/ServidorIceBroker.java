@@ -40,7 +40,8 @@ public class ServidorIceBroker implements BrokerService {
      * @param votoIce Voto en formato Ice recibido desde el cliente
      * @param current Contexto de la llamada Ice (no utilizado)
      * @return true si el voto fue procesado exitosamente, false en caso contrario
-     */    @Override
+     */    
+    @Override
     public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
         try {
             // Convertir Ice a Java y reenviar
@@ -61,6 +62,11 @@ public class ServidorIceBroker implements BrokerService {
     @Override
     public boolean ping(com.zeroc.Ice.Current current) {
         return true;
+    }
+
+    @Override
+    public int recibirValidacionVotante(String documento, Integer candidatoId, com.zeroc.Ice.Current current) {
+        return controller.validarVoto(documento, candidatoId);
     }
     
     /**

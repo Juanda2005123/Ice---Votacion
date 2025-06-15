@@ -180,6 +180,20 @@ public class RepositorioMesaVotacion {
             throw new RuntimeException("Error almacenando voto en repositorio: " + e.getMessage());
         }
     }
+
+    public int validarMesaYVoto(String documento) {
+        Ciudadano ciudadano = votantesElegibles.get(documento);
+        
+        if (ciudadano == null) {
+            return -1;
+        }
+        
+        if (ciudadano.isYaVoto()) {
+            return 2;
+        }
+        
+        return 0;
+    }
     
     /**
      * Obtiene todos los votos registrados.

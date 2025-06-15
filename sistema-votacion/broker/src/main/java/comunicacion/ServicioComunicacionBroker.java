@@ -29,7 +29,7 @@ public class ServicioComunicacionBroker {
      * DIFERENCIA CON LUGAR: Verifica conectividad antes de enviar
      */    
     public boolean reenviarVoto(Voto voto) {
-        ConfiguracionBroker.Destino destino = estrategiaEnrutamiento.seleccionarDestino();
+        ConfiguracionBroker.Destino destino = seleccionarDestino();
         
         if (destino == null) {
             return false;
@@ -37,7 +37,32 @@ public class ServicioComunicacionBroker {
         
         return enviarVotoADestino(voto, destino);
     }
-      /**
+
+    public int reenviarValidacionVotante(String documento, Integer candidatoId) {
+        ConfiguracionBroker.Destino destino = seleccionarDestino();
+
+        return enviarValidacionADestino(documento, candidatoId, destino);
+    } 
+
+    private ConfiguracionBroker.Destino seleccionarDestino() {
+        return estrategiaEnrutamiento.seleccionarDestino();
+    }
+    
+    private int enviarValidacionADestino(String documento, Integer candidatoId, ConfiguracionBroker.Destino destino) {
+        try {
+            String proxyString = String.format("ReceptorVotos:tcp -h %s -p %d", 
+                                             destino.getHost(), destino.getPuerto());
+            
+            com.zeroc.Ice.ObjectPrx proxy = communicator.stringToProxy(proxyString);
+            ReceptorVotosPrx receptorPrx = ReceptorVotosPrx.checkedCast(proxy);
+            
+            return receptorPrx.recibirValidacionVotante(documento, candidatoId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
      * Envia un voto a un destino especifico - una sola vez
      */
     private boolean enviarVotoADestino(Voto voto, ConfiguracionBroker.Destino destino) {

@@ -22,13 +22,13 @@ public class CoordinadorEnvioVotos {
      * 
      * @param repositorio Repositorio de mesa de votacion
      */
-    public CoordinadorEnvioVotos(RepositorioMesaVotacion repositorio) {
+    public CoordinadorEnvioVotos(RepositorioMesaVotacion repositorio, ServicioComunicacionIce servicioIce) {
         if (repositorio == null) {
             throw new IllegalArgumentException("El repositorio no puede ser null");
         }
         
         this.repositorio = repositorio;
-        this.servicioIce = new ServicioComunicacionIce();
+        this.servicioIce = servicioIce;
     }
     
     /**
@@ -48,11 +48,6 @@ public class CoordinadorEnvioVotos {
             throw new IllegalArgumentException("El votante no puede ser null");
         }
         
-        // Verificar que el votante no haya votado ya
-        if (votante.isYaVoto()) {
-            throw new IllegalArgumentException("El votante ya ha emitido su voto");
-        }
-        
         try {
             // 1. Marcar votante como votado (operacion local)
             votante.marcarComoVotado();
@@ -64,13 +59,11 @@ public class CoordinadorEnvioVotos {
             enviarVoto(voto);
             
         } catch (IllegalArgumentException e) {
-            // En caso de error de validacion, revertir estado del votante
-            votante.setYaVoto(false);
             throw e;
-        } catch (Exception e) {
-            // En caso de cualquier otro error, revertir estado del votante
-            votante.setYaVoto(false);
+        } catch (Exception e) {            
             throw new RuntimeException("Error procesando voto: " + e.getMessage());
+        } finally {
+            votante.setYaVoto(false);
         }
     }
       /**

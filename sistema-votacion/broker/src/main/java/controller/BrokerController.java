@@ -73,6 +73,15 @@ public class BrokerController {
         // Solo reenviar el voto
         return comunicacion.reenviarVoto(voto);
     }
+
+    public int validarVoto(String documento, Integer candidatoId) {
+        // Solo reenviar el voto
+        if(nodo.nombre().lowercase().contains("departamento")) {
+            //POR AHORA
+            return 1;
+        }
+        return comunicacion.reenviarValidacionVotante(documento, candidatoId);
+    }
     
     /**
      * Verifica si un destino especifico esta disponible antes de enviar.
