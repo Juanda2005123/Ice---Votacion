@@ -1,7 +1,9 @@
 package enrutamiento;
 
 import config.ConfiguracionBroker;
+import comunicacion.ServicioVerificacionConectividad;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -19,10 +21,10 @@ import java.util.Random;
  * @version 1.0
  * @since 2025-06-14
  */
-public class EstrategiaEnrutamiento {
-    
+public class EstrategiaEnrutamiento {    
     private ConfiguracionBroker config;
     private Random random;
+    private ServicioVerificacionConectividad verificador;
     
     /**
      * Constructor que inicializa la estrategia con la configuracion del broker.
@@ -32,66 +34,79 @@ public class EstrategiaEnrutamiento {
     public EstrategiaEnrutamiento(ConfiguracionBroker config) {
         this.config = config;
         this.random = new Random();
+        this.verificador = new ServicioVerificacionConectividad();
     }
-    
-    /**
-     * Selecciona un destino de forma aleatoria entre los destinos activos.
+      /**
+     * Selecciona un destino de forma aleatoria entre los destinos REALMENTE CONECTADOS.
+     * Verifica la conectividad en tiempo real antes de seleccionar.
      * 
-     * @return El destino seleccionado o null si no hay destinos activos
-     */    public ConfiguracionBroker.Destino seleccionarDestino() {
+     * @return El destino seleccionado y conectado, o null si no hay destinos disponibles
+     */    
+    public ConfiguracionBroker.Destino seleccionarDestino() {
         List<ConfiguracionBroker.Destino> destinosActivos = config.getDestinosActivos();
         if (destinosActivos.isEmpty()) {
             return null;
         }
         
-        // Seleccion aleatoria
+        // NUEVA LOGICA: Filtrar solo destinos realmente conectados
+        List<ConfiguracionBroker.Destino> destinosConectados = new ArrayList<>();
+        
+        for (ConfiguracionBroker.Destino destino : destinosActivos) {
+            if (verificador.verificarConectividad(destino)) {
+                destinosConectados.add(destino);
+            }
+        }
+          // Si no hay destinos conectados, retornar null
+        if (destinosConectados.isEmpty()) {
+            return null;
+        }
+        
+        // Seleccion aleatoria entre destinos REALMENTE conectados
         ConfiguracionBroker.Destino destinoSeleccionado = 
-            destinosActivos.get(random.nextInt(destinosActivos.size()));
+            destinosConectados.get(random.nextInt(destinosConectados.size()));
         
         return destinoSeleccionado;
-    }
-    
-    /**
-     * Obtiene estadisticas detalladas del enrutamiento y estado de destinos.
+    }    /**
+     * Verifica si hay destinos disponibles para enrutamiento (realmente conectados).
      * 
-     * @return Cadena con estadisticas formateadas del enrutamiento
-     */
-    public String getEstadisticas() {
-        List<ConfiguracionBroker.Destino> destinosActivos = config.getDestinosActivos();
-        List<ConfiguracionBroker.Destino> todosDestinos = config.getTodosLosDestinos();
-        
-        StringBuilder stats = new StringBuilder();
-        stats.append("=== ESTADISTICAS DE ENRUTAMIENTO ===\n");
-        stats.append("Estrategia: ").append(config.getEstrategiaEnrutamiento()).append("\n");
-        stats.append("Destinos totales: ").append(todosDestinos.size()).append("\n");
-        stats.append("Destinos activos: ").append(destinosActivos.size()).append("\n");
-        stats.append("Destinos inactivos: ").append(todosDestinos.size() - destinosActivos.size()).append("\n");
-        
-        stats.append("\nDestinos disponibles:\n");
-        for (ConfiguracionBroker.Destino destino : todosDestinos) {
-            stats.append("- ").append(destino.getId())
-                 .append(" (").append(destino.getHost()).append(":").append(destino.getPuerto()).append(")")
-                 .append(" - Estado: ").append(destino.isActivo() ? "ACTIVO" : "INACTIVO")
-                 .append("\n");
-        }
-          return stats.toString();
-    }
-    
-    /**
-     * Verifica si hay destinos disponibles para enrutamiento.
-     * 
-     * @return true si hay al menos un destino activo, false en caso contrario
+     * @return true si hay al menos un destino activo Y conectado, false en caso contrario
      */
     public boolean hayDestinosDisponibles() {
-        return !config.getDestinosActivos().isEmpty();
+        List<ConfiguracionBroker.Destino> destinosActivos = config.getDestinosActivos();
+        
+        for (ConfiguracionBroker.Destino destino : destinosActivos) {
+            if (verificador.verificarConectividad(destino)) {
+                return true; // Al menos uno esta conectado
+            }
+        }
+        
+        return false; // Ningun destino esta realmente conectado
     }
     
     /**
-     * Obtiene el numero de destinos activos disponibles para enrutamiento.
+     * Obtiene el numero de destinos realmente conectados (no solo activos en config).
      * 
-     * @return Numero de destinos activos
+     * @return Numero de destinos que estan realmente conectados
      */
     public int getNumeroDestinosActivos() {
-        return config.getDestinosActivos().size();
+        List<ConfiguracionBroker.Destino> destinosActivos = config.getDestinosActivos();
+        int conectados = 0;
+        
+        for (ConfiguracionBroker.Destino destino : destinosActivos) {
+            if (verificador.verificarConectividad(destino)) {
+                conectados++;
+            }
+        }
+        
+        return conectados;
+    }
+    
+    /**
+     * Cierra el verificador de conectividad y libera recursos.
+     */
+    public void cerrar() {
+        if (verificador != null) {
+            verificador.cerrar();
+        }
     }
 }

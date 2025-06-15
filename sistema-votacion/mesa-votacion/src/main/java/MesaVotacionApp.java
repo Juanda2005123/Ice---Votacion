@@ -38,16 +38,13 @@ public class MesaVotacionApp {
      * - 1: Error fatal de aplicacion
      */
     public static void main(String[] args) {
-        // Extraer ID de mesa de votacion de argumentos de linea de comandos o usar predeterminado
-        String idMesaVotacion = args.length > 0 ? args[0] : "MESA-001";
         
         System.out.println("=== SISTEMA DE VOTACION - MESA DE VOTACION ===");
-        System.out.println("Inicializando mesa: " + idMesaVotacion);
-        System.out.println("Cargando base de datos de votantes e informacion de candidatos...\n");
+        
         
         try {
             // Crear el controlador principal con el ID de mesa especificado
-            ControllerVotacion controlador = new ControllerVotacion(idMesaVotacion);
+            ControllerVotacion controlador = new ControllerVotacion();
             
             // Iniciar el flujo principal de la aplicacion
             controlador.iniciar();

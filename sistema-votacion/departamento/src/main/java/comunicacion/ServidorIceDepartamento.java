@@ -2,15 +2,15 @@ package comunicacion;
 
 import VotingSystem.*;
 import model.Voto;
-import controller.LugarController;
+import controller.DepartamentoController;
 
 /**
- * Servidor Ice que recibe votos en el lugar de votacion.
+ * Servidor Ice que recibe votos en el departamento de votacion.
  * 
  * Este servidor es responsable de:
- * - Recibir votos desde el broker a traves de Ice
+ * - Recibir votos desde el broker lugar-departamento a traves de Ice
  * - Convertir los votos del formato Ice al formato Java interno
- * - Delegar el procesamiento (reenvio) al controlador del lugar
+ * - Delegar el procesamiento (reenvio) al controlador del departamento
  * - Responder a solicitudes de ping para verificacion de conectividad
  * 
  * El servidor no realiza validaciones de negocio, solo conversion de datos
@@ -18,21 +18,20 @@ import controller.LugarController;
  * 
  * @author Sistema de Votacion
  * @version 1.0
- * @since 2025-06-14
+ * @since 2025-06-15
  */
-public class ServidorIceLugar implements ReceptorVotos {
+public class ServidorIceDepartamento implements ReceptorVotos {
     
-    private LugarController controller;
+    private DepartamentoController controller;
     
     /**
-     * Constructor que inicializa el servidor con el controlador del lugar.
+     * Constructor que inicializa el servidor con el controlador del departamento.
      * 
      * @param controller Controlador que procesara los votos recibidos
      */
-    public ServidorIceLugar(LugarController controller) {
+    public ServidorIceDepartamento(DepartamentoController controller) {
         this.controller = controller;
     }
-    
     /**
      * Recibe un voto desde el broker y lo procesa.
      * No realiza validaciones, solo conversion y reenvio al controlador.
@@ -40,7 +39,7 @@ public class ServidorIceLugar implements ReceptorVotos {
      * @param votoIce Voto en formato Ice recibido desde el broker
      * @param current Contexto de la llamada Ice (no utilizado)
      * @return true si el voto fue procesado exitosamente, false en caso contrario
-     */    
+     */
     @Override
     public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
         try {
@@ -49,7 +48,7 @@ public class ServidorIceLugar implements ReceptorVotos {
             return controller.procesarVoto(votoJava);
             
         } catch (Exception e) {
-            System.err.println("Error procesando voto en lugar de votacion: " + e.getMessage());
+            System.err.println("Error procesando voto en departamento de votacion: " + e.getMessage());
             return false;
         }
     }
@@ -63,25 +62,19 @@ public class ServidorIceLugar implements ReceptorVotos {
     @Override
     public boolean ping(com.zeroc.Ice.Current current) {
         return true;
-    }
-
-    /**
-     * Recibe una validación de votante desde el broker y la reenvia.
-     * No realiza validaciones locales, solo reenvio al siguiente broker.
+    }    /**
+     * Recibe una validación de votante - NO IMPLEMENTADO EN DEPARTAMENTO.
+     * El departamento no realiza validaciones locales, solo reenvio de votos al servidor central.
      * 
      * @param documento Documento del votante
      * @param candidatoId ID del candidato elegido
      * @param current Contexto de la llamada Ice (no utilizado)
-     * @return Código de validación del broker destino (0-3)
+     * @return No retorna, lanza excepcion
+     * @throws UnsupportedOperationException Siempre, ya que no se utiliza en departamento
      */
     @Override
     public int recibirValidacionVotante(String documento, int candidatoId, com.zeroc.Ice.Current current) {
-        try {
-            return controller.validarVoto(documento, candidatoId);
-        } catch (Exception e) {
-            System.err.println("Error procesando validacion en lugar de votacion: " + e.getMessage());
-            return 3; // Error de procesamiento
-        }
+        throw new UnsupportedOperationException("La validacion de ciudadanos no se implementa en el departamento. Los votos se reenvian directamente al servidor central.");
     }
     
     /**

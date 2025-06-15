@@ -8,11 +8,9 @@ import model.Ciudadano;
 import ui.VotacionUI;
 import votos.CoordinadorEnvioVotos;
 import votos.RepositorioMesaVotacion;
-import votos.VerificacionVoto;
+import comunicacion.ServicioComunicacionIce;
 
 import java.util.*;
-
-import comunicacion.ServicioComunicacionIce;
 
 /**
  * Controlador principal de votacion para gestion de mesa de votacion.
@@ -33,13 +31,13 @@ import comunicacion.ServicioComunicacionIce;
  * @version 1.0
  * @since 2025-05-30
  */
-public class ControllerVotacion {
-    // ===== VARIABLES DE INSTANCIA =====
+public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
     private VotacionUI ui;                              // Manejador de interfaz de usuario
     private String idMesaVotacion;                      // Identificador unico para esta mesa de votacion
     private RepositorioMesaVotacion repositorio;        // Repositorio centralizado de datos de votacion
     private CoordinadorEnvioVotos coordinadorEnvio;     // Encargado de coordinar envio de votos
-    private VerificacionVoto verificacionVoto;          // Encargado de validar votos antes de enviar
+    private int contadorSecuencialVotos;                // Contador secuencial para generar IDs de votos
+    private config.ConfiguracionMesa configProperties; // Configuracion cargada desde archivo .properties
     
     // ===== CONSTRUCTOR =====
     /**
@@ -47,16 +45,20 @@ public class ControllerVotacion {
      * Inicializa UI, estructuras de datos de votacion y carga votantes elegibles.
      * 
      * @param idMesaVotacion Identificador unico para esta mesa de votacion
-     */
-    public ControllerVotacion(String idMesaVotacion) {
+     */    public ControllerVotacion() {
         this.ui = new VotacionUI();
-        this.idMesaVotacion = idMesaVotacion;
+        this.contadorSecuencialVotos = 1;  // Inicializar contador en 1
+        
+        // Cargar configuracion desde archivo .properties
+        this.configProperties = cargarConfiguracionArchivo();
+        
+        // Usar el ID de mesa del archivo de configuracion en lugar del parametro
+        this.idMesaVotacion = configProperties.getMesaId();
         
         // Inicializar repositorio centralizado y coordinador
+        this.repositorio = new RepositorioMesaVotacion(this.idMesaVotacion);
         ServicioComunicacionIce servicioIce = new ServicioComunicacionIce();
-        this.repositorio = new RepositorioMesaVotacion(idMesaVotacion);
         this.coordinadorEnvio = new CoordinadorEnvioVotos(repositorio, servicioIce);
-        this.verificacionVoto = new VerificacionVoto(repositorio, servicioIce);
 
         // Cargar datos iniciales
         SistemaPrecarga sistemaPrecarga = new SistemaPrecarga(repositorio);
@@ -83,10 +85,33 @@ public class ControllerVotacion {
             ui.mostrarMensajeInfo("Mesa precargada exitosamente:");
             ui.mostrarMensajeInfo("- Candidatos: " + repositorio.getCandidatosDisponibles().size());
             ui.mostrarMensajeInfo("- Votantes elegibles: " + repositorio.getTotalVotantesElegibles());
-            
-        } catch (Exception e) {
+              } catch (Exception e) {
             ui.mostrarMensajeError("Error durante la precarga: " + e.getMessage());
             throw new RuntimeException("No se pudo precargar la mesa de votacion");
+        }
+    }
+    
+    /**
+     * Carga la configuracion desde el archivo .properties externo o interno.
+     * Busca primero un archivo externo en el directorio actual, luego uno interno.
+     * 
+     * @return Configuracion cargada desde el archivo .properties
+     */
+    private config.ConfiguracionMesa cargarConfiguracionArchivo() {
+        try {
+            // Buscar archivo externo en directorio actual
+            java.io.File archivoExterno = new java.io.File("mesa-votacion.properties");
+            if (archivoExterno.exists()) {
+                System.out.println("Cargando configuracion desde archivo externo: mesa-votacion.properties");
+                return new config.ConfiguracionMesa("mesa-votacion.properties");
+            } else {
+                // Usar archivo interno del JAR
+                System.out.println("Cargando configuracion desde archivo interno (JAR)");
+                return new config.ConfiguracionMesa("src/main/resources/mesa-votacion.properties");
+            }
+        } catch (Exception e) {
+            System.err.println("Error cargando configuracion: " + e.getMessage());
+            throw new RuntimeException("No se pudo cargar la configuracion de mesa");
         }
     }
     
@@ -168,10 +193,6 @@ public class ControllerVotacion {
         coordinadorEnvio.procesarVoto(voto, votante);
     }
     
-    private Integer validarVoto(String documento, Integer candidatoId) {
-        return verificacionVoto.validarVoto(documento, candidatoId);
-    }
-    
     // ===== PROCESAMIENTO DE VOTOS =====
     
     /**
@@ -193,6 +214,27 @@ public class ControllerVotacion {
             // 1. Capturar documento
             String documento = ui.capturarDocumento();
             
+            // 2. Validar elegibilidad del votante
+            Ciudadano votante = validarElegibilidadVotante(documento);
+            if (votante == null) {
+                ui.mostrarMensajeError("El documento " + documento + " no es elegible para votar en esta mesa de votacion.");
+                ui.pausarEjecucion();
+                ui.limpiarPantalla();
+                return;
+            }
+            
+            // 3. Validar estado de votacion
+            if (!validarEstadoVotacion(votante)) {
+                ui.mostrarMensajeError("El votante " + votante.getNombre() + " " + votante.getApellido() + " ya ha ejercido su derecho al voto.");
+                ui.pausarEjecucion();
+                ui.limpiarPantalla();
+                return;
+            }
+            
+            // 4. Mostrar informacion del votante
+            ui.mostrarMensajeInfo("Votante elegible: " + votante.getNombre() + " " + votante.getApellido());
+            ui.mostrarMensajeInfo("Mesa asignada: " + votante.getMesaId());
+            
             // 5. Mostrar candidatos disponibles (desde repositorio)
             ui.mostrarCandidatos(repositorio.getCandidatosDisponibles());
             
@@ -201,39 +243,24 @@ public class ControllerVotacion {
             
             // 7. Obtener candidato seleccionado
             Candidato candidatoSeleccionado = repositorio.getCandidatosDisponibles().get(seleccion - 1);
-              int valid = validarVoto(documento, candidatoSeleccionado.getId());
-            switch (valid) {
-                case 0:
-                    // Puede votar - proceder con el registro
-
-                    Ciudadano votante = validarElegibilidadVotante(documento);
-
-                    Integer votoId = UUID.randomUUID().hashCode();
-                    Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);
-
-                    confirmarVoto(votante, nuevoVoto);
-                    
-                    // Mostrar confirmacion de exito
-                    ui.mostrarMensajeExito("Voto registrado exitosamente.");
-                    ui.mostrarMensajeInfo("Votante: " + votante.getNombre() + " " + votante.getApellido());
-                    ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombre());
-                    break;                case 1:
-                    // No es su mesa de votacion
-                    ui.mostrarMensajeError("ya no esta en la mesa que es");
-                    break;
-                case 2:
-                    // Ya voto
-                    ui.mostrarMensajeError("ya voto");
-                    break;                case 3: 
-                    // No existe en la base de datos o error de conexion
-                    ui.mostrarMensajeError("no existe");
-                    break;
-                default:
-                    // Codigo de error no reconocido
-                    ui.mostrarMensajeError("Error inesperado en la validacion del voto (codigo: " + valid + ").");
-                    ui.mostrarMensajeInfo("Por favor, consulte con el personal electoral.");
-                    break;
+            
+            // 8. Confirmar voto con informacion completa
+            if (!ui.confirmarVoto(candidatoSeleccionado, votante)) {
+                ui.mostrarMensajeInfo("Voto cancelado.");
+                ui.pausarEjecucion();
+                ui.limpiarPantalla();
+                return;
             }
+              // 9. Registrar voto con ID secuencial
+            Integer votoId = generarIdVotoSecuencial();
+            Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);
+
+            confirmarVoto(votante, nuevoVoto);
+            
+            // 10. Mostrar confirmacion de exito
+            ui.mostrarMensajeExito("Voto registrado exitosamente.");
+            ui.mostrarMensajeInfo("Votante: " + votante.getNombre() + " " + votante.getApellido());
+            ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombre());
             
         } catch (IllegalArgumentException e) {
             ui.mostrarMensajeError(e.getMessage());
@@ -244,7 +271,30 @@ public class ControllerVotacion {
         }
         
         ui.pausarEjecucion();
-        ui.limpiarPantalla();
+        ui.limpiarPantalla();    }
+    
+    // ===== METODOS DE UTILIDAD =====
+    
+    /**
+     * Genera un ID unico para el voto combinando el numero de mesa y un contador secuencial.
+     * Formato: XXXNN donde XXX es el numero de mesa y NN es el contador secuencial.
+     * Ejemplo: Mesa 001 -> primer voto: 00101, segundo voto: 00102, etc.
+     * Ejemplo: Mesa 018 -> primer voto: 01801, segundo voto: 01802, etc.
+     * 
+     * @return ID unico del voto como Integer
+     */
+    private Integer generarIdVotoSecuencial() {
+        // Extraer numero de mesa del ID (formato MESA-XXX)
+        String numeroMesa = idMesaVotacion.substring(idMesaVotacion.lastIndexOf('-') + 1);
+        
+        // Formatear ID: numero de mesa (3 digitos) + contador secuencial (2 digitos)
+        String idVoto = String.format("%s%02d", numeroMesa, contadorSecuencialVotos);
+        
+        // Incrementar contador para el proximo voto
+        contadorSecuencialVotos++;
+        
+        // Convertir a Integer y retornar
+        return Integer.valueOf(idVoto);
     }
     
     // ===== METODOS GETTER (Para pruebas y depuracion) =====
