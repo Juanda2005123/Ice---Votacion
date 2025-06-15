@@ -15,15 +15,15 @@
 
 package VotingSystem;
 
-public interface ObserverCiudadano extends com.zeroc.Ice.Object
+public interface QueryStation extends com.zeroc.Ice.Object
 {
-    ConsultaLugarResponse notificarConsulta(String cedula, com.zeroc.Ice.Current current);
+    String query(String document, com.zeroc.Ice.Current current);
 
     /** @hidden */
     static final String[] _iceIds =
     {
         "::Ice::Object",
-        "::VotingSystem::ObserverCiudadano"
+        "::VotingSystem::QueryStation"
     };
 
     @Override
@@ -40,7 +40,7 @@ public interface ObserverCiudadano extends com.zeroc.Ice.Object
 
     static String ice_staticId()
     {
-        return "::VotingSystem::ObserverCiudadano";
+        return "::VotingSystem::QueryStation";
     }
 
     /**
@@ -50,17 +50,16 @@ public interface ObserverCiudadano extends com.zeroc.Ice.Object
      * @param current -
      * @return -
     **/
-    static java.util.concurrent.CompletionStage<com.zeroc.Ice.OutputStream> _iceD_notificarConsulta(ObserverCiudadano obj, final com.zeroc.IceInternal.Incoming inS, com.zeroc.Ice.Current current)
+    static java.util.concurrent.CompletionStage<com.zeroc.Ice.OutputStream> _iceD_query(QueryStation obj, final com.zeroc.IceInternal.Incoming inS, com.zeroc.Ice.Current current)
     {
         com.zeroc.Ice.Object._iceCheckMode(null, current.mode);
         com.zeroc.Ice.InputStream istr = inS.startReadParams();
-        String iceP_cedula;
-        iceP_cedula = istr.readString();
+        String iceP_document;
+        iceP_document = istr.readString();
         inS.endReadParams();
-        ConsultaLugarResponse ret = obj.notificarConsulta(iceP_cedula, current);
+        String ret = obj.query(iceP_document, current);
         com.zeroc.Ice.OutputStream ostr = inS.startWriteParams();
-        ostr.writeValue(ret);
-        ostr.writePendingValues();
+        ostr.writeString(ret);
         inS.endWriteParams(ostr);
         return inS.setResult(ostr);
     }
@@ -72,7 +71,7 @@ public interface ObserverCiudadano extends com.zeroc.Ice.Object
         "ice_ids",
         "ice_isA",
         "ice_ping",
-        "notificarConsulta"
+        "query"
     };
 
     /** @hidden */
@@ -106,7 +105,7 @@ public interface ObserverCiudadano extends com.zeroc.Ice.Object
             }
             case 4:
             {
-                return _iceD_notificarConsulta(this, in, current);
+                return _iceD_query(this, in, current);
             }
         }
 

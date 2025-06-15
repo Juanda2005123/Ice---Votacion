@@ -1,7 +1,7 @@
 package controller;
 
 import com.zeroc.Ice.*;
-import comunicacion.ServicioConsultaCiudadanosIce;
+import comunicacion.QueryStationImpl;
 import dao.CiudadanoDAO;
 import ui.CiudadanoUI;
 import java.lang.Exception;
@@ -12,14 +12,14 @@ public class ControllerCiudadano {
     public void iniciar() {
         try (Communicator communicator = Util.initialize()) {
             CiudadanoDAO dao = new CiudadanoDAO();
-            ServicioConsultaCiudadanosIce observador = new ServicioConsultaCiudadanosIce(dao, ui);
+            QueryStationImpl servicio = new QueryStationImpl(dao);
 
             ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints(
-                    "ObserverCiudadanoAdapter", "default -p 12000");
-            adapter.add(observador, Util.stringToIdentity("ObserverCiudadano"));
+                    "QueryStationAdapter", "default -p 12000");
+            adapter.add(servicio, Util.stringToIdentity("QueryStation"));
             adapter.activate();
 
-            ui.mostrarInfo("ConsultaCiudadanos iniciado y observador registrado.");
+            ui.mostrarInfo("QueryStation registrado y listo para consultas.");
             communicator.waitForShutdown();
         } catch (Exception e) {
             ui.mostrarError("Error al iniciar el servidor ICE: " + e.getMessage());

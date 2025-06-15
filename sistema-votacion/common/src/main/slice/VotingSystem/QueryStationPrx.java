@@ -15,45 +15,44 @@
 
 package VotingSystem;
 
-public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
+public interface QueryStationPrx extends com.zeroc.Ice.ObjectPrx
 {
-    default ConsultaLugarResponse notificarConsulta(String cedula)
+    default String query(String document)
     {
-        return notificarConsulta(cedula, com.zeroc.Ice.ObjectPrx.noExplicitContext);
+        return query(document, com.zeroc.Ice.ObjectPrx.noExplicitContext);
     }
 
-    default ConsultaLugarResponse notificarConsulta(String cedula, java.util.Map<String, String> context)
+    default String query(String document, java.util.Map<String, String> context)
     {
-        return _iceI_notificarConsultaAsync(cedula, context, true).waitForResponse();
+        return _iceI_queryAsync(document, context, true).waitForResponse();
     }
 
-    default java.util.concurrent.CompletableFuture<ConsultaLugarResponse> notificarConsultaAsync(String cedula)
+    default java.util.concurrent.CompletableFuture<java.lang.String> queryAsync(String document)
     {
-        return _iceI_notificarConsultaAsync(cedula, com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
+        return _iceI_queryAsync(document, com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
     }
 
-    default java.util.concurrent.CompletableFuture<ConsultaLugarResponse> notificarConsultaAsync(String cedula, java.util.Map<String, String> context)
+    default java.util.concurrent.CompletableFuture<java.lang.String> queryAsync(String document, java.util.Map<String, String> context)
     {
-        return _iceI_notificarConsultaAsync(cedula, context, false);
+        return _iceI_queryAsync(document, context, false);
     }
 
     /**
      * @hidden
-     * @param iceP_cedula -
+     * @param iceP_document -
      * @param context -
      * @param sync -
      * @return -
      **/
-    default com.zeroc.IceInternal.OutgoingAsync<ConsultaLugarResponse> _iceI_notificarConsultaAsync(String iceP_cedula, java.util.Map<String, String> context, boolean sync)
+    default com.zeroc.IceInternal.OutgoingAsync<java.lang.String> _iceI_queryAsync(String iceP_document, java.util.Map<String, String> context, boolean sync)
     {
-        com.zeroc.IceInternal.OutgoingAsync<ConsultaLugarResponse> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "notificarConsulta", null, sync, null);
+        com.zeroc.IceInternal.OutgoingAsync<java.lang.String> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "query", null, sync, null);
         f.invoke(true, context, null, ostr -> {
-                     ostr.writeString(iceP_cedula);
+                     ostr.writeString(iceP_document);
                  }, istr -> {
-                     final com.zeroc.IceInternal.Holder<ConsultaLugarResponse> ret = new com.zeroc.IceInternal.Holder<>();
-                     istr.readValue(v -> ret.value = v, ConsultaLugarResponse.class);
-                     istr.readPendingValues();
-                     return ret.value;
+                     String ret;
+                     ret = istr.readString();
+                     return ret;
                  });
         return f;
     }
@@ -64,9 +63,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @param obj The untyped proxy.
      * @return A proxy for this type, or null if the object does not support this type.
      **/
-    static ObserverCiudadanoPrx checkedCast(com.zeroc.Ice.ObjectPrx obj)
+    static QueryStationPrx checkedCast(com.zeroc.Ice.ObjectPrx obj)
     {
-        return com.zeroc.Ice.ObjectPrx._checkedCast(obj, ice_staticId(), ObserverCiudadanoPrx.class, _ObserverCiudadanoPrxI.class);
+        return com.zeroc.Ice.ObjectPrx._checkedCast(obj, ice_staticId(), QueryStationPrx.class, _QueryStationPrxI.class);
     }
 
     /**
@@ -76,9 +75,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @param context The Context map to send with the invocation.
      * @return A proxy for this type, or null if the object does not support this type.
      **/
-    static ObserverCiudadanoPrx checkedCast(com.zeroc.Ice.ObjectPrx obj, java.util.Map<String, String> context)
+    static QueryStationPrx checkedCast(com.zeroc.Ice.ObjectPrx obj, java.util.Map<String, String> context)
     {
-        return com.zeroc.Ice.ObjectPrx._checkedCast(obj, context, ice_staticId(), ObserverCiudadanoPrx.class, _ObserverCiudadanoPrxI.class);
+        return com.zeroc.Ice.ObjectPrx._checkedCast(obj, context, ice_staticId(), QueryStationPrx.class, _QueryStationPrxI.class);
     }
 
     /**
@@ -88,9 +87,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @param facet The name of the desired facet.
      * @return A proxy for this type, or null if the object does not support this type.
      **/
-    static ObserverCiudadanoPrx checkedCast(com.zeroc.Ice.ObjectPrx obj, String facet)
+    static QueryStationPrx checkedCast(com.zeroc.Ice.ObjectPrx obj, String facet)
     {
-        return com.zeroc.Ice.ObjectPrx._checkedCast(obj, facet, ice_staticId(), ObserverCiudadanoPrx.class, _ObserverCiudadanoPrxI.class);
+        return com.zeroc.Ice.ObjectPrx._checkedCast(obj, facet, ice_staticId(), QueryStationPrx.class, _QueryStationPrxI.class);
     }
 
     /**
@@ -101,9 +100,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @param context The Context map to send with the invocation.
      * @return A proxy for this type, or null if the object does not support this type.
      **/
-    static ObserverCiudadanoPrx checkedCast(com.zeroc.Ice.ObjectPrx obj, String facet, java.util.Map<String, String> context)
+    static QueryStationPrx checkedCast(com.zeroc.Ice.ObjectPrx obj, String facet, java.util.Map<String, String> context)
     {
-        return com.zeroc.Ice.ObjectPrx._checkedCast(obj, facet, context, ice_staticId(), ObserverCiudadanoPrx.class, _ObserverCiudadanoPrxI.class);
+        return com.zeroc.Ice.ObjectPrx._checkedCast(obj, facet, context, ice_staticId(), QueryStationPrx.class, _QueryStationPrxI.class);
     }
 
     /**
@@ -111,9 +110,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @param obj The untyped proxy.
      * @return A proxy for this type.
      **/
-    static ObserverCiudadanoPrx uncheckedCast(com.zeroc.Ice.ObjectPrx obj)
+    static QueryStationPrx uncheckedCast(com.zeroc.Ice.ObjectPrx obj)
     {
-        return com.zeroc.Ice.ObjectPrx._uncheckedCast(obj, ObserverCiudadanoPrx.class, _ObserverCiudadanoPrxI.class);
+        return com.zeroc.Ice.ObjectPrx._uncheckedCast(obj, QueryStationPrx.class, _QueryStationPrxI.class);
     }
 
     /**
@@ -122,9 +121,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @param facet The name of the desired facet.
      * @return A proxy for this type.
      **/
-    static ObserverCiudadanoPrx uncheckedCast(com.zeroc.Ice.ObjectPrx obj, String facet)
+    static QueryStationPrx uncheckedCast(com.zeroc.Ice.ObjectPrx obj, String facet)
     {
-        return com.zeroc.Ice.ObjectPrx._uncheckedCast(obj, facet, ObserverCiudadanoPrx.class, _ObserverCiudadanoPrxI.class);
+        return com.zeroc.Ice.ObjectPrx._uncheckedCast(obj, facet, QueryStationPrx.class, _QueryStationPrxI.class);
     }
 
     /**
@@ -133,9 +132,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified per-proxy context.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_context(java.util.Map<String, String> newContext)
+    default QueryStationPrx ice_context(java.util.Map<String, String> newContext)
     {
-        return (ObserverCiudadanoPrx)_ice_context(newContext);
+        return (QueryStationPrx)_ice_context(newContext);
     }
 
     /**
@@ -144,9 +143,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified adapter ID.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_adapterId(String newAdapterId)
+    default QueryStationPrx ice_adapterId(String newAdapterId)
     {
-        return (ObserverCiudadanoPrx)_ice_adapterId(newAdapterId);
+        return (QueryStationPrx)_ice_adapterId(newAdapterId);
     }
 
     /**
@@ -155,9 +154,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified endpoints.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_endpoints(com.zeroc.Ice.Endpoint[] newEndpoints)
+    default QueryStationPrx ice_endpoints(com.zeroc.Ice.Endpoint[] newEndpoints)
     {
-        return (ObserverCiudadanoPrx)_ice_endpoints(newEndpoints);
+        return (QueryStationPrx)_ice_endpoints(newEndpoints);
     }
 
     /**
@@ -166,9 +165,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified locator cache timeout.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_locatorCacheTimeout(int newTimeout)
+    default QueryStationPrx ice_locatorCacheTimeout(int newTimeout)
     {
-        return (ObserverCiudadanoPrx)_ice_locatorCacheTimeout(newTimeout);
+        return (QueryStationPrx)_ice_locatorCacheTimeout(newTimeout);
     }
 
     /**
@@ -177,9 +176,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified invocation timeout.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_invocationTimeout(int newTimeout)
+    default QueryStationPrx ice_invocationTimeout(int newTimeout)
     {
-        return (ObserverCiudadanoPrx)_ice_invocationTimeout(newTimeout);
+        return (QueryStationPrx)_ice_invocationTimeout(newTimeout);
     }
 
     /**
@@ -188,9 +187,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified caching policy.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_connectionCached(boolean newCache)
+    default QueryStationPrx ice_connectionCached(boolean newCache)
     {
-        return (ObserverCiudadanoPrx)_ice_connectionCached(newCache);
+        return (QueryStationPrx)_ice_connectionCached(newCache);
     }
 
     /**
@@ -199,9 +198,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified endpoint selection policy.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_endpointSelection(com.zeroc.Ice.EndpointSelectionType newType)
+    default QueryStationPrx ice_endpointSelection(com.zeroc.Ice.EndpointSelectionType newType)
     {
-        return (ObserverCiudadanoPrx)_ice_endpointSelection(newType);
+        return (QueryStationPrx)_ice_endpointSelection(newType);
     }
 
     /**
@@ -212,9 +211,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified selection policy.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_secure(boolean b)
+    default QueryStationPrx ice_secure(boolean b)
     {
-        return (ObserverCiudadanoPrx)_ice_secure(b);
+        return (QueryStationPrx)_ice_secure(b);
     }
 
     /**
@@ -223,9 +222,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified encoding version.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_encodingVersion(com.zeroc.Ice.EncodingVersion e)
+    default QueryStationPrx ice_encodingVersion(com.zeroc.Ice.EncodingVersion e)
     {
-        return (ObserverCiudadanoPrx)_ice_encodingVersion(e);
+        return (QueryStationPrx)_ice_encodingVersion(e);
     }
 
     /**
@@ -236,9 +235,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified selection policy.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_preferSecure(boolean b)
+    default QueryStationPrx ice_preferSecure(boolean b)
     {
-        return (ObserverCiudadanoPrx)_ice_preferSecure(b);
+        return (QueryStationPrx)_ice_preferSecure(b);
     }
 
     /**
@@ -247,9 +246,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified router.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_router(com.zeroc.Ice.RouterPrx router)
+    default QueryStationPrx ice_router(com.zeroc.Ice.RouterPrx router)
     {
-        return (ObserverCiudadanoPrx)_ice_router(router);
+        return (QueryStationPrx)_ice_router(router);
     }
 
     /**
@@ -258,9 +257,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified locator.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_locator(com.zeroc.Ice.LocatorPrx locator)
+    default QueryStationPrx ice_locator(com.zeroc.Ice.LocatorPrx locator)
     {
-        return (ObserverCiudadanoPrx)_ice_locator(locator);
+        return (QueryStationPrx)_ice_locator(locator);
     }
 
     /**
@@ -269,9 +268,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified collocation optimization.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_collocationOptimized(boolean b)
+    default QueryStationPrx ice_collocationOptimized(boolean b)
     {
-        return (ObserverCiudadanoPrx)_ice_collocationOptimized(b);
+        return (QueryStationPrx)_ice_collocationOptimized(b);
     }
 
     /**
@@ -279,9 +278,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy that uses twoway invocations.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_twoway()
+    default QueryStationPrx ice_twoway()
     {
-        return (ObserverCiudadanoPrx)_ice_twoway();
+        return (QueryStationPrx)_ice_twoway();
     }
 
     /**
@@ -289,9 +288,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy that uses oneway invocations.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_oneway()
+    default QueryStationPrx ice_oneway()
     {
-        return (ObserverCiudadanoPrx)_ice_oneway();
+        return (QueryStationPrx)_ice_oneway();
     }
 
     /**
@@ -299,9 +298,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy that uses batch oneway invocations.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_batchOneway()
+    default QueryStationPrx ice_batchOneway()
     {
-        return (ObserverCiudadanoPrx)_ice_batchOneway();
+        return (QueryStationPrx)_ice_batchOneway();
     }
 
     /**
@@ -309,9 +308,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy that uses datagram invocations.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_datagram()
+    default QueryStationPrx ice_datagram()
     {
-        return (ObserverCiudadanoPrx)_ice_datagram();
+        return (QueryStationPrx)_ice_datagram();
     }
 
     /**
@@ -319,9 +318,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy that uses batch datagram invocations.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_batchDatagram()
+    default QueryStationPrx ice_batchDatagram()
     {
-        return (ObserverCiudadanoPrx)_ice_batchDatagram();
+        return (QueryStationPrx)_ice_batchDatagram();
     }
 
     /**
@@ -330,9 +329,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified compression setting.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_compress(boolean co)
+    default QueryStationPrx ice_compress(boolean co)
     {
-        return (ObserverCiudadanoPrx)_ice_compress(co);
+        return (QueryStationPrx)_ice_compress(co);
     }
 
     /**
@@ -341,9 +340,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified timeout.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_timeout(int t)
+    default QueryStationPrx ice_timeout(int t)
     {
-        return (ObserverCiudadanoPrx)_ice_timeout(t);
+        return (QueryStationPrx)_ice_timeout(t);
     }
 
     /**
@@ -352,9 +351,9 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A proxy with the specified connection ID.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_connectionId(String connectionId)
+    default QueryStationPrx ice_connectionId(String connectionId)
     {
-        return (ObserverCiudadanoPrx)_ice_connectionId(connectionId);
+        return (QueryStationPrx)_ice_connectionId(connectionId);
     }
 
     /**
@@ -363,13 +362,13 @@ public interface ObserverCiudadanoPrx extends com.zeroc.Ice.ObjectPrx
      * @return A fixed proxy bound to the given connection.
      **/
     @Override
-    default ObserverCiudadanoPrx ice_fixed(com.zeroc.Ice.Connection connection)
+    default QueryStationPrx ice_fixed(com.zeroc.Ice.Connection connection)
     {
-        return (ObserverCiudadanoPrx)_ice_fixed(connection);
+        return (QueryStationPrx)_ice_fixed(connection);
     }
 
     static String ice_staticId()
     {
-        return "::VotingSystem::ObserverCiudadano";
+        return "::VotingSystem::QueryStation";
     }
 }
