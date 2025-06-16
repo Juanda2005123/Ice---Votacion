@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Controlador principal de votacion para gestion de mesa de votacion.
@@ -51,7 +52,9 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
     private RepositorioDeltas repositorioDeltas;        // Repositorio de conteos absolutos para auditoría
     private ExecutorService threadPoolDeltas;           // Pool de hilos para procesamiento de deltas
     private ServicioComunicacionIce servicioIce;        // Servicio Ice para comunicación
-    
+    private AtomicInteger deltasEnviados;                // Contador de deltas enviados exitosamente
+    private AtomicInteger deltasFallidos;                // Contador de deltas que fallaron al enviar
+
     // ===== CONSTRUCTOR =====
     /**
      * Constructor para ControllerVotacion.
@@ -76,9 +79,12 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
         // ===== INICIALIZAR SISTEMA DE DELTAS =====
         // Inicializar repositorio de deltas para conteos absolutos y auditoría
         this.repositorioDeltas = new RepositorioDeltas(this.idMesaVotacion);
-        
-        // Inicializar generador de deltas para Map-Reduce
+          // Inicializar generador de deltas para Map-Reduce
         this.generadorDeltas = new GeneradorDeltas(configProperties);
+        
+        // Inicializar contadores de diagnóstico
+        this.deltasEnviados = new AtomicInteger(0);
+        this.deltasFallidos = new AtomicInteger(0);
           // Crear pool de hilos configurado para procesamiento de deltas
         this.threadPoolDeltas = Executors.newFixedThreadPool(configProperties.getThreadsPoolSize());        // Cargar datos iniciales con candidatos desde CSV
         String rutaCandidatos = "candidatos.csv"; // Archivo junto al JAR
@@ -204,10 +210,10 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
               // 3. SOLO REGISTRAR EN GENERADOR DE DELTAS (Map-Reduce)
             // ELIMINADO: repositorioDeltas.registrarVoto(voto); // <- CAUSA DUPLICACION
             generadorDeltas.registrarVoto(voto.getCandidato());
-            
-            // 4. VERIFICAR UMBRALES Y PROCESAR DELTAS
+              // 4. VERIFICAR UMBRALES Y PROCESAR DELTAS DE FORMA CONTROLADA
             if (generadorDeltas.debeEnviarDelta()) {
-                procesarEnvioDeltas();
+                // Durante simulación, procesar deltas de forma más síncrona para evitar saturación
+                procesarEnvioDeltasControlado();
             }
             
         } catch (Exception e) {
@@ -372,10 +378,9 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
                     if ((i + 1) % 100 == 0 || i + 1 == maxVotos) {
                         ui.mostrarProgresoSimulacion(i + 1, maxVotos);
                     }
-                    
-                    // Pequeña pausa para no saturar el sistema
-                    if (i % 1000 == 0 && i > 0) {
-                        Thread.sleep(10);
+                      // Pequeña pausa para no saturar el sistema y dar tiempo a procesar deltas
+                    if (i % 100 == 0 && i > 0) {
+                        Thread.sleep(5); // Aumentar ligeramente la pausa
                     }
                     
                 } catch (Exception e) {
@@ -385,12 +390,19 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
             
             long tiempoFin = System.currentTimeMillis();
             long duracion = tiempoFin - tiempoInicio;
-            
-            ui.mostrarMensajeExito("Simulación completada!");
+              ui.mostrarMensajeExito("Simulación completada!");
             ui.mostrarMensajeInfo("Votos exitosos: " + votosExitosos);
             ui.mostrarMensajeInfo("Votos rechazados: " + votosRechazados);
             ui.mostrarMensajeInfo("Tiempo total: " + duracion + " ms");
             ui.mostrarMensajeInfo("Velocidad: " + (votosExitosos * 1000.0 / duracion) + " votos/seg");
+              // ENVIAR DELTAS PENDIENTES DESPUÉS DE LA SIMULACIÓN
+            if (generadorDeltas.hayVotosPendientes()) {
+                ui.mostrarMensajeInfo("Enviando deltas finales de simulación...");
+                ui.mostrarMensajeInfo("Votos pendientes en buffer: " + generadorDeltas.getEstadisticasBuffer());
+                enviarDeltaFinalSincronizado();
+            } else {
+                ui.mostrarMensajeInfo("No hay deltas pendientes - todos fueron enviados durante la simulación.");
+            }
             
         } catch (Exception e) {
             ui.mostrarMensajeError("Error durante la simulación: " + e.getMessage());
@@ -430,14 +442,46 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
                 if (envioExitoso) {
                     // 3. RESETEAR BUFFER DESPUES DE ENVIO EXITOSO
                     generadorDeltas.resetearBuffer();
+                    deltasEnviados.incrementAndGet(); // Incrementar contador de deltas enviados
                 } else {
                     // El buffer NO se resetea en caso de error, se reintentará en próximo umbral
+                    deltasFallidos.incrementAndGet(); // Incrementar contador de deltas fallidos
                 }
                 
             } catch (Exception e) {
                 // El buffer NO se resetea en caso de excepción
+                deltasFallidos.incrementAndGet(); // Incrementar contador de deltas fallidos
             }
         });
+    }
+    
+    /**
+     * Procesa el envío de deltas de forma controlada durante simulación.
+     * Evita saturación del pool de hilos usando envío síncrono cuando es necesario.
+     */
+    private void procesarEnvioDeltasControlado() {
+        try {
+            // Generar delta inmediatamente
+            DeltaConteo delta = generadorDeltas.generarDelta();
+            
+            if (delta != null) {
+                // Envío síncrono directo para evitar saturación durante simulación
+                boolean envioExitoso = servicioIce.enviarDelta(delta);
+                
+                if (envioExitoso) {
+                    generadorDeltas.resetearBuffer();
+                    deltasEnviados.incrementAndGet(); // Incrementar contador de deltas enviados
+                } else {
+                    // En caso de error, mantener el buffer para reintento
+                    System.err.println("Error enviando delta durante simulación");
+                    deltasFallidos.incrementAndGet(); // Incrementar contador de deltas fallidos
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error procesando delta controlado: " + e.getMessage());
+            deltasFallidos.incrementAndGet(); // Incrementar contador de deltas fallidos
+        }
     }
 
     // ===== METODOS DE UTILIDAD =====
@@ -554,14 +598,10 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
     private void cerrarSistemaConDeltas() {
         try {
             ui.mostrarMensajeInfo("Iniciando cierre ordenado del sistema...");
-            
-            // 1. ENVIAR DELTAS PENDIENTES
+              // 1. ENVIAR DELTAS PENDIENTES DE FORMA SINCRONA
             if (generadorDeltas.hayVotosPendientes()) {
                 ui.mostrarMensajeInfo("Enviando deltas pendientes...");
-                procesarEnvioDeltas();
-                
-                // Esperar un momento para que se complete el envío
-                Thread.sleep(2000);
+                enviarDeltaFinalSincronizado();
             }
               // 2. CERRAR SERVICIO ICE
             servicioIce.cerrarConexion();
@@ -594,9 +634,11 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
         ui.mostrarMensajeInfo("\n=== ESTADISTICAS FINALES ===");
         ui.mostrarMensajeInfo("Mesa: " + idMesaVotacion);
         ui.mostrarMensajeInfo("Total votos registrados: " + repositorio.getTotalVotos());
-        ui.mostrarMensajeInfo("Total votos absolutos (deltas): " + repositorioDeltas.getTotalVotos());
-        ui.mostrarMensajeInfo("Votantes que votaron: " + repositorio.getTotalVotantesQueYaVotaron());
+        ui.mostrarMensajeInfo("Total votos absolutos (deltas): " + repositorioDeltas.getTotalVotos());        ui.mostrarMensajeInfo("Votantes que votaron: " + repositorio.getTotalVotantesQueYaVotaron());
         ui.mostrarMensajeInfo("Votantes elegibles: " + repositorio.getTotalVotantesElegibles());
+        ui.mostrarMensajeInfo("Deltas enviados exitosamente: " + deltasEnviados.get());
+        ui.mostrarMensajeInfo("Deltas fallidos: " + deltasFallidos.get());
+        ui.mostrarMensajeInfo("Total deltas procesados: " + (deltasEnviados.get() + deltasFallidos.get()));
         
         // Mostrar conteo por candidato desde repositorio de deltas
         Map<Integer, Integer> conteoFinal = repositorioDeltas.getConteoAbsoluto();
@@ -720,6 +762,34 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
         } catch (Exception e) {
             System.err.println("Error generando CSV manualmente: " + e.getMessage());
             return false;
+        }
+    }
+    
+    /**
+     * Envía el delta final de forma síncrona antes del cierre del sistema.
+     * Garantiza que todos los votos pendientes sean enviados.
+     */
+    private void enviarDeltaFinalSincronizado() {
+        try {
+            // Generar delta con todos los votos pendientes
+            DeltaConteo deltaFinal = generadorDeltas.generarDelta();
+            
+            if (deltaFinal != null) {
+                ui.mostrarMensajeInfo("Enviando delta final con " + deltaFinal.totalVotos + " votos...");
+                
+                // Envío síncrono directo (no usar threadPool)
+                boolean envioExitoso = servicioIce.enviarDelta(deltaFinal);
+                
+                if (envioExitoso) {
+                    generadorDeltas.resetearBuffer();
+                    ui.mostrarMensajeExito("Delta final enviado exitosamente.");
+                } else {
+                    ui.mostrarMensajeError("Error enviando delta final - algunos votos pueden perderse.");
+                }
+            }
+            
+        } catch (Exception e) {
+            ui.mostrarMensajeError("Error durante envío de delta final: " + e.getMessage());
         }
     }
 }
