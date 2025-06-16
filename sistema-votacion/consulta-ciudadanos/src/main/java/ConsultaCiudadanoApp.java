@@ -14,7 +14,7 @@ public class ConsultaCiudadanoApp {
             CiudadanoDAO dao = new CiudadanoDAO();
             QueryStationImpl queryStation = new QueryStationImpl(dao);
 
-            String endpoints = String.format("tcp -h localhost -p %d", port);
+            String endpoints = String.format("tcp -h 0.0.0.0 -p %d", port);
             ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("Adapter" + instanceId, endpoints);
             adapter.add(queryStation, Util.stringToIdentity("QueryStation"));
             adapter.activate();

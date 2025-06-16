@@ -15,7 +15,7 @@ public class CiudadanoDAO {
 
     public ConsultaLugarResponse consultarLugarPorCedula(String cedula) {
         ConsultaLugarResponse response = new ConsultaLugarResponse();
-        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/elecciones", "postgres", "12345")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://192.168.131.101:5432/votaciones", "postgres", "postgres")) {
             String sql = "SELECT c.nombre, c.apellido, d.nombre AS departamento, m.nombre AS municipio, " +
                          "p.nombre AS lugar, p.direccion, c.mesa_id " +
                          "FROM ciudadano c " +

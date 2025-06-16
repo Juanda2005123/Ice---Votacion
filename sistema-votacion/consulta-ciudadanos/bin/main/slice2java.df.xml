@@ -1,20 +1,20 @@
 <state>
-  <timestamp value='1750032227864' />
+  <timestamp value='1750054373095' />
   <sourceSet name='default'>
-    <source name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\common\src\main\slice\VotingService.ice'>
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\Candidato.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\Ciudadano.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\Voto.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\ConsultaLugarResponse.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\BrokerService.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\ReceptorVotos.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\QueryStation.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\BrokerServicePrx.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\_BrokerServicePrxI.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\ReceptorVotosPrx.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\_ReceptorVotosPrxI.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\QueryStationPrx.java' />
-      <file name='C:\Users\user\Desktop\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\_QueryStationPrxI.java' />
+    <source name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\common\src\main\slice\VotingService.ice'>
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\Candidato.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\Ciudadano.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\Voto.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\ConsultaLugarResponse.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\BrokerService.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\ReceptorVotos.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\QueryStation.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\BrokerServicePrx.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\_BrokerServicePrxI.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\ReceptorVotosPrx.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\_ReceptorVotosPrxI.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\QueryStationPrx.java' />
+      <file name='C:\Users\Public\IngSoft4Public\V2\Ice---Votacion\sistema-votacion\consulta-ciudadanos\build\generated-src\VotingSystem\_QueryStationPrxI.java' />
     </source>
     <arg value='C:\Program Files\ZeroC\Ice-3.7.10\\bin\slice2java.exe' />
     <arg value='-IC:\Program Files\ZeroC\Ice-3.7.10\\slice' />
