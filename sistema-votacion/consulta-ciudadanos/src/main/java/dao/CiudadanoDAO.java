@@ -7,7 +7,7 @@ import java.lang.Exception;
 public class CiudadanoDAO {
     private static final CiudadanoDAO instance = new CiudadanoDAO();
 
-    private CiudadanoDAO() {}
+    public CiudadanoDAO() {}
 
     public static CiudadanoDAO getInstance() {
         return instance;
