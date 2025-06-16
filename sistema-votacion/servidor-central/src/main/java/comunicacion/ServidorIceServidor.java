@@ -1,23 +1,21 @@
 package comunicacion;
 
 import VotingSystem.*;
-import model.Voto;
 import controller.ServidorController;
 
 /**
- * Servidor Ice que recibe votos en el servidor central de votacion.
+ * Servidor Ice que recibe deltas en el servidor central para Reduce Final.
  * 
  * Este servidor es responsable de:
- * - Recibir votos desde el broker departamento-central a traves de Ice
- * - Convertir los votos del formato Ice al formato Java interno
- * - Delegar el procesamiento (impresion) al controlador del servidor central
- * - Responder a solicitudes de ping para verificacion de conectividad
+ * - Recibir deltas departamentales a través de Ice
+ * - Delegar el procesamiento Reduce Final al controlador del servidor central
+ * - Responder a solicitudes de ping para verificación de conectividad
  * 
- * El servidor es el destino final del flujo de votos, solo recibe e imprime,
- * no reenvia votos a ningun otro destino.
+ * El servidor es el destino final del flujo Map-Reduce, solo recibe y consolida,
+ * no reenvía deltas a ningún otro destino.
  * 
  * @author Sistema de Votacion
- * @version 1.0
+ * @version 3.0 - Reduce Final
  * @since 2025-06-15
  */
 public class ServidorIceServidor implements ReceptorVotos {
@@ -27,44 +25,41 @@ public class ServidorIceServidor implements ReceptorVotos {
     /**
      * Constructor que inicializa el servidor con el controlador del servidor central.
      * 
-     * @param controller Controlador que procesara los votos recibidos
+     * @param controller Controlador que procesará los deltas recibidos
      */
     public ServidorIceServidor(ServidorController controller) {
         this.controller = controller;
     }    /**
-     * Recibe un voto desde el broker y lo procesa.
-     * El servidor central es el destino final, solo recibe e imprime votos.
+     * Recibe un delta desde departamentos y lo procesa con Reduce Final.
+     * El servidor central es el destino final de la consolidación Map-Reduce.
      * 
-     * @param votoIce Voto en formato Ice recibido desde el broker
+     * @param delta Delta departamental en formato Ice
      * @param current Contexto de la llamada Ice (no utilizado)
-     * @return true si el voto fue procesado exitosamente, false en caso contrario
+     * @return true si el delta fue procesado exitosamente, false en caso contrario
      */
     @Override
-    public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
+    public boolean recibirDeltaConteo(DeltaConteo delta, com.zeroc.Ice.Current current) {
         try {
-            // Convertir Ice a Java y procesar (imprimir)
-            Voto votoJava = convertirVotoIceAJava(votoIce);
-            return controller.procesarVoto(votoJava);
+            // Procesar delta con Reduce Final
+            return controller.procesarDelta(delta);
             
         } catch (Exception e) {
-            System.err.println("Error procesando voto en servidor central: " + e.getMessage());
+            System.err.println("Error procesando delta en servidor central: " + e.getMessage());
             return false;
-        }
-    }
+        }    }
       /**
-     * Responde a solicitudes de ping para verificar que el servidor central esta activo.
+     * Responde a solicitudes de ping para verificar que el servidor central está activo.
      * 
      * @param current Contexto de la llamada Ice (no utilizado)
-     * @return Siempre true indicando que el servidor central esta operativo
+     * @return Siempre true indicando que el servidor central está operativo
      */
     @Override
     public boolean ping(com.zeroc.Ice.Current current) {
         return true;
     }
-    
-    /**
-     * Recibe una validacion de votante - NO IMPLEMENTADO EN SERVIDOR CENTRAL.
-     * El servidor central es el destino final, solo recibe votos procesados.
+      /**
+     * Recibe una validación de votante - NO IMPLEMENTADO EN SERVIDOR CENTRAL.
+     * El servidor central es el destino final, solo recibe deltas procesados.
      * 
      * @param documento Documento del votante
      * @param candidatoId ID del candidato elegido
@@ -74,28 +69,6 @@ public class ServidorIceServidor implements ReceptorVotos {
      */
     @Override
     public int recibirValidacionVotante(String documento, int candidatoId, com.zeroc.Ice.Current current) {
-        throw new UnsupportedOperationException("La validacion de votantes no se implementa en el servidor central. Solo se reciben votos ya procesados.");
-    }
-    
-    /**
-     * Convierte un voto del formato Ice al formato Java interno.
-     * Mantiene los tipos Integer para los IDs sin conversion adicional.
-     * 
-     * @param votoIce Voto en formato Ice a convertir
-     * @return Voto en formato Java equivalente
-     */
-    private Voto convertirVotoIceAJava(VotingSystem.Voto votoIce) {
-        model.Candidato candidatoJava = new model.Candidato(
-            votoIce.candidato.id,    // Integer directo desde Ice
-            votoIce.candidato.nombre,
-            votoIce.candidato.partidoPolitico
-        );
-        
-        Voto votoJava = new Voto(
-            votoIce.id,              // Integer directo desde Ice
-            candidatoJava
-        );
-        
-        return votoJava;
+        throw new UnsupportedOperationException("La validacion de votantes no se implementa en el servidor central. Solo se reciben deltas consolidados.");
     }
 }

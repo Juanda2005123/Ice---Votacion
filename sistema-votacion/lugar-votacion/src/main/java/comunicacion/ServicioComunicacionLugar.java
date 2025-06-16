@@ -1,13 +1,15 @@
 package comunicacion;
 
 import VotingSystem.*;
-import model.Voto;
 import config.ConfiguracionLugar;
 
 /**
- * Servicio para ENVIAR votos al broker lugar-departamento.
- * Solo reenvia votos, sin validaciones ni estadisticas.
- * (Consistente con ServicioComunicacionBroker)
+ * Servicio para enviar deltas consolidadas al broker lugar-departamento.
+ * Solo reenvia deltas Map-Reduce, sin validaciones ni estadisticas.
+ * 
+ * @author Sistema de Votacion
+ * @version 2.0 - Map-Reduce Level 1 
+ * @since 2025-06-15
  */
 public class ServicioComunicacionLugar {
     
@@ -24,11 +26,15 @@ public class ServicioComunicacionLugar {
         }
     }
     
-    /**     * Funcion principal: Reenvia un voto al broker lugar-departamento
-     * Sin validaciones - solo reenvio
+    /**
+     * Reenvia un delta consolidado al broker lugar-departamento.
+     * REDUCE PHASE: Envía resultado de consolidación Map-Reduce.
+     * 
+     * @param delta Delta consolidado a reenviar
+     * @return true si el delta fue reenviado exitosamente
      */
-    public boolean reenviarVoto(Voto voto) {
-        return enviarVotoADestino(voto);
+    public boolean reenviarDelta(DeltaConteo delta) {
+        return enviarDeltaADestino(delta);
     }    /**
      * Reenvia una validacion de votante al broker lugar-departamento.
      * 
@@ -67,9 +73,12 @@ public class ServicioComunicacionLugar {
     }
     
     /**
-     * Envia un voto al broker destino - una sola vez
+     * Envia un delta consolidado al broker destino usando Map-Reduce.
+     * 
+     * @param delta Delta consolidado a enviar
+     * @return true si el delta fue enviado exitosamente
      */
-    private boolean enviarVotoADestino(Voto voto) {
+    private boolean enviarDeltaADestino(DeltaConteo delta) {
         try {
             String proxyString = String.format("BrokerService:tcp -h %s -p %d", 
                                              config.getBrokerDestinoHost(), 
@@ -82,28 +91,11 @@ public class ServicioComunicacionLugar {
                 return false;
             }
             
-            VotingSystem.Voto votoIce = convertirVotoJavaAIce(voto);
-            return brokerPrx.recibirVoto(votoIce);
+            return brokerPrx.recibirDeltaConteo(delta);
             
         } catch (Exception e) {
             return false;
         }
-    }
-    
-    /**
-     * Convertir Voto Java a Ice - MANTIENE Integer IDs
-     */
-    private VotingSystem.Voto convertirVotoJavaAIce(Voto votoJava) {
-        VotingSystem.Candidato candidatoIce = new VotingSystem.Candidato();
-        candidatoIce.id = votoJava.getCandidato().getId(); // Integer directo
-        candidatoIce.nombre = votoJava.getCandidato().getNombre();
-        candidatoIce.partidoPolitico = votoJava.getCandidato().getPartidoPolitico();
-        
-        VotingSystem.Voto votoIce = new VotingSystem.Voto();
-        votoIce.id = votoJava.getId(); // Integer directo
-        votoIce.candidato = candidatoIce;
-        
-        return votoIce;
     }
     
     /**

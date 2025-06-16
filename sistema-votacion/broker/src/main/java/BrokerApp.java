@@ -79,22 +79,14 @@ public class BrokerApp {
             adapter.add(servidor, Util.stringToIdentity("BrokerService"));
             
             // Activar el adaptador para comenzar a recibir peticiones
-            adapter.activate();
-            
-            // Mensaje de inicio del broker (sin tildes)
-            System.out.println("=== BROKER " + config.getBrokerId() + " INICIADO ===");
-            System.out.println("- ID: " + config.getBrokerId());
-            System.out.println("- Nombre: " + config.getBrokerNombre());
-            System.out.println("- Puerto: " + config.getPuerto());
+            adapter.activate();              // Mensaje de inicio del broker silencioso para automatizacion
+            System.out.println("BROKER " + config.getBrokerId() + " INICIADO");
             
             // Verificar conectividad con todos los destinos configurados
             controller.verificarConectividadInicial();
             
-            System.out.println("Broker listo para procesar votos...");
-            
             // Configurar shutdown hook para cierre limpio
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("Cerrando broker...");
                 if (controller != null) {
                     controller.cerrar();
                 }
@@ -108,7 +100,6 @@ public class BrokerApp {
             
         } catch (java.lang.Exception e) {  // Especificar java.lang.Exception
             System.err.println("Error iniciando broker: " + e.getMessage());
-            e.printStackTrace();
             System.exit(1);
         }
     }

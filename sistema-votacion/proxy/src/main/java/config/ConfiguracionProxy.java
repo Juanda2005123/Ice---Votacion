@@ -70,24 +70,22 @@ public class ConfiguracionProxy {
     public String getHost() {
         return properties.getProperty("proxy.host", "localhost");
     }
-    
-    /**
+      /**
      * Obtiene el puerto del proxy de validacion.
      * 
      * @return Puerto donde escucha el proxy
      */
     public int getPuerto() {
-        return Integer.parseInt(properties.getProperty("proxy.puerto", "8001"));
+        return Integer.parseInt(properties.getProperty("proxy.puerto", "8001").trim());
     }
-    
-    /**
+      /**
      * Obtiene el timeout general del proxy.
      * 
      * @return Timeout en milisegundos
      */
     public int getTimeout() {
-        return Integer.parseInt(properties.getProperty("proxy.timeout", "5000"));
-    }      // Configuracion de la Base de Datos PostgreSQL
+        return Integer.parseInt(properties.getProperty("proxy.timeout", "5000").trim());
+    }// Configuracion de la Base de Datos PostgreSQL
     
     /**
      * Obtiene el host de la base de datos PostgreSQL.
@@ -97,14 +95,13 @@ public class ConfiguracionProxy {
     public String getDbHost() {
         return properties.getProperty("db.host", "localhost");
     }
-    
-    /**
+      /**
      * Obtiene el puerto de la base de datos PostgreSQL.
      * 
      * @return Puerto de la base de datos
      */
     public int getDbPuerto() {
-        return Integer.parseInt(properties.getProperty("db.puerto", "5432"));
+        return Integer.parseInt(properties.getProperty("db.puerto", "5432").trim());
     }
     
     /**
@@ -159,41 +156,37 @@ public class ConfiguracionProxy {
     public String getDbColumnaDocumento() {
         return properties.getProperty("db.columna.documento", "documento");
     }
-    
-    /**
+      /**
      * Obtiene el tamaño minimo del pool de conexiones.
      * 
      * @return Tamaño minimo del pool
      */
     public int getDbPoolMinimo() {
-        return Integer.parseInt(properties.getProperty("db.pool.minimo", "2"));
+        return Integer.parseInt(properties.getProperty("db.pool.minimo", "2").trim());
     }
-    
-    /**
+      /**
      * Obtiene el tamaño maximo del pool de conexiones.
      * 
      * @return Tamaño maximo del pool
      */
     public int getDbPoolMaximo() {
-        return Integer.parseInt(properties.getProperty("db.pool.maximo", "10"));
+        return Integer.parseInt(properties.getProperty("db.pool.maximo", "10").trim());
     }
-    
-    /**
+      /**
      * Obtiene el timeout para conexiones a la base de datos.
      * 
      * @return Timeout de conexion en milisegundos
      */
     public int getDbTimeoutConexion() {
-        return Integer.parseInt(properties.getProperty("db.timeout.conexion", "30000"));
+        return Integer.parseInt(properties.getProperty("db.timeout.conexion", "30000").trim());
     }
-    
-    /**
+      /**
      * Obtiene el timeout para queries a la base de datos.
      * 
      * @return Timeout de query en milisegundos
      */
     public int getDbTimeoutQuery() {
-        return Integer.parseInt(properties.getProperty("db.timeout.query", "15000"));
+        return Integer.parseInt(properties.getProperty("db.timeout.query", "15000").trim());
     }
     
     /**
@@ -205,22 +198,20 @@ public class ConfiguracionProxy {
         return String.format("jdbc:postgresql://%s:%d/%s", 
                            getDbHost(), getDbPuerto(), getDbNombre());
     }
-    
-    /**
+      /**
      * Obtiene el numero de reintentos para conexiones.
      * 
      * @return Numero de reintentos permitidos
      */
     public int getConexionReintentos() {
-        return Integer.parseInt(properties.getProperty("conexion.reintentos", "3"));
+        return Integer.parseInt(properties.getProperty("conexion.reintentos", "3").trim());
     }
-    
-    /**
+      /**
      * Obtiene el timeout para intentos de conexion.
      * 
      * @return Timeout de conexion en milisegundos
      */
     public int getConexionTimeout() {
-        return Integer.parseInt(properties.getProperty("conexion.timeout", "3000"));
+        return Integer.parseInt(properties.getProperty("conexion.timeout", "3000").trim());
     }
 }

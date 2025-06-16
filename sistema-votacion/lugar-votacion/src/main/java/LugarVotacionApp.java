@@ -72,17 +72,11 @@ public class LugarVotacionApp {
             
             // Activar el adaptador
             adapter.activate();
-            
-            // Mensaje de inicio del lugar de votacion
-            System.out.println("=== LUGAR DE VOTACION " + config.getLugarId() + " INICIADO ===");
-            System.out.println("- ID: " + config.getLugarId());
-            System.out.println("- Nombre: " + config.getLugarNombre());            System.out.println("- Puerto de recepcion: " + config.getPuerto());
+              // Mensaje de inicio silencioso para automatizacion
+            System.out.println("LUGAR " + config.getLugarId() + " INICIADO");
             
             // Verificar conectividad con broker destino
             controller.verificarConectividadInicial();
-            
-            System.out.println("\n");
-            System.out.println("Lugar de votacion listo para procesar votos...");
             
             // Configurar shutdown hook
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -97,10 +91,8 @@ public class LugarVotacionApp {
             
             // Mantener el lugar de votacion corriendo
             communicator.waitForShutdown();
-            
-        } catch (java.lang.Exception e) {  // Especificar java.lang.Exception
+              } catch (java.lang.Exception e) {  // Especificar java.lang.Exception
             System.err.println("Error iniciando lugar de votacion: " + e.getMessage());
-            e.printStackTrace();
             System.exit(1);
         }
     }

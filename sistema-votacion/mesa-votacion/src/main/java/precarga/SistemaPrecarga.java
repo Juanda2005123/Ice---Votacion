@@ -21,61 +21,55 @@ import java.util.List;
  * @since 2025-05-30
  */
 public class SistemaPrecarga {
-    
-    private RepositorioMesaVotacion repositorio;
+      private RepositorioMesaVotacion repositorio;
     private boolean precargaCompletada;
-    
-    /**
+    private CargadorCandidatos cargadorCandidatos;
+      /**
      * Constructor del sistema de precarga.
      * 
      * @param repositorio Repositorio donde cargar los datos
+     * @param rutaCandidatos Ruta al archivo CSV de candidatos
      */
-    public SistemaPrecarga(RepositorioMesaVotacion repositorio) {
+    public SistemaPrecarga(RepositorioMesaVotacion repositorio, String rutaCandidatos) {
         if (repositorio == null) {
             throw new IllegalArgumentException("El repositorio no puede ser null");
         }
         
         this.repositorio = repositorio;
         this.precargaCompletada = false;
+        this.cargadorCandidatos = new CargadorCandidatos(rutaCandidatos);
+        
+        // Verificar que el archivo de candidatos existe
+        if (!cargadorCandidatos.existeArchivoCandidatos()) {
+            throw new RuntimeException("Archivo de candidatos no encontrado: " + rutaCandidatos);
+        }
     }
-    
-    /**
-     * Realiza la precarga completa de la mesa con configuracion recibida.
-     * Operacion atomica: si algo falla, no se carga nada.
+      /**
+     * Realiza la precarga completa de la mesa cargando candidatos desde CSV
+     * y generando votantes simulados.
      * 
-     * @param configuracion Configuracion de mesa recibida del servidor
-     * @throws IllegalArgumentException si la configuracion es invalida
      * @throws RuntimeException si hay error en la precarga
      */
-    public void precargarMesa(ConfiguracionMesa configuracion) {
-        if (configuracion == null) {
-            throw new IllegalArgumentException("La configuracion no puede ser null");
-        }
-        
+    public void precargarMesa() {
         if (precargaCompletada) {
             throw new RuntimeException("La mesa ya ha sido precargada. No se permite recargar.");
         }
         
         try {
-            // 1. Validar configuracion
-            configuracion.validar();
+            // 1. Cargar candidatos desde CSV
+            List<Candidato> candidatos = cargadorCandidatos.cargarCandidatos();
+            precargarCandidatos(candidatos);
             
-            // 2. Verificar que sea la mesa correcta
-            if (!repositorio.getIdMesaVotacion().equals(configuracion.getIdMesa())) {
-                throw new IllegalArgumentException("La configuracion no corresponde a esta mesa de votacion");
-            }
+            // 2. Generar votantes simulados para esta mesa
+            List<Ciudadano> votantes = generarVotantesSimulados(repositorio.getIdMesaVotacion());
+            precargarVotantes(votantes);
             
-            // 3. Precargar candidatos
-            precargarCandidatos(configuracion.getCandidatos());
-            
-            // 4. Precargar votantes
-            precargarVotantes(configuracion.getVotantesElegibles());
-            
-            // 5. Marcar precarga como completada
+            // 3. Marcar precarga como completada
             this.precargaCompletada = true;
             
+            System.out.println("[PRECARGA] Mesa precargada exitosamente: " + repositorio.getIdMesaVotacion());
+            
         } catch (Exception e) {
-            // En caso de error, limpiar cualquier dato parcialmente cargado
             throw new RuntimeException("Error durante la precarga: " + e.getMessage());
         }
     }
@@ -155,25 +149,16 @@ public class SistemaPrecarga {
         // Cargar en repositorio
         repositorio.cargarVotantesElegibles(votantes);
     }
-    
-    /**
-     * Genera configuracion de datos simulados para pruebas locales.
+      /**
+     * Genera votantes simulados para una mesa específica.
      * 
-     * @param idMesa ID de la mesa para la cual generar datos
-     * @return Configuracion con datos simulados
+     * @param idMesa ID de la mesa para la cual generar votantes
+     * @return Lista de votantes simulados
      */
-    public ConfiguracionMesa generarConfiguracionSimulada(String idMesa) {
-        // Generar candidatos simulados
-        List<Candidato> candidatos = new ArrayList<>();
-        candidatos.add(new Candidato(1, "Juan Carlos Perez", "Partido Liberal"));
-        candidatos.add(new Candidato(2, "Maria Elena Gonzalez", "Partido Conservador"));
-        candidatos.add(new Candidato(3, "Roberto Sanchez Diaz", "Partido Verde"));
-        candidatos.add(new Candidato(4, "Ana Maria Torres", "Movimiento Ciudadano"));
-        candidatos.add(new Candidato(5, "Carlos Eduardo Ramirez", "Partido de la Unidad"));
-        candidatos.add(new Candidato(99, "Voto en Blanco", "BLANCO"));
+    private List<Ciudadano> generarVotantesSimulados(String idMesa) {
+        List<Ciudadano> votantes = new ArrayList<>();
         
         // Generar votantes simulados para esta mesa
-        List<Ciudadano> votantes = new ArrayList<>();
         votantes.add(new Ciudadano(1, "12345678", "Ana", "Garcia Lopez", idMesa));
         votantes.add(new Ciudadano(2, "23456789", "Carlos", "Rodriguez Perez", idMesa));
         votantes.add(new Ciudadano(3, "34567890", "Maria", "Fernandez Torres", idMesa));
@@ -186,7 +171,7 @@ public class SistemaPrecarga {
         votantes.add(new Ciudadano(10, "90123456", "Elena", "Ruiz Mendoza", idMesa));
         votantes.add(new Ciudadano(11, "01234567", "Diego", "Jimenez Ortega", idMesa));
         
-        return new ConfiguracionMesa(idMesa, candidatos, votantes);
+        return votantes;
     }
     
     /**

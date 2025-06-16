@@ -76,9 +76,8 @@ public class ConfiguracionLugar {
      * Obtiene el puerto del lugar de votacion.
      * 
      * @return Puerto donde escucha el lugar
-     */
-    public int getPuerto() {
-        return Integer.parseInt(properties.getProperty("lugar.puerto", "8001"));
+     */    public int getPuerto() {
+        return Integer.parseInt(properties.getProperty("lugar.puerto", "8001").trim());
     }
     
     /**
@@ -87,7 +86,7 @@ public class ConfiguracionLugar {
      * @return Timeout en milisegundos
      */
     public int getTimeout() {
-        return Integer.parseInt(properties.getProperty("lugar.timeout", "5000"));
+        return Integer.parseInt(properties.getProperty("lugar.timeout", "5000").trim());
     }
     
     // Configuracion del broker destino (para reenvio)
@@ -107,7 +106,7 @@ public class ConfiguracionLugar {
      * @return Puerto del broker lugar-departamento
      */
     public int getBrokerDestinoPuerto() {
-        return Integer.parseInt(properties.getProperty("broker.destino.puerto", "9001"));
+        return Integer.parseInt(properties.getProperty("broker.destino.puerto", "9001").trim());
     }
     
     /**
@@ -116,16 +115,15 @@ public class ConfiguracionLugar {
      * @return Timeout para broker destino en milisegundos
      */
     public int getBrokerDestinoTimeout() {
-        return Integer.parseInt(properties.getProperty("broker.destino.timeout", "5000"));
+        return Integer.parseInt(properties.getProperty("broker.destino.timeout", "5000").trim());
     }
-    
-    /**
+      /**
      * Obtiene el numero de reintentos para conexiones.
      * 
      * @return Numero de reintentos permitidos
      */
     public int getConexionReintentos() {
-        return Integer.parseInt(properties.getProperty("conexion.reintentos", "3"));
+        return Integer.parseInt(properties.getProperty("conexion.reintentos", "3").trim());
     }
     
     /**
@@ -134,6 +132,35 @@ public class ConfiguracionLugar {
      * @return Timeout de conexion en milisegundos
      */
     public int getConexionTimeout() {
-        return Integer.parseInt(properties.getProperty("conexion.timeout", "3000"));
+        return Integer.parseInt(properties.getProperty("conexion.timeout", "3000").trim());
+    }
+    
+    // Configuración de deltas Map-Reduce
+    
+    /**
+     * Obtiene el umbral de votos para envío de deltas consolidadas.
+     * 
+     * @return Número de votos consolidados antes de enviar
+     */
+    public int getDeltaUmbralVotos() {
+        return Integer.parseInt(properties.getProperty("delta.umbral.votos", "500").trim());
+    }
+    
+    /**
+     * Obtiene el umbral de tiempo para envío de deltas consolidadas.
+     * 
+     * @return Tiempo en milisegundos antes de enviar
+     */
+    public long getDeltaUmbralTiempo() {
+        return Long.parseLong(properties.getProperty("delta.umbral.tiempo", "1000").trim());
+    }
+    
+    /**
+     * Obtiene el tamaño del pool de hilos para Map-Reduce.
+     * 
+     * @return Tamaño del pool de hilos
+     */
+    public int getThreadPoolSize() {
+        return Integer.parseInt(properties.getProperty("threads.pool.size", "12").trim());
     }
 }

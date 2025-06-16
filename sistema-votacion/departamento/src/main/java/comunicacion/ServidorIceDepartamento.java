@@ -1,23 +1,19 @@
 package comunicacion;
 
 import VotingSystem.*;
-import model.Voto;
 import controller.DepartamentoController;
 
 /**
- * Servidor Ice que recibe votos en el departamento de votacion.
+ * Servidor Ice que recibe deltas en el departamento para Map-Reduce Level 2.
  * 
  * Este servidor es responsable de:
- * - Recibir votos desde el broker lugar-departamento a traves de Ice
- * - Convertir los votos del formato Ice al formato Java interno
- * - Delegar el procesamiento (reenvio) al controlador del departamento
+ * - Recibir deltas desde lugares de votación a traves de Ice
+ * - Delegar el procesamiento Map-Reduce al controlador del departamento
  * - Responder a solicitudes de ping para verificacion de conectividad
- * 
- * El servidor no realiza validaciones de negocio, solo conversion de datos
- * y delegacion al controlador correspondiente.
+ * - NO implementa validaciones (solo consolidación)
  * 
  * @author Sistema de Votacion
- * @version 1.0
+ * @version 2.0 - Map-Reduce Level 2
  * @since 2025-06-15
  */
 public class ServidorIceDepartamento implements ReceptorVotos {
@@ -27,44 +23,42 @@ public class ServidorIceDepartamento implements ReceptorVotos {
     /**
      * Constructor que inicializa el servidor con el controlador del departamento.
      * 
-     * @param controller Controlador que procesara los votos recibidos
+     * @param controller Controlador que procesara los deltas recibidos
      */
     public ServidorIceDepartamento(DepartamentoController controller) {
         this.controller = controller;
     }
+
     /**
-     * Recibe un voto desde el broker y lo procesa.
-     * No realiza validaciones, solo conversion y reenvio al controlador.
+     * Recibe un delta desde lugares y lo procesa con Map-Reduce departamental.
+     * MAP PHASE: Thread Pool consolida deltas departamentales en paralelo.
      * 
-     * @param votoIce Voto en formato Ice recibido desde el broker
+     * @param delta Delta en formato Ice recibido desde el cliente
      * @param current Contexto de la llamada Ice (no utilizado)
-     * @return true si el voto fue procesado exitosamente, false en caso contrario
-     */
+     * @return true si el delta fue procesado exitosamente
+     */    
     @Override
-    public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
+    public boolean recibirDeltaConteo(VotingSystem.DeltaConteo delta, com.zeroc.Ice.Current current) {
         try {
-            // Convertir Ice a Java y procesar (reenviar)
-            Voto votoJava = convertirVotoIceAJava(votoIce);
-            return controller.procesarVoto(votoJava);
-            
+            return controller.procesarDelta(delta);
         } catch (Exception e) {
-            System.err.println("Error procesando voto en departamento de votacion: " + e.getMessage());
             return false;
         }
-    }
-    
+    }    
     /**
-     * Responde a solicitudes de ping para verificar que el lugar esta activo.
+     * Responde a solicitudes de ping para verificar que el departamento esta activo.
      * 
      * @param current Contexto de la llamada Ice (no utilizado)
-     * @return Siempre true indicando que el lugar esta operativo
+     * @return Siempre true indicando que el departamento esta operativo
      */
     @Override
     public boolean ping(com.zeroc.Ice.Current current) {
         return true;
-    }    /**
+    }
+
+    /**
      * Recibe una validación de votante - NO IMPLEMENTADO EN DEPARTAMENTO.
-     * El departamento no realiza validaciones locales, solo reenvio de votos al servidor central.
+     * El departamento no realiza validaciones locales, solo consolidación de deltas.
      * 
      * @param documento Documento del votante
      * @param candidatoId ID del candidato elegido
@@ -74,28 +68,6 @@ public class ServidorIceDepartamento implements ReceptorVotos {
      */
     @Override
     public int recibirValidacionVotante(String documento, int candidatoId, com.zeroc.Ice.Current current) {
-        throw new UnsupportedOperationException("La validacion de ciudadanos no se implementa en el departamento. Los votos se reenvian directamente al servidor central.");
-    }
-    
-    /**
-     * Convierte un voto del formato Ice al formato Java interno.
-     * Mantiene los tipos Integer para los IDs sin conversion adicional.
-     * 
-     * @param votoIce Voto en formato Ice a convertir
-     * @return Voto en formato Java equivalente
-     */
-    private Voto convertirVotoIceAJava(VotingSystem.Voto votoIce) {
-        model.Candidato candidatoJava = new model.Candidato(
-            votoIce.candidato.id,    // Integer directo desde Ice
-            votoIce.candidato.nombre,
-            votoIce.candidato.partidoPolitico
-        );
-        
-        Voto votoJava = new Voto(
-            votoIce.id,              // Integer directo desde Ice
-            candidatoJava
-        );
-        
-        return votoJava;
+        throw new UnsupportedOperationException("La validacion de ciudadanos no se implementa en el departamento. Los deltas se consolidan y reenvian al servidor central.");
     }
 }

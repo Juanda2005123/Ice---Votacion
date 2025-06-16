@@ -1,20 +1,24 @@
 package comunicacion;
 
 import VotingSystem.*;
-import model.Voto;
 import config.ConfiguracionBroker;
 import enrutamiento.EstrategiaEnrutamiento;
 
 /**
- * Servicio para ENVIAR votos a destinos configurados.
- * Solo reenvia votos, sin validaciones ni estadisticas.
+ * Servicio para reenviar deltas a destinos configurados con load balancing.
+ * Solo reenvia deltas usando Map-Reduce, sin validaciones ni estadisticas.
+ * 
+ * @author Sistema de Votacion
+ * @version 2.0 - Delta System con Thread Pool
+ * @since 2025-06-15
  */
 public class ServicioComunicacionBroker {
     
     private com.zeroc.Ice.Communicator communicator;
     private EstrategiaEnrutamiento estrategiaEnrutamiento;
     private ConfiguracionBroker config;
-        public ServicioComunicacionBroker(ConfiguracionBroker config) {
+
+    public ServicioComunicacionBroker(ConfiguracionBroker config) {
         this.config = config;
         this.estrategiaEnrutamiento = new EstrategiaEnrutamiento(config);
         
@@ -24,19 +28,19 @@ public class ServicioComunicacionBroker {
             throw new RuntimeException("Error inicializando cliente Ice: " + e.getMessage());
         }
     }
+
     /**
-     * Funcion principal: Reenvia un voto al destino seleccionado
-     * Sin validaciones - solo reenvio
-     * DIFERENCIA CON LUGAR: Verifica conectividad antes de enviar
+     * Reenvia un delta al destino seleccionado usando load balancing LRU.
+     * Sin validaciones - solo reenvio con Thread Pool.
      */    
-    public boolean reenviarVoto(Voto voto) {
+    public boolean reenviarDelta(DeltaConteo delta) {
         ConfiguracionBroker.Destino destino = seleccionarDestino();
         
         if (destino == null) {
             return false;
         }
         
-        return enviarVotoADestino(voto, destino);
+        return enviarDeltaADestino(delta, destino);
     }      /**
      * Reenvia una validacion de votante al destino seleccionado.
      * 
@@ -82,8 +86,7 @@ public class ServicioComunicacionBroker {
 
     private ConfiguracionBroker.Destino seleccionarDestino() {
         return estrategiaEnrutamiento.seleccionarDestino();
-    }
-    /**
+    }    /**
      * Envia una validacion de votante a un destino especifico.
      * 
      * @param documento Documento del votante
@@ -110,9 +113,9 @@ public class ServicioComunicacionBroker {
     }
 
     /**
-     * Envia un voto a un destino especifico - una sola vez
+     * Envia un delta a un destino especifico usando Map-Reduce.
      */
-    private boolean enviarVotoADestino(Voto voto, ConfiguracionBroker.Destino destino) {
+    private boolean enviarDeltaADestino(DeltaConteo delta, ConfiguracionBroker.Destino destino) {
         try {
             String proxyString = String.format("ReceptorVotos:tcp -h %s -p %d", 
                                              destino.getHost(), destino.getPuerto());
@@ -124,27 +127,10 @@ public class ServicioComunicacionBroker {
                 return false;
             }
             
-            VotingSystem.Voto votoIce = convertirVotoJavaAIce(voto);
-            return receptorPrx.recibirVoto(votoIce);
-              } catch (Exception e) {
+            return receptorPrx.recibirDeltaConteo(delta);
+        } catch (Exception e) {
             return false;
         }
-    }
-    
-    /**
-     * Convertir Voto Java a Ice - MANTIENE Integer IDs
-     */
-    private VotingSystem.Voto convertirVotoJavaAIce(Voto votoJava) {
-        VotingSystem.Candidato candidatoIce = new VotingSystem.Candidato();
-        candidatoIce.id = votoJava.getCandidato().getId(); // Integer directo
-        candidatoIce.nombre = votoJava.getCandidato().getNombre();
-        candidatoIce.partidoPolitico = votoJava.getCandidato().getPartidoPolitico();
-        
-        VotingSystem.Voto votoIce = new VotingSystem.Voto();
-        votoIce.id = votoJava.getId(); // Integer directo
-        votoIce.candidato = candidatoIce;
-        
-        return votoIce;
     }
       /**
      * Cierra la conexion Ice

@@ -1,5 +1,14 @@
 module VotingSystem {
 
+    dictionary<int, int> MapConteoVotos;
+
+    class DeltaConteo {
+        string nodoId;
+        long timestamp;
+        int totalVotos;
+        MapConteoVotos conteo; // candidatoId → cantidad
+    };
+
     // Clase Candidato
     class Candidato {
         int id;
@@ -25,15 +34,16 @@ module VotingSystem {
     
     // Interface para enviar votos al Broker
     interface BrokerService {
-        bool recibirVoto(Voto voto);
+        bool recibirDeltaConteo(DeltaConteo delta);
         int recibirValidacionVotante(string documento, int candidatoId);
         bool ping();
     };
 
     // Interface para que Broker envíe votos  
     interface ReceptorVotos {
-        bool recibirVoto(Voto voto);
+        bool recibirDeltaConteo(DeltaConteo delta);
         int recibirValidacionVotante(string documento, int candidatoId);
         bool ping();
     };
+    
 };

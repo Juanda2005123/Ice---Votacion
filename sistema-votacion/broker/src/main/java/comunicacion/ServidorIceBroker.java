@@ -1,24 +1,20 @@
 package comunicacion;
 
 import VotingSystem.*;
-import model.Voto;
 import controller.BrokerController;
 
 /**
- * Servidor Ice que recibe votos en el broker.
+ * Servidor Ice que recibe deltas en el broker para Map-Reduce.
  * 
  * Este servidor es responsable de:
- * - Recibir votos desde las mesas de votacion a traves de Ice
- * - Convertir los votos del formato Ice al formato Java interno
- * - Delegar el procesamiento (reenvio) al controlador del broker
+ * - Recibir deltas desde los nodos inferiores a traves de Ice
+ * - Delegar el procesamiento (reenvio) al controlador del broker con Thread Pool
  * - Responder a solicitudes de ping para verificacion de conectividad
- * 
- * El servidor no realiza validaciones de negocio, solo conversion de datos
- * y delegacion al controlador correspondiente.
+ * - Manejar validaciones de ciudadanos
  * 
  * @author Sistema de Votacion
- * @version 1.0
- * @since 2025-06-14
+ * @version 2.0 - Map-Reduce Delta System
+ * @since 2025-06-15
  */
 public class ServidorIceBroker implements BrokerService {
     
@@ -27,32 +23,27 @@ public class ServidorIceBroker implements BrokerService {
     /**
      * Constructor que inicializa el servidor con el controlador del broker.
      * 
-     * @param controller Controlador que procesara los votos recibidos
+     * @param controller Controlador que procesara los deltas recibidos
      */
     public ServidorIceBroker(BrokerController controller) {
         this.controller = controller;
     }
     
     /**
-     * Recibe un voto desde cualquier cliente y lo reenvia.
-     * No realiza validaciones, solo conversion y reenvio.
+     * Recibe un delta desde nodos inferiores y lo procesa con Thread Pool.
      * 
-     * @param votoIce Voto en formato Ice recibido desde el cliente
+     * @param delta Delta en formato Ice recibido desde el cliente
      * @param current Contexto de la llamada Ice (no utilizado)
-     * @return true si el voto fue procesado exitosamente, false en caso contrario
+     * @return true si el delta fue procesado exitosamente, false en caso contrario
      */    
     @Override
-    public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
+    public boolean recibirDeltaConteo(VotingSystem.DeltaConteo delta, com.zeroc.Ice.Current current) {
         try {
-            // Convertir Ice a Java y reenviar
-            Voto votoJava = convertirVotoIceAJava(votoIce);
-            return controller.procesarVoto(votoJava);
-            
+            return controller.procesarDelta(delta);
         } catch (Exception e) {
             return false;
         }
-    }
-    
+    }    
     /**
      * Responde a solicitudes de ping para verificar que el broker esta activo.
      * 
@@ -62,7 +53,9 @@ public class ServidorIceBroker implements BrokerService {
     @Override
     public boolean ping(com.zeroc.Ice.Current current) {
         return true;
-    }    /**
+    }
+
+    /**
      * Recibe una validación de ciudadano desde cualquier cliente y la procesa.
      * No realiza validaciones locales, solo delegacion al controlador.
      * 
@@ -78,27 +71,5 @@ public class ServidorIceBroker implements BrokerService {
         } catch (Exception e) {
             return 4; // Error de procesamiento
         }
-    }
-    
-    /**
-     * Convierte un voto del formato Ice al formato Java interno.
-     * Mantiene los tipos Integer para los IDs sin conversion adicional.
-     * 
-     * @param votoIce Voto en formato Ice a convertir
-     * @return Voto en formato Java equivalente
-     */
-    private Voto convertirVotoIceAJava(VotingSystem.Voto votoIce) {
-        model.Candidato candidatoJava = new model.Candidato(
-            votoIce.candidato.id,    // Integer directo desde Ice
-            votoIce.candidato.nombre,
-            votoIce.candidato.partidoPolitico
-        );
-        
-        Voto votoJava = new Voto(
-            votoIce.id,              // Integer directo desde Ice
-            candidatoJava
-        );
-        
-        return votoJava;
     }
 }

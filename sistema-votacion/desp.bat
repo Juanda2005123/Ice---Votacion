@@ -25,6 +25,7 @@ echo 2. Eliminando JAR anteriores...
 del /q "jar\broker mesa-votacion a lugar-votacion\*.jar" 2>nul
 del /q "jar\broker lugar-votacion a departamento\*.jar" 2>nul
 del /q "jar\mesa-votacion1\*.jar" 2>nul
+del /q "jar\mesa-votacion2\*.jar" 2>nul
 del /q "jar\lugar-votacion1\*.jar" 2>nul
 del /q "jar\departamento1\*.jar" 2>nul
 del /q "jar\servidor-central1\*.jar" 2>nul
@@ -54,13 +55,22 @@ if !errorlevel! equ 0 (
     echo [ERROR] Fallo al copiar broker-fat.jar (lugar ^> departamento)
 )
 
-REM Mesa de votacion
-echo Copiando mesa-votacion...
+REM Mesa de votacion 1
+echo Copiando mesa-votacion1...
 copy "mesa-votacion\build\libs\mesa-votacion-fat.jar" "jar\mesa-votacion1\" >nul 2>&1
 if !errorlevel! equ 0 (
     echo [OK] mesa-votacion-fat.jar copiado a 'mesa-votacion1'
 ) else (
-    echo [ERROR] Fallo al copiar mesa-votacion-fat.jar
+    echo [ERROR] Fallo al copiar mesa-votacion-fat.jar a mesa-votacion1
+)
+
+REM Mesa de votacion 2
+echo Copiando mesa-votacion2...
+copy "mesa-votacion\build\libs\mesa-votacion-fat.jar" "jar\mesa-votacion2\" >nul 2>&1
+if !errorlevel! equ 0 (
+    echo [OK] mesa-votacion-fat.jar copiado a 'mesa-votacion2'
+) else (
+    echo [ERROR] Fallo al copiar mesa-votacion-fat.jar a mesa-votacion2
 )
 
 REM Lugar de votacion
@@ -108,6 +118,7 @@ echo JAR disponibles en:
 echo ├── jar\broker mesa-votacion a lugar-votacion\broker-fat.jar
 echo ├── jar\broker lugar-votacion a departamento\broker-fat.jar
 echo ├── jar\mesa-votacion1\mesa-votacion-fat.jar
+echo ├── jar\mesa-votacion2\mesa-votacion-fat.jar
 echo ├── jar\lugar-votacion1\lugar-votacion-fat.jar
 echo ├── jar\departamento1\departamento-fat.jar
 echo ├── jar\servidor-central1\servidor-central-fat.jar

@@ -1,13 +1,15 @@
 package comunicacion;
 
 import VotingSystem.*;
-import model.Voto;
 import config.ConfiguracionDepartamento;
 
 /**
- * Servicio para ENVIAR votos al servidor central (conexion directa).
- * Solo reenvia votos, sin validaciones ni estadisticas.
- * (Consistente con ServicioComunicacionLugar)
+ * Servicio para enviar deltas consolidadas departamentales al servidor central.
+ * Solo reenvia deltas Map-Reduce Level 2, sin validaciones ni estadisticas.
+ * 
+ * @author Sistema de Votacion
+ * @version 2.0 - Map-Reduce Level 2 
+ * @since 2025-06-15
  */
 public class ServicioComunicacionDepartamento {
     
@@ -22,16 +24,20 @@ public class ServicioComunicacionDepartamento {
         } catch (Exception e) {
             throw new RuntimeException("Error inicializando cliente Ice: " + e.getMessage());
         }
-    }    /**
-     * Funcion principal: Reenvia un voto al servidor central
-     * Implementa la comunicacion directa con el servidor central
-     */
-    public boolean reenviarVoto(Voto voto) {
-        return enviarVotoAServidor(voto);
     }
-      /**
+
+    /**
+     * Reenvia un delta consolidado departamental al servidor central.
+     * REDUCE PHASE: Envía resultado de consolidación Map-Reduce Level 2.
+     * 
+     * @param delta Delta consolidado departamental a reenviar
+     * @return true si el delta fue reenviado exitosamente
+     */
+    public boolean reenviarDelta(DeltaConteo delta) {
+        return enviarDeltaAServidor(delta);
+    }      /**
      * Recibe una validacion de votante - NO IMPLEMENTADO EN DEPARTAMENTO.
-     * El departamento no realiza validaciones, solo reenvio de votos.
+     * El departamento no realiza validaciones, solo consolidación de deltas.
      * 
      * @param documento Documento del votante
      * @param candidatoId ID del candidato elegido
@@ -39,16 +45,16 @@ public class ServicioComunicacionDepartamento {
      * @throws UnsupportedOperationException Siempre, ya que no se utiliza en departamento
      */
     public int reenviarValidacionVotante(String documento, Integer candidatoId) {
-        throw new UnsupportedOperationException("La validacion de ciudadanos no se implementa en el departamento. Los votos se reenvian directamente al servidor central.");
+        throw new UnsupportedOperationException("La validacion de ciudadanos no se implementa en el departamento. Los deltas se consolidan y reenvian al servidor central.");
     }
     
     /**
-     * Envia un voto al servidor central directamente.
+     * Envia un delta consolidado departamental al servidor central directamente.
      * 
-     * @param voto Voto a enviar al servidor central
-     * @return true si el voto fue enviado exitosamente, false en caso contrario
+     * @param delta Delta consolidado departamental a enviar
+     * @return true si el delta fue enviado exitosamente, false en caso contrario
      */
-    private boolean enviarVotoAServidor(Voto voto) {
+    private boolean enviarDeltaAServidor(DeltaConteo delta) {
         try {
             String proxyString = String.format("ReceptorVotos:tcp -h %s -p %d", 
                                              config.getServidorCentralHost(), 
@@ -58,38 +64,16 @@ public class ServicioComunicacionDepartamento {
             ReceptorVotosPrx receptorPrx = ReceptorVotosPrx.checkedCast(proxy);
             
             if (receptorPrx == null) {
-                System.err.println("[ERROR] No se pudo conectar con servidor central");
                 return false;
             }
             
-            VotingSystem.Voto votoIce = convertirVotoJavaAIce(voto);
-            return receptorPrx.recibirVoto(votoIce);
+            return receptorPrx.recibirDeltaConteo(delta);
             
         } catch (Exception e) {
-            System.err.println("[ERROR] Error enviando voto al servidor central: " + e.getMessage());
             return false;
         }
     }
     
-    /**
-     * Convierte un voto del formato Java al formato Ice.
-     * Mantiene los tipos Integer para los IDs sin conversion adicional.
-     * 
-     * @param votoJava Voto en formato Java a convertir
-     * @return Voto en formato Ice equivalente
-     */
-    private VotingSystem.Voto convertirVotoJavaAIce(Voto votoJava) {
-        VotingSystem.Candidato candidatoIce = new VotingSystem.Candidato();
-        candidatoIce.id = votoJava.getCandidato().getId(); // Integer directo
-        candidatoIce.nombre = votoJava.getCandidato().getNombre();
-        candidatoIce.partidoPolitico = votoJava.getCandidato().getPartidoPolitico();
-        
-        VotingSystem.Voto votoIce = new VotingSystem.Voto();
-        votoIce.id = votoJava.getId(); // Integer directo
-        votoIce.candidato = candidatoIce;
-        
-        return votoIce;
-    }    
     /**
      * Cierra la conexion Ice
      */

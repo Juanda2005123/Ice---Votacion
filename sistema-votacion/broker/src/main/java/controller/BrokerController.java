@@ -1,31 +1,33 @@
 package controller;
 
-import model.Voto;
+import VotingSystem.DeltaConteo;
 import config.ConfiguracionBroker;
 import comunicacion.ServicioComunicacionBroker;
 import comunicacion.ServicioVerificacionConectividad;
 import enrutamiento.EstrategiaEnrutamiento;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Controlador principal del broker que maneja el reenvio de votos.
+ * Controlador principal del broker que maneja el reenvio de deltas con Thread Pool.
  * 
  * Este controlador es responsable de:
- * - Recibir votos desde el servidor Ice
+ * - Recibir deltas desde el servidor Ice
  * - Verificar conectividad con destinos configurados
- * - Reenviar votos a destinos activos segun la estrategia de enrutamiento
- * 
- * El controlador no realiza validaciones de negocio ni almacenamiento,
- * solo actua como intermediario para el reenvio de votos.
+ * - Reenviar deltas a destinos activos usando Thread Pool para paralelismo
+ * - Mantener load balancing LRU implementado
  * 
  * @author Sistema de Votacion
- * @version 1.0
- * @since 2025-06-14
+ * @version 2.0 - Map-Reduce Delta System con Thread Pool
+ * @since 2025-06-15
  */
 public class BrokerController {    
     private ServicioComunicacionBroker comunicacion;
     private ServicioVerificacionConectividad verificador;
     private ConfiguracionBroker config;
     private EstrategiaEnrutamiento estrategia;
+    private ExecutorService threadPool;
 
     /**
      * Constructor que inicializa el controlador con la configuracion del broker.
@@ -37,42 +39,41 @@ public class BrokerController {
         this.comunicacion = new ServicioComunicacionBroker(config);
         this.verificador = new ServicioVerificacionConectividad();
         this.estrategia = new EstrategiaEnrutamiento(config);
+        
+        // Inicializar Thread Pool para reenvio paralelo de deltas
+        int poolSize = config.getThreadPoolSize();
+        this.threadPool = Executors.newFixedThreadPool(poolSize);
     }    /**
      * Verifica la conectividad con todos los destinos al iniciar el broker.
-     * Muestra informacion detallada de cada destino verificado.
      */
     public void verificarConectividadInicial() {
-        System.out.println("=== VERIFICANDO CONECTIVIDAD CON DESTINOS ===");
-        
         for (ConfiguracionBroker.Destino destino : config.getDestinosActivos()) {
             boolean conectado = verificador.verificarConectividad(destino);
             if (conectado) {
-                // Mostrar informacion detallada del destino conectado
-                System.out.println("[OK] Conexion exitosa con " + destino.getId() + 
-                                 " (" + destino.getTipo() + ") en " + 
-                                 destino.getHost() + ":" + destino.getPuerto());
+                // Solo log de conexión exitosa sin detalles
             } else {
-                // Mostrar advertencia para destinos no conectados
-                System.out.println("[!] ADVERTENCIA: No se pudo conectar con " + destino.getId() + 
-                                 " (" + destino.getTipo() + ") en " + 
-                                 destino.getHost() + ":" + destino.getPuerto());
+                // Solo log de advertencia sin detalles
             }
         }
-        
-        System.out.println("=== VERIFICACION DE CONECTIVIDAD COMPLETADA ===");
     }
     
     /**
-     * Funcion principal que recibe un voto y lo reenvia al destino correspondiente.
-     * No realiza validaciones de negocio ni almacenamiento, solo reenvio.
-     * A diferencia del lugar de votacion, puede verificar conectividad antes de enviar.
+     * Procesa un delta recibido usando Thread Pool para reenvio paralelo.
+     * No realiza validaciones, solo reenvio con load balancing LRU.
      * 
-     * @param voto Voto a procesar y reenviar
-     * @return true si el voto fue reenviado exitosamente, false en caso contrario
+     * @param delta Delta a procesar y reenviar
+     * @return true si el delta fue enviado para procesamiento, false en caso contrario
      */
-    public boolean procesarVoto(Voto voto) {
-        // Solo reenviar el voto
-        return comunicacion.reenviarVoto(voto);
+    public boolean procesarDelta(DeltaConteo delta) {
+        try {
+            // Enviar delta para procesamiento asíncrono en Thread Pool
+            threadPool.submit(() -> {
+                comunicacion.reenviarDelta(delta);
+            });
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }    /**
      * Valida un ciudadano enviando la solicitud al proxy de validacion.
      * Se conecta al proxy configurado para verificar si el ciudadano existe.
@@ -82,7 +83,6 @@ public class BrokerController {
      * @return Código de validación del proxy: 1=existe, 3=no existe, 4=error
      */
     public int validarCiudadano(String documento, Integer candidatoId) {
-        // Enviar validacion al proxy configurado
         return comunicacion.enviarValidacionAProxy(documento, candidatoId);
     }
     
@@ -115,10 +115,24 @@ public class BrokerController {
      */
     public void verificarEstadoDestinos() {
         verificador.verificarConectividadDestinos(config);
-    }    /**
-     * Cierra todas las conexiones y libera recursos.
+    }
+
+    /**
+     * Cierra todas las conexiones y libera recursos incluyendo Thread Pool.
      */
     public void cerrar() {
+        // Cerrar Thread Pool ordenadamente
+        if (threadPool != null) {
+            threadPool.shutdown();
+            try {
+                if (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+                    threadPool.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                threadPool.shutdownNow();
+            }
+        }
+        
         if (verificador != null) {
             verificador.cerrar();
         }

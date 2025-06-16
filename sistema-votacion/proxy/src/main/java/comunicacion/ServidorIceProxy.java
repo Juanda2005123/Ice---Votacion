@@ -29,8 +29,7 @@ public class ServidorIceProxy implements ReceptorVotos {
      */
     public ServidorIceProxy(ProxyController controller) {
         this.controller = controller;
-    }    
-    /**
+    }      /**
      * Recibe un voto - NO IMPLEMENTADO EN PROXY.
      * El proxy solo maneja validaciones de ciudadanos, no votos.
      * 
@@ -39,7 +38,6 @@ public class ServidorIceProxy implements ReceptorVotos {
      * @return No retorna, lanza excepcion
      * @throws UnsupportedOperationException Siempre, ya que no se utiliza en proxy
      */
-    @Override
     public boolean recibirVoto(VotingSystem.Voto votoIce, com.zeroc.Ice.Current current) {
         throw new UnsupportedOperationException("El procesamiento de votos no se implementa en el proxy. Solo se procesan validaciones de ciudadanos.");
     }
@@ -72,5 +70,19 @@ public class ServidorIceProxy implements ReceptorVotos {
             System.err.println("Error procesando validacion en proxy: " + e.getMessage());
             return 3; // Error de procesamiento
         }
+    }
+    
+    /**
+     * Recibe un delta - NO IMPLEMENTADO EN PROXY.
+     * El proxy solo maneja validaciones de ciudadanos, no deltas.
+     * 
+     * @param delta Delta en formato Ice
+     * @param current Contexto de la llamada Ice (no utilizado)
+     * @return No retorna, lanza excepcion
+     * @throws UnsupportedOperationException Siempre, ya que no se utiliza en proxy
+     */
+    @Override
+    public boolean recibirDeltaConteo(DeltaConteo delta, com.zeroc.Ice.Current current) {
+        throw new UnsupportedOperationException("El procesamiento de deltas no se implementa en el proxy. Solo se procesan validaciones de ciudadanos.");
     }
 }

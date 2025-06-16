@@ -68,14 +68,13 @@ public class ConfiguracionServidor {
     public String getHost() {
         return properties.getProperty("servidor.host", "localhost");
     }
-    
-    /**
+      /**
      * Obtiene el puerto del servidor central de votacion.
      * 
      * @return Puerto donde escucha el servidor central
      */
     public int getPuerto() {
-        return Integer.parseInt(properties.getProperty("servidor.puerto", "6000"));
+        return Integer.parseInt(properties.getProperty("servidor.puerto", "6000").trim());
     }
     
     /**
@@ -84,7 +83,7 @@ public class ConfiguracionServidor {
      * @return Timeout en milisegundos
      */
     public int getTimeout() {
-        return Integer.parseInt(properties.getProperty("servidor.timeout", "5000"));
+        return Integer.parseInt(properties.getProperty("servidor.timeout", "5000").trim());
     }    
     /**
      * Obtiene el numero de reintentos para conexiones.
@@ -92,7 +91,7 @@ public class ConfiguracionServidor {
      * @return Numero de reintentos permitidos
      */
     public int getConexionReintentos() {
-        return Integer.parseInt(properties.getProperty("conexion.reintentos", "3"));
+        return Integer.parseInt(properties.getProperty("conexion.reintentos", "3").trim());
     }
     
     /**
@@ -101,6 +100,17 @@ public class ConfiguracionServidor {
      * @return Timeout de conexion en milisegundos
      */
     public int getConexionTimeout() {
-        return Integer.parseInt(properties.getProperty("conexion.timeout", "3000"));
+        return Integer.parseInt(properties.getProperty("conexion.timeout", "3000").trim());
+    }
+    
+    // Configuración Thread Pool para Reduce Final
+    
+    /**
+     * Obtiene el tamaño del pool de hilos para procesamiento de deltas.
+     * 
+     * @return Número de hilos para el thread pool
+     */
+    public int getThreadPoolSize() {
+        return Integer.parseInt(properties.getProperty("threads.pool.size", "4").trim());
     }
 }

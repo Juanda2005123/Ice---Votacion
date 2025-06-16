@@ -1,72 +1,95 @@
 package controller;
 
-import model.Voto;
+import VotingSystem.DeltaConteo;
 import config.ConfiguracionLugar;
 import comunicacion.ServicioComunicacionLugar;
 import comunicacion.ServicioVerificacionConectividad;
+import deltas.RepositorioDeltas;
+import deltas.GeneradorDeltas;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Controlador principal del lugar de votacion que maneja el reenvio de votos.
+ * Controlador principal del lugar de votación con Map-Reduce Level 1.
  * 
- * Este controlador es responsable de:
- * - Recibir votos desde el broker mesa-lugar
- * - Verificar conectividad con el broker destino
- * - Reenviar votos al broker lugar-departamento
- * 
- * El controlador no realiza validaciones de negocio ni almacenamiento,
- * solo actua como intermediario en la cadena de comunicacion.
+ * Este controlador implementa el primer nivel de consolidación Map-Reduce:
+ * - MAP PHASE: Thread Pool recibe deltas de mesas, los consolida en paralelo
+ * - REDUCE PHASE: Crea y envía deltas consolidados por umbral
+ * - ESTADO COMPARTIDO: ConcurrentHashMap thread-safe para conteos
  * 
  * @author Sistema de Votacion
- * @version 1.0
- * @since 2025-06-14
+ * @version 2.0 - Map-Reduce Level 1
+ * @since 2025-06-15
  */
 public class LugarController {
     
     private ServicioComunicacionLugar comunicacion;
     private ServicioVerificacionConectividad verificador;
     private ConfiguracionLugar config;
+    private ExecutorService threadPool;
+    private RepositorioDeltas repositorioDeltas;
+    private GeneradorDeltas generadorDeltas;
 
     /**
-     * Constructor que inicializa el controlador con la configuracion del lugar.
+     * Constructor que inicializa el controlador con Map-Reduce.
      * 
-     * @param config Configuracion del lugar con destino y parametros
+     * @param config Configuracion del lugar con parametros Map-Reduce
      */
     public LugarController(ConfiguracionLugar config) {
         this.config = config;
         this.comunicacion = new ServicioComunicacionLugar(config);
         this.verificador = new ServicioVerificacionConectividad();
-    }
-    
+        
+        // Inicializar Thread Pool para MAP PHASE
+        int poolSize = config.getThreadPoolSize();
+        this.threadPool = Executors.newFixedThreadPool(poolSize);
+        
+        // Inicializar sistema Map-Reduce
+        this.repositorioDeltas = new RepositorioDeltas(config.getLugarId());
+        this.generadorDeltas = new GeneradorDeltas(
+            repositorioDeltas, 
+            config, 
+            this::enviarDeltaConsolidado
+        );
+    }    
     /**
      * Verifica la conectividad con el broker destino al iniciar el lugar de votacion.
-     * Muestra informacion detallada del broker destino (consistente con el broker).
      */
     public void verificarConectividadInicial() {
-        System.out.println("=== VERIFICANDO CONECTIVIDAD CON BROKER DESTINO ===");
-        
-        boolean conectado = verificador.verificarConectividad(config);        if (conectado) {
-            // Mostrar informacion detallada del broker destino conectado (consistente con broker)
-            System.out.println("[OK] Conexion exitosa con broker lugar-departamento en " + 
-                             config.getBrokerDestinoHost() + ":" + config.getBrokerDestinoPuerto());
-        } else {
-            // Mostrar advertencia para broker destino no conectado (consistente con broker)
-            System.out.println("[!] ADVERTENCIA: No se pudo conectar con broker lugar-departamento en " + 
-                             config.getBrokerDestinoHost() + ":" + config.getBrokerDestinoPuerto());
+        boolean conectado = verificador.verificarConectividad(config);
+        if (!conectado) {
+            // Solo log de error crítico
         }
-        
-        System.out.println("=== VERIFICACION DE CONECTIVIDAD COMPLETADA ===");
     }
     
     /**
-     * Funcion principal que recibe un voto y lo reenvia al broker destino.
-     * No realiza validaciones de negocio ni almacenamiento, solo reenvio.
+     * MAP PHASE: Procesa un delta de mesa usando Thread Pool.
+     * Cada hilo ejecuta la consolidación en paralelo.
      * 
-     * @param voto Voto a procesar y reenviar
-     * @return true si el voto fue reenviado exitosamente, false en caso contrario
+     * @param delta Delta recibido de mesa de votación
+     * @return true si el delta fue enviado para procesamiento
      */
-    public boolean procesarVoto(Voto voto) {
-        // Solo reenviar el voto
-        return comunicacion.reenviarVoto(voto);
+    public boolean procesarDelta(DeltaConteo delta) {
+        try {
+            // Enviar para procesamiento asíncrono en Thread Pool (MAP PHASE)
+            threadPool.submit(() -> {
+                generadorDeltas.procesarDelta(delta);
+            });
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * CALLBACK: Envía delta consolidado al broker destino.
+     * Llamado por GeneradorDeltas cuando alcanza umbral.
+     * 
+     * @param deltaConsolidado Delta consolidado listo para enviar
+     */
+    private void enviarDeltaConsolidado(DeltaConteo deltaConsolidado) {
+        comunicacion.reenviarDelta(deltaConsolidado);
     }    /**
      * Valida un voto reenviando la solicitud al broker destino.
      * El lugar actua como intermediario sin validacion local.
@@ -76,7 +99,6 @@ public class LugarController {
      * @return Código de validación del broker destino (0-3)
      */
     public int validarVoto(String documento, Integer candidatoId) {
-        // Solo reenviar la validación al broker destino
         return comunicacion.reenviarValidacionVotante(documento, candidatoId);
     }
     
@@ -99,16 +121,32 @@ public class LugarController {
     }
     
     /**
-     * Cierra todas las conexiones y libera recursos.
-     * Debe llamarse al finalizar el uso del controlador.
+     * Cierra todas las conexiones y libera recursos incluyendo Thread Pool.
+     * Envía último delta consolidado antes de cerrar.
      */
     public void cerrar() {
+        // Enviar último delta antes de cerrar
+        if (generadorDeltas != null) {
+            generadorDeltas.cerrar();
+        }
+        
+        // Cerrar Thread Pool ordenadamente
+        if (threadPool != null) {
+            threadPool.shutdown();
+            try {
+                if (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+                    threadPool.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                threadPool.shutdownNow();
+            }
+        }
+        
         if (verificador != null) {
             verificador.cerrar();
         }
         if (comunicacion != null) {
             comunicacion.cerrarConexion();
         }
-        System.out.println("LugarController " + config.getLugarId() + " cerrado");
     }
 }

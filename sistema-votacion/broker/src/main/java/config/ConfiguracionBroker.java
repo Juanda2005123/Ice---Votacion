@@ -47,12 +47,11 @@ public class ConfiguracionBroker {
         } catch (IOException e) {
             throw new RuntimeException("Error cargando configuracion: " + e.getMessage());
         }
-    }
-      /**
+    }    /**
      * Carga los destinos configurados desde las propiedades.
      */
     private void cargarDestinos() {
-        int cantidad = Integer.parseInt(properties.getProperty("destinos.cantidad", "0"));
+        int cantidad = Integer.parseInt(properties.getProperty("destinos.cantidad", "0").trim());
         
         for (int i = 1; i <= cantidad; i++) {
             String id = properties.getProperty("destino." + i + ".id");
@@ -62,7 +61,7 @@ public class ConfiguracionBroker {
             String tipo = properties.getProperty("destino." + i + ".tipo", "lugar-votacion");
             
             if (id != null && host != null && puertoStr != null) {
-                int puerto = Integer.parseInt(puertoStr);
+                int puerto = Integer.parseInt(puertoStr.trim());
                 boolean activo = Boolean.parseBoolean(activoStr);
                 destinos.add(new Destino(id, host, puerto, activo, tipo));
             }
@@ -70,14 +69,13 @@ public class ConfiguracionBroker {
     }
     
     // Getters para propiedades del broker (actualizados para usar nodo.id)
-    
-    /**
+      /**
      * Obtiene el identificador del broker.
      * 
      * @return ID del broker configurado
      */
     public String getBrokerId() {
-        return properties.getProperty("nodo.id", "BROKER-DEFAULT");
+        return properties.getProperty("broker.id", "BROKER-DEFAULT");
     }
     
     /**
@@ -86,7 +84,7 @@ public class ConfiguracionBroker {
      * @return Nombre del broker configurado
      */
     public String getBrokerNombre() {
-        return properties.getProperty("nodo.nombre", "Broker Default");
+        return properties.getProperty("broker.nombre", "Broker Default");
     }
     
     /**
@@ -97,32 +95,29 @@ public class ConfiguracionBroker {
     public String getHost() {
         return properties.getProperty("broker.host", "localhost");
     }
-    
-    /**
+      /**
      * Obtiene el puerto del broker.
      * 
      * @return Puerto donde escucha el broker
      */
     public int getPuerto() {
-        return Integer.parseInt(properties.getProperty("broker.puerto", "9000"));
+        return Integer.parseInt(properties.getProperty("broker.puerto", "9000").trim());
     }
-    
-    /**
+      /**
      * Obtiene el timeout general del broker.
      * 
      * @return Timeout en milisegundos
      */
     public int getTimeout() {
-        return Integer.parseInt(properties.getProperty("broker.timeout", "5000"));
+        return Integer.parseInt(properties.getProperty("broker.timeout", "5000").trim());
     }
-    
-    /**
+      /**
      * Obtiene el timeout especifico para enrutamiento.
      * 
      * @return Timeout de enrutamiento en milisegundos
      */
     public int getEnrutamientoTimeout() {
-        return Integer.parseInt(properties.getProperty("enrutamiento.timeout", "3000"));
+        return Integer.parseInt(properties.getProperty("enrutamiento.timeout", "3000").trim());
     }
       /**
      * Obtiene la estrategia de enrutamiento configurada.
@@ -143,23 +138,29 @@ public class ConfiguracionBroker {
     public String getProxyHost() {
         return properties.getProperty("proxy.host", "localhost");
     }
-    
-    /**
+      /**
      * Obtiene el puerto del proxy de validacion.
      * 
      * @return Puerto del proxy de validacion
      */
     public int getProxyPuerto() {
-        return Integer.parseInt(properties.getProperty("proxy.puerto", "8001"));
+        return Integer.parseInt(properties.getProperty("proxy.puerto", "8001").trim());
     }
-    
-    /**
+      /**
      * Obtiene el timeout para conexiones al proxy.
      * 
      * @return Timeout en milisegundos
      */
     public int getProxyTimeout() {
-        return Integer.parseInt(properties.getProperty("proxy.timeout", "5000"));
+        return Integer.parseInt(properties.getProperty("proxy.timeout", "5000").trim());
+    }
+      /**
+     * Obtiene el tamaño del pool de hilos para reenvio de deltas.
+     * 
+     * @return Tamaño del pool de hilos
+     */
+    public int getThreadPoolSize() {
+        return Integer.parseInt(properties.getProperty("threads.pool.size", "10").trim());
     }
     
     // Metodos para manejar destinos

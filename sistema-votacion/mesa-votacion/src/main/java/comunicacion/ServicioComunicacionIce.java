@@ -1,25 +1,23 @@
 package comunicacion;
 
 import VotingSystem.*;
-import model.Voto;
-import config.ConfiguracionMesa;
+import config.ConfiguracionMesaVotacion;
 
 /**
- * Cliente Ice para enviar votos al BROKER implementando patrón Singleton.
- * La mesa envía votos al broker, quien los reenvía a los destinos finales.
+ * Cliente Ice para enviar deltas al BROKER implementando patrón Map-Reduce.
+ * La mesa envía solo deltas consolidados al broker.
  * Garantiza una única instancia de conexión por mesa de votación.
  */
 public class ServicioComunicacionIce {
     
-    
     // Campos de la clase
     private com.zeroc.Ice.Communicator communicator;
     private BrokerServicePrx brokerProxy;
-    private ConfiguracionMesa config;
+    private ConfiguracionMesaVotacion config;
     
     /**
-     * Constructor privado para implementar Singleton.
-     * Inicializa conexión con el broker usando configuración externa.
+     * Constructor para inicializar conexión con el broker.
+     * Inicializa conexión usando configuración externa.
      */
     public ServicioComunicacionIce() {        
         try {
@@ -32,7 +30,7 @@ public class ServicioComunicacionIce {
                 rutaConfig = "src/main/resources/mesa-votacion.properties";
             }
             
-            config = new ConfiguracionMesa(rutaConfig);
+            config = new ConfiguracionMesaVotacion(rutaConfig);
             
             // Inicializar Ice communicator
             communicator = com.zeroc.Ice.Util.initialize();
@@ -48,36 +46,26 @@ public class ServicioComunicacionIce {
                                          config.getBrokerHost() + ":" + config.getBrokerPuerto());
             }
             
-            System.out.println("ServicioComunicacionIce: Conectado al broker " + 
-                             config.getBrokerHost() + ":" + config.getBrokerPuerto());
-            
         } catch (Exception e) {
-            System.err.println("Error inicializando conexión al broker: " + e.getMessage());
             throw new RuntimeException("No se pudo inicializar conexión al broker");
         }
-    }
-    
-    /**
-     * Envía un voto al broker de forma simple y directa.
-     * Solo envía el voto, sin información adicional del votante.
+    }      /**
+     * Envía un delta de conteos al broker (implementación Map-Reduce).
+     * Método principal para envío de deltas en lugar de votos individuales.
      * 
-     * @param voto El voto a enviar
-     * @return true si se envió exitosamente
+     * @param delta DeltaConteo con conteos incrementales desde último envío
+     * @return true si se envió exitosamente al broker
      */
-    public boolean enviarVoto(Voto voto) {
+    public boolean enviarDelta(DeltaConteo delta) {
         try {
-            // Convertir voto Java a Ice
-            VotingSystem.Voto votoIce = convertirVotoJavaAIce(voto);
-            
-            // Enviar al broker de forma simple
-            brokerProxy.recibirVoto(votoIce);
-            
-            return true; // Siempre exitoso si llega al broker
+            // Enviar delta al broker usando la nueva interfaz
+            boolean resultado = brokerProxy.recibirDeltaConteo(delta);
+            return resultado;
             
         } catch (Exception e) {
             return false;
         }
-    }    /**
+    }/**
      * Valida un voto enviando documento y candidato al broker.
      * 
      * @param documento Documento del votante
@@ -91,17 +79,13 @@ public class ServicioComunicacionIce {
             return 4; // Error de conexión se considera como "no existe"
         }
     }
-    
-    /**
+      /**
      * Cierra la conexión con el broker Ice.
-     * También resetea la instancia Singleton para permitir reconexión.
      */
     public void cerrarConexion() {
         if (communicator != null) {
             communicator.destroy();
-            System.out.println("Conexión al broker cerrada");
         }
-        
     }
     
     /**
@@ -124,21 +108,5 @@ public class ServicioComunicacionIce {
      */
     public boolean ping() {
         return verificarConectividad();
-    }
-    
-    /**
-     * Convertir Voto Java a Ice - MANTIENE Integer IDs
-     */
-    private VotingSystem.Voto convertirVotoJavaAIce(Voto votoJava) {
-        VotingSystem.Candidato candidatoIce = new VotingSystem.Candidato();
-        candidatoIce.id = votoJava.getCandidato().getId(); // Integer directo
-        candidatoIce.nombre = votoJava.getCandidato().getNombre();
-        candidatoIce.partidoPolitico = votoJava.getCandidato().getPartidoPolitico();
-        
-        VotingSystem.Voto votoIce = new VotingSystem.Voto();
-        votoIce.id = votoJava.getId(); // Integer directo
-        votoIce.candidato = candidatoIce;
-        
-        return votoIce;
     }
 }
