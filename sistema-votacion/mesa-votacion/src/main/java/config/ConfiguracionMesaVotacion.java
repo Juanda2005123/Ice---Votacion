@@ -145,8 +145,7 @@ public class ConfiguracionMesaVotacion {
     public long getDeltaUmbralTiempo() {
         return Long.parseLong(properties.getProperty("delta.umbral.tiempo", "300").trim());
     }
-    
-    // ===== CONFIGURACIÓN DE THREADS =====
+      // ===== CONFIGURACIÓN DE THREADS =====
     
     /**
      * Obtiene el tamaño del pool de threads para deltas.
@@ -155,5 +154,25 @@ public class ConfiguracionMesaVotacion {
      */
     public int getThreadsPoolSize() {
         return Integer.parseInt(properties.getProperty("threads.pool.size", "5").trim());
+    }
+    
+    // ===== CONFIGURACIÓN DE SIMULACIÓN =====
+    
+    /**
+     * Obtiene el número de votos a simular.
+     * 
+     * @return Número de votos para la simulación
+     */
+    public int getSimulacionNumeroVotos() {
+        return Integer.parseInt(properties.getProperty("simulacion.numero.votos", "1000").trim());
+    }
+    
+    /**
+     * Obtiene la pausa en segundos antes de iniciar la simulación.
+     * 
+     * @return Pausa en segundos (puede ser decimal)
+     */
+    public double getSimulacionPausaInicio() {
+        return Double.parseDouble(properties.getProperty("simulacion.pausa.inicio", "1.0").trim());
     }
 }

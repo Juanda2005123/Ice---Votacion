@@ -20,16 +20,17 @@ public class RepositorioDeltas {
     private final ConcurrentHashMap<Integer, AtomicInteger> conteoConsolidado;
     private final AtomicInteger totalVotos;
     private final String nodoId;
+    private final AtomicInteger contadorDeltas;
     
     /**
      * Constructor del repositorio de deltas consolidadas.
      * 
      * @param nodoId ID del nodo lugar de votación
-     */
-    public RepositorioDeltas(String nodoId) {
+     */    public RepositorioDeltas(String nodoId) {
         this.nodoId = nodoId;
         this.conteoConsolidado = new ConcurrentHashMap<>();
         this.totalVotos = new AtomicInteger(0);
+        this.contadorDeltas = new AtomicInteger(0);
     }
     
     /**
@@ -56,10 +57,10 @@ public class RepositorioDeltas {
      * REDUCE PHASE: Crea delta consolidado del estado actual.
      * 
      * @return Delta consolidado listo para enviar
-     */
-    public synchronized DeltaConteo crearDeltaConsolidado() {
+     */    public synchronized DeltaConteo crearDeltaConsolidado() {
         DeltaConteo deltaConsolidado = new DeltaConteo();
         deltaConsolidado.nodoId = nodoId;
+        deltaConsolidado.deltaId = nodoId + "-" + contadorDeltas.incrementAndGet();
         deltaConsolidado.timestamp = System.currentTimeMillis();
         deltaConsolidado.totalVotos = totalVotos.get();
         

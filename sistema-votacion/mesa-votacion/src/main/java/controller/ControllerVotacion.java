@@ -131,8 +131,7 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
     }
     
     // ===== FLUJO PRINCIPAL DE APLICACION =====
-    
-    /**
+      /**
      * Metodo principal que ejecuta el flujo de la aplicacion.
      * Muestra opciones de menu y maneja interacciones del usuario hasta el apagado del sistema.
      */
@@ -150,13 +149,17 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
                 switch (opcion) {
                     case 1:
                         procesarVoto();
-                        break;                    
+                        break;
                     case 2:
+                        procesarSimulacion();
+                        break;
+                    case 3:
                         ui.mostrarMensajeInfo("Cerrando sistema de votacion...");
                         cerrarSistemaConDeltas();
                         continuarEjecutando = false;
-                        break;default:
-                        ui.mostrarMensajeError("Opcion invalida. Por favor seleccione 1 o 2.");
+                        break;
+                    default:
+                        ui.mostrarMensajeError("Opcion invalida. Por favor seleccione 1, 2 o 3.");
                         ui.limpiarPantalla();
                 }            } catch (Exception e) {
                 ui.mostrarMensajeError("Error inesperado: " + e.getMessage());
@@ -178,14 +181,13 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
      */
     private Ciudadano validarElegibilidadVotante(String documento) {
         return repositorio.obtenerVotantePorDocumento(documento);
-    }
-      /**
+    }    /**
      * Confirma y procesa el voto con sistema de deltas únicamente.
      * 
      * FLUJO CON DELTAS:
      * 1. Marca al votante como que ya votó
-     * 2. Registra voto en repositorio de deltas (conteo absoluto para auditoría)
-     * 3. Añade voto al buffer de deltas (conteo incremental)
+     * 2. Registra voto en repositorio original (para mantener estructura)
+     * 3. Registra SOLO en generador de deltas (evita doble conteo)
      * 4. Verifica umbrales y envía delta si es necesario
      * 
      * @param votante El votante que emitio el voto
@@ -199,14 +201,11 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
             
             // 2. REGISTRAR EN REPOSITORIO ORIGINAL (mantener estructura)
             repositorio.registrarVoto(voto);
-            
-            // 3. REGISTRAR EN REPOSITORIO DE DELTAS (conteo absoluto para auditoría)
-            repositorioDeltas.registrarVoto(voto);
-            
-            // 4. AÑADIR AL BUFFER DE DELTAS (conteo incremental para Map-Reduce)  
+              // 3. SOLO REGISTRAR EN GENERADOR DE DELTAS (Map-Reduce)
+            // ELIMINADO: repositorioDeltas.registrarVoto(voto); // <- CAUSA DUPLICACION
             generadorDeltas.registrarVoto(voto.getCandidato());
             
-            // 5. VERIFICAR UMBRALES Y PROCESAR DELTAS
+            // 4. VERIFICAR UMBRALES Y PROCESAR DELTAS
             if (generadorDeltas.debeEnviarDelta()) {
                 procesarEnvioDeltas();
             }
@@ -288,8 +287,116 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
         } catch (RuntimeException e) {
             ui.mostrarMensajeError("Error durante el proceso de votacion: " + e.getMessage());
         } catch (Exception e) {
-            ui.mostrarMensajeError("Error inesperado durante el proceso de votacion: " + e.getMessage());        }
+            ui.mostrarMensajeError("Error inesperado durante el proceso de votacion: " + e.getMessage());        }        
+        ui.limpiarPantalla();
+    }
+      /**
+     * Procesa la simulación de votación.
+     * Genera votos automatizados usando ciudadanos cargados y candidatos aleatorios.
+     */
+    private void procesarSimulacion() {
+        try {
+            int numeroVotos = configProperties.getSimulacionNumeroVotos();
+            
+            // Confirmar con el usuario
+            if (!ui.confirmarSimulacion(numeroVotos)) {
+                ui.mostrarMensajeInfo("Simulación cancelada.");
+                ui.limpiarPantalla();
+                return;
+            }
+            
+            // Pausa configurable antes de iniciar la simulación
+            double pausaInicio = configProperties.getSimulacionPausaInicio();
+            ui.mostrarMensajeInfo("Esperando " + pausaInicio + " segundos antes de iniciar la simulación...");
+            Thread.sleep((long) (pausaInicio * 1000));
+            
+            // Obtener ciudadanos y candidatos disponibles
+            List<Ciudadano> ciudadanosDisponibles = repositorio.obtenerCiudadanosParaSimulacion();
+            List<Candidato> candidatosDisponibles = repositorio.getCandidatosDisponibles();
+            
+            if (ciudadanosDisponibles.isEmpty()) {
+                ui.mostrarMensajeError("No hay ciudadanos disponibles para simular.");
+                ui.limpiarPantalla();
+                return;
+            }
+            
+            if (candidatosDisponibles.isEmpty()) {
+                ui.mostrarMensajeError("No hay candidatos disponibles para simular.");
+                ui.limpiarPantalla();
+                return;
+            }
+            
+            // Ajustar número de votos al máximo disponible de ciudadanos
+            int maxVotos = Math.min(numeroVotos, ciudadanosDisponibles.size());
+            if (maxVotos < numeroVotos) {
+                ui.mostrarMensajeInfo("Ajustando simulación a " + maxVotos + " votos (máximo disponible).");
+            }
+            
+            ui.mostrarMensajeInfo("Iniciando simulación de " + maxVotos + " votos...");
+            long tiempoInicio = System.currentTimeMillis();
+            
+            Random random = new Random();
+            int votosExitosos = 0;
+            int votosRechazados = 0;
+            
+            // Procesar votos de forma secuencial (sin repetición)
+            for (int i = 0; i < maxVotos; i++) {
+                try {
+                    // Seleccionar ciudadano de forma secuencial (sin repetición)
+                    Ciudadano ciudadano = ciudadanosDisponibles.get(i);
+                    
+                    // Verificar si ya votó (no debería pasar con selección secuencial)
+                    if (ciudadano.isYaVoto()) {
+                        votosRechazados++;
+                        continue;
+                    }
+                    
+                    // Seleccionar candidato aleatorio
+                    Candidato candidato = candidatosDisponibles.get(random.nextInt(candidatosDisponibles.size()));
+                    
+                    // Validar voto
+                    int validacion = validarVoto(ciudadano.getDocumento(), candidato.getId());
+                    if (validacion != 0) {
+                        votosRechazados++;
+                        continue;
+                    }
+                    
+                    // Crear y procesar voto
+                    Integer votoId = generarIdVotoSecuencial();
+                    Voto nuevoVoto = new Voto(votoId, candidato);
+                    
+                    confirmarVoto(ciudadano, nuevoVoto);
+                    votosExitosos++;
+                    
+                    // Mostrar progreso cada 100 votos
+                    if ((i + 1) % 100 == 0 || i + 1 == maxVotos) {
+                        ui.mostrarProgresoSimulacion(i + 1, maxVotos);
+                    }
+                    
+                    // Pequeña pausa para no saturar el sistema
+                    if (i % 1000 == 0 && i > 0) {
+                        Thread.sleep(10);
+                    }
+                    
+                } catch (Exception e) {
+                    votosRechazados++;
+                }
+            }
+            
+            long tiempoFin = System.currentTimeMillis();
+            long duracion = tiempoFin - tiempoInicio;
+            
+            ui.mostrarMensajeExito("Simulación completada!");
+            ui.mostrarMensajeInfo("Votos exitosos: " + votosExitosos);
+            ui.mostrarMensajeInfo("Votos rechazados: " + votosRechazados);
+            ui.mostrarMensajeInfo("Tiempo total: " + duracion + " ms");
+            ui.mostrarMensajeInfo("Velocidad: " + (votosExitosos * 1000.0 / duracion) + " votos/seg");
+            
+        } catch (Exception e) {
+            ui.mostrarMensajeError("Error durante la simulación: " + e.getMessage());
+        }
         
+        ui.pausarEjecucion();
         ui.limpiarPantalla();
     }
     

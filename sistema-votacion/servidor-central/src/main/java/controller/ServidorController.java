@@ -47,12 +47,14 @@ public class ServidorController {    private ExecutorService threadPool;
      * 
      * @param delta Delta departamental recibido
      * @return true si el delta fue enviado para procesamiento
-     */
-    public boolean procesarDelta(DeltaConteo delta) {
+     */    public boolean procesarDelta(DeltaConteo delta) {
         try {
             // Enviar para procesamiento asíncrono en Thread Pool (REDUCE FINAL)
             threadPool.submit(() -> {
-                consolidador.consolidarDelta(delta);
+                boolean procesado = consolidador.consolidarDelta(delta);
+                if (!procesado) {
+                    System.out.println("Delta duplicado rechazado: " + delta.deltaId + " de " + delta.nodoId);
+                }
             });
             return true;
         } catch (Exception e) {

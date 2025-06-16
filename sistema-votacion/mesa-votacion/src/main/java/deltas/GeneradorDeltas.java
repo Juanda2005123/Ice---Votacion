@@ -37,7 +37,9 @@ public class GeneradorDeltas {
     private int contadorVotosBuffer;
     private long timestampUltimoEnvio;
     
-    /**
+    // Contador para generar IDs únicos de deltas
+    private int contadorDeltas;
+      /**
      * Constructor que inicializa el generador con la configuración de la mesa.
      * 
      * @param config Configuración de la mesa con umbrales de deltas
@@ -50,6 +52,7 @@ public class GeneradorDeltas {
         this.bufferDeltas = new ConcurrentHashMap<>();
         this.contadorVotosBuffer = 0;
         this.timestampUltimoEnvio = System.currentTimeMillis();
+        this.contadorDeltas = 1; // Inicializar contador de deltas
     }
     
     /**
@@ -83,7 +86,7 @@ public class GeneradorDeltas {
         }
         
         return false;
-    }/**
+    }    /**
      * Genera un objeto DeltaConteo con el buffer actual.
      * Incluye información de nodo, timestamp y conteos incrementales.
      * 
@@ -99,6 +102,7 @@ public class GeneradorDeltas {
         
         // Crear objeto DeltaConteo
         DeltaConteo delta = new DeltaConteo();
+        delta.deltaId = nodoId + "-" + contadorDeltas++; // ID único: MESA-001-1, MESA-001-2, etc.
         delta.nodoId = nodoId;
         delta.timestamp = System.currentTimeMillis();
         delta.totalVotos = contadorVotosBuffer;

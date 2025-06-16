@@ -21,6 +21,9 @@ public class ConsolidadorNacional {
     
     private final String servidorId;
     private final ConcurrentHashMap<Integer, AtomicInteger> conteoNacional;
+    
+    // Protección contra duplicados: set thread-safe para rastrear IDs de deltas procesados
+    private final ConcurrentHashMap<String, Boolean> deltasProcesados;
 
     /**
      * Constructor que inicializa el consolidador nacional.
@@ -30,14 +33,24 @@ public class ConsolidadorNacional {
     public ConsolidadorNacional(String servidorId) {
         this.servidorId = servidorId;
         this.conteoNacional = new ConcurrentHashMap<>();
-    }
-      /**
+        this.deltasProcesados = new ConcurrentHashMap<>();
+    }    /**
      * REDUCE FINAL: Consolida un delta departamental en el conteo nacional.
      * Esta operación es thread-safe y atómica.
+     * Incluye protección contra procesamiento duplicado de deltas.
      * 
      * @param delta Delta departamental a consolidar
+     * @return true si el delta fue procesado, false si ya había sido procesado antes
      */
-    public void consolidarDelta(DeltaConteo delta) {
+    public boolean consolidarDelta(DeltaConteo delta) {
+        // Verificar si el delta ya fue procesado usando su ID único
+        if (deltasProcesados.putIfAbsent(delta.deltaId, Boolean.TRUE) != null) {
+            // Delta duplicado - ya fue procesado
+            System.out.println("ADVERTENCIA: Delta duplicado detectado: " + delta.deltaId);
+            return false;
+        }
+        
+        // Delta nuevo - procesar normalmente
         for (Map.Entry<Integer, Integer> entry : delta.conteo.entrySet()) {
             Integer candidatoId = entry.getKey();
             Integer votos = entry.getValue();
@@ -46,6 +59,8 @@ public class ConsolidadorNacional {
             conteoNacional.computeIfAbsent(candidatoId, k -> new AtomicInteger(0))
                          .addAndGet(votos);
         }
+        
+        return true;
     }
     
     /**
@@ -86,5 +101,6 @@ public class ConsolidadorNacional {
      */
     public void reiniciar() {
         conteoNacional.clear();
+        deltasProcesados.clear();
     }
 }

@@ -1,8 +1,7 @@
 module VotingSystem {
 
-    dictionary<int, int> MapConteoVotos;
-
-    class DeltaConteo {
+    dictionary<int, int> MapConteoVotos;    class DeltaConteo {
+        string deltaId;       // ID único para evitar procesamiento duplicado
         string nodoId;
         long timestamp;
         int totalVotos;

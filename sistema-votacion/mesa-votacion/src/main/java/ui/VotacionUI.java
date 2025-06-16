@@ -31,16 +31,16 @@ public class VotacionUI {
     public VotacionUI() {
         this.scanner = new Scanner(System.in);
     }
-    
-    /**
+      /**
      * Muestra el menu principal y captura la opcion seleccionada.
      * 
-     * @return La opcion del menu seleccionada (1-2), o -1 para entrada invalida
+     * @return La opcion del menu seleccionada (1-3), o -1 para entrada invalida
      */
     public int mostrarMenuPrincipal() {
         System.out.println("=== MESA DE VOTACION ===");
         System.out.println("1. Registrar voto");
-        System.out.println("2. Salir");
+        System.out.println("2. Simular votacion");
+        System.out.println("3. Salir");
         System.out.print("Seleccione una opcion: ");
         
         try {
@@ -190,8 +190,7 @@ public class VotacionUI {
             System.out.println();
         }
     }
-    
-    /**
+      /**
      * Cierra el recurso scanner.
      * Debe ser llamado cuando la interfaz ya no sea necesaria.
      */
@@ -199,5 +198,36 @@ public class VotacionUI {
         if (scanner != null) {
             scanner.close();
         }
+    }
+    
+    /**
+     * Muestra el progreso de la simulación de votación.
+     * 
+     * @param actual Número de votos procesados
+     * @param total Número total de votos a simular
+     */
+    public void mostrarProgresoSimulacion(int actual, int total) {
+        int porcentaje = (int) ((actual * 100.0) / total);
+        System.out.print("\rSimulando votación... " + actual + "/" + total + " (" + porcentaje + "%)");
+        if (actual == total) {
+            System.out.println(); // Nueva línea al finalizar
+        }
+    }
+    
+    /**
+     * Confirma si el usuario desea continuar con la simulación.
+     * 
+     * @param numeroVotos Número de votos a simular
+     * @return true si el usuario confirma, false en caso contrario
+     */
+    public boolean confirmarSimulacion(int numeroVotos) {
+        System.out.println("\n=== SIMULACION DE VOTACION ===");
+        System.out.println("Se van a simular " + numeroVotos + " votos usando:");
+        System.out.println("- Ciudadanos cargados desde ciudadanos_mesa.csv");
+        System.out.println("- Candidatos seleccionados aleatoriamente");
+        System.out.print("¿Desea continuar? (s/n): ");
+        
+        String respuesta = scanner.nextLine().trim().toLowerCase();
+        return respuesta.equals("s") || respuesta.equals("si") || respuesta.equals("y") || respuesta.equals("yes");
     }
 }

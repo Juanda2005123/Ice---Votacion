@@ -146,14 +146,24 @@ public class RepositorioMesaVotacion {
                 .filter(Ciudadano::isYaVoto)
                 .count();
     }
-    
-    /**
+      /**
      * Obtiene todos los votantes elegibles.
      * 
      * @return Coleccion inmutable de votantes elegibles
      */
     public Collection<Ciudadano> getVotantesElegibles() {
         return Collections.unmodifiableCollection(votantesElegibles.values());
+    }
+    
+    /**
+     * Obtiene una lista de ciudadanos disponibles para simulacion.
+     * Devuelve todos los ciudadanos elegibles como lista para facilitar
+     * la seleccion aleatoria durante la simulacion.
+     * 
+     * @return Lista de ciudadanos elegibles para simulacion
+     */
+    public List<Ciudadano> obtenerCiudadanosParaSimulacion() {
+        return new ArrayList<>(votantesElegibles.values());
     }
     
     // ===== GESTION DE VOTOS =====
