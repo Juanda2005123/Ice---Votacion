@@ -71,7 +71,6 @@ public class BrokerController {
      * @return true si el voto fue reenviado exitosamente, false en caso contrario
      */
     public boolean procesarVoto(Voto voto) {
-        System.out.println(voto.getCandidato().getNombre());
         // Solo reenviar el voto
         return comunicacion.reenviarVoto(voto);
     }    /**

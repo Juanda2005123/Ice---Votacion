@@ -196,12 +196,12 @@ public class ConfiguracionBroker {
                 .findFirst()
                 .orElse(null);
     }
-    
-    /**
+      /**
      * Clase interna que representa un destino de reenvio.
      * 
      * Encapsula la informacion necesaria para conectarse a un destino
      * de reenvio de votos (lugar de votacion, departamento, etc).
+     * Incluye soporte para Load Balancing LRU (Least Recently Used).
      * 
      * @author Sistema de Votacion
      * @version 1.0
@@ -213,6 +213,7 @@ public class ConfiguracionBroker {
         private int puerto;
         private boolean activo;
         private String tipo;
+        private long ultimoUso;  // Timestamp para Load Balancing LRU
         
         /**
          * Constructor que inicializa un destino con todos sus parametros.
@@ -228,6 +229,7 @@ public class ConfiguracionBroker {
             this.host = host;            this.puerto = puerto;
             this.activo = activo;
             this.tipo = tipo;
+            this.ultimoUso = 0; // Inicializar en 0 para que sea el primero en ser seleccionado
         }
         
         // Getters
@@ -259,14 +261,20 @@ public class ConfiguracionBroker {
          * @return true si el destino esta activo, false en caso contrario
          */
         public boolean isActivo() { return activo; }
-        
-        /**
+          /**
          * Obtiene el tipo del destino.
          * 
          * @return Tipo del destino (lugar-votacion, departamento, etc)
          */
         public String getTipo() { return tipo; }
         
+        /**
+         * Obtiene el timestamp del ultimo uso para Load Balancing LRU.
+         * 
+         * @return Timestamp en milisegundos del ultimo uso
+         */
+        public long getUltimoUso() { return ultimoUso; }
+
         // Setters
         
         /**
@@ -277,14 +285,25 @@ public class ConfiguracionBroker {
         public void setActivo(boolean activo) { this.activo = activo; }
         
         /**
+         * Marca este destino como usado ahora (para Load Balancing LRU).
+         * Actualiza el timestamp de ultimo uso al tiempo actual.
+         */
+        public void marcarComoUsado() {
+            this.ultimoUso = System.currentTimeMillis();
+        }
+          /**
          * Representacion en cadena del destino para debugging.
+         * Incluye informacion de Load Balancing LRU.
          * 
          * @return Cadena con informacion del destino
          */
         @Override
         public String toString() {
-            return String.format("Destino{id='%s', host='%s', puerto=%d, activo=%s, tipo='%s'}", 
-                               id, host, puerto, activo, tipo);
+            long tiempoTranscurrido = ultimoUso > 0 ? 
+                (System.currentTimeMillis() - ultimoUso) / 1000 : -1;
+            
+            return String.format("Destino{id='%s', host='%s', puerto=%d, activo=%s, tipo='%s', ultimoUso=%ds}", 
+                               id, host, puerto, activo, tipo, tiempoTranscurrido);
         }
     }
 }

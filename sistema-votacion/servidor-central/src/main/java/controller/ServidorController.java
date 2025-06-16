@@ -39,7 +39,6 @@ public class ServidorController {
      */
     public boolean procesarVoto(Voto voto) {
         // Imprimir informacion del voto recibido (solo el nombre del candidato)
-        System.out.println(voto.getId());
         return true;
     }
     
