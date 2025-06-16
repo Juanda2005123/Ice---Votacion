@@ -21,10 +21,10 @@ import java.util.List;
  * @since 2025-05-30
  */
 public class SistemaPrecarga {
-      private RepositorioMesaVotacion repositorio;
+    private RepositorioMesaVotacion repositorio;
     private boolean precargaCompletada;
     private CargadorCandidatos cargadorCandidatos;
-      /**
+    private CargadorCiudadanos cargadorCiudadanos;      /**
      * Constructor del sistema de precarga.
      * 
      * @param repositorio Repositorio donde cargar los datos
@@ -39,9 +39,18 @@ public class SistemaPrecarga {
         this.precargaCompletada = false;
         this.cargadorCandidatos = new CargadorCandidatos(rutaCandidatos);
         
-        // Verificar que el archivo de candidatos existe
+        // Determinar ruta del archivo de ciudadanos (mismo directorio que candidatos)
+        String directorioConfig = obtenerDirectorio(rutaCandidatos);
+        String rutaCiudadanos = directorioConfig + "ciudadanos_mesa.csv";
+        this.cargadorCiudadanos = new CargadorCiudadanos(rutaCiudadanos);
+        
+        // Verificar que ambos archivos existen
         if (!cargadorCandidatos.existeArchivoCandidatos()) {
             throw new RuntimeException("Archivo de candidatos no encontrado: " + rutaCandidatos);
+        }
+        
+        if (!cargadorCiudadanos.existeArchivoCiudadanos()) {
+            throw new RuntimeException("Archivo de ciudadanos no encontrado: " + rutaCiudadanos);
         }
     }
       /**
@@ -54,20 +63,20 @@ public class SistemaPrecarga {
         if (precargaCompletada) {
             throw new RuntimeException("La mesa ya ha sido precargada. No se permite recargar.");
         }
-        
-        try {
+          try {
             // 1. Cargar candidatos desde CSV
             List<Candidato> candidatos = cargadorCandidatos.cargarCandidatos();
             precargarCandidatos(candidatos);
             
-            // 2. Generar votantes simulados para esta mesa
-            List<Ciudadano> votantes = generarVotantesSimulados(repositorio.getIdMesaVotacion());
-            precargarVotantes(votantes);
+            // 2. Cargar ciudadanos desde CSV
+            List<Ciudadano> ciudadanos = cargadorCiudadanos.cargarCiudadanos();
+            precargarCiudadanos(ciudadanos);
             
             // 3. Marcar precarga como completada
             this.precargaCompletada = true;
             
             System.out.println("[PRECARGA] Mesa precargada exitosamente: " + repositorio.getIdMesaVotacion());
+            System.out.println("[PRECARGA] Candidatos: " + candidatos.size() + ", Ciudadanos: " + ciudadanos.size());
             
         } catch (Exception e) {
             throw new RuntimeException("Error durante la precarga: " + e.getMessage());
@@ -108,70 +117,65 @@ public class SistemaPrecarga {
         // Cargar en repositorio
         repositorio.cargarCandidatos(candidatos);
     }
-    
-    /**
-     * Precarga la lista de votantes con validaciones adicionales.
+      /**
+     * Precarga la lista de ciudadanos con validaciones adicionales.
      * 
-     * @param votantes Lista de votantes a precargar
-     * @throws IllegalArgumentException si hay votantes invalidos
+     * @param ciudadanos Lista de ciudadanos a precargar
+     * @throws IllegalArgumentException si hay ciudadanos invalidos
      */
-    private void precargarVotantes(List<Ciudadano> votantes) {
-        // Validaciones adicionales especificas para votantes
+    private void precargarCiudadanos(List<Ciudadano> ciudadanos) {
+        // Validaciones adicionales especificas para ciudadanos
         List<String> documentosUnicos = new ArrayList<>();
         
-        for (Ciudadano votante : votantes) {
-            // Usar getDocumento() en lugar de getCedula()
-            if (votante.getDocumento() == null || votante.getDocumento().trim().isEmpty()) {
-                throw new IllegalArgumentException("Votante con documento invalido encontrado");
+        for (Ciudadano ciudadano : ciudadanos) {
+            if (ciudadano.getDocumento() == null || ciudadano.getDocumento().trim().isEmpty()) {
+                throw new IllegalArgumentException("Ciudadano con documento invalido encontrado");
             }
             
-            if (votante.getNombre() == null || votante.getNombre().trim().isEmpty()) {
-                throw new IllegalArgumentException("Votante sin nombre encontrado: " + votante.getDocumento());
+            if (ciudadano.getNombre() == null || ciudadano.getNombre().trim().isEmpty()) {
+                throw new IllegalArgumentException("Ciudadano sin nombre encontrado: " + ciudadano.getDocumento());
             }
             
-            // Usar getApellido() en lugar de getApellidos()
-            if (votante.getApellido() == null || votante.getApellido().trim().isEmpty()) {
-                throw new IllegalArgumentException("Votante sin apellido encontrado: " + votante.getDocumento());
+            if (ciudadano.getApellido() == null || ciudadano.getApellido().trim().isEmpty()) {
+                throw new IllegalArgumentException("Ciudadano sin apellido encontrado: " + ciudadano.getDocumento());
             }
             
             // Verificar documentos unicos
-            if (documentosUnicos.contains(votante.getDocumento())) {
-                throw new IllegalArgumentException("Documento duplicado encontrado: " + votante.getDocumento());
+            if (documentosUnicos.contains(ciudadano.getDocumento())) {
+                throw new IllegalArgumentException("Documento duplicado encontrado: " + ciudadano.getDocumento());
             }
-            documentosUnicos.add(votante.getDocumento());
+            documentosUnicos.add(ciudadano.getDocumento());
             
-            // Verificar que pertenezca a esta mesa
-            if (!repositorio.getIdMesaVotacion().equals(votante.getMesaId())) {
-                throw new IllegalArgumentException("Votante no pertenece a esta mesa: " + votante.getDocumento());
-            }
+            // IMPORTANTE: No validamos mesa_id - si está en el CSV, puede votar en esta mesa
+        }
+        
+        // Verificar que hay ciudadanos para cargar
+        if (ciudadanos.isEmpty()) {
+            throw new IllegalArgumentException("Debe existir al menos un ciudadano en el archivo CSV");
         }
         
         // Cargar en repositorio
-        repositorio.cargarVotantesElegibles(votantes);
-    }
-      /**
-     * Genera votantes simulados para una mesa específica.
+        repositorio.cargarVotantesElegibles(ciudadanos);
+    }      /**
+     * Obtiene el directorio de un archivo dado su ruta completa.
      * 
-     * @param idMesa ID de la mesa para la cual generar votantes
-     * @return Lista de votantes simulados
+     * @param rutaArchivo Ruta completa del archivo
+     * @return Directorio del archivo
      */
-    private List<Ciudadano> generarVotantesSimulados(String idMesa) {
-        List<Ciudadano> votantes = new ArrayList<>();
+    private String obtenerDirectorio(String rutaArchivo) {
+        java.io.File archivo = new java.io.File(rutaArchivo);
+        String directorio = archivo.getParent();
         
-        // Generar votantes simulados para esta mesa
-        votantes.add(new Ciudadano(1, "12345678", "Ana", "Garcia Lopez", idMesa));
-        votantes.add(new Ciudadano(2, "23456789", "Carlos", "Rodriguez Perez", idMesa));
-        votantes.add(new Ciudadano(3, "34567890", "Maria", "Fernandez Torres", idMesa));
-        votantes.add(new Ciudadano(4, "45678901", "Jose", "Martinez Ramirez", idMesa));
-        votantes.add(new Ciudadano(5, "56789012", "Laura", "Gonzalez Diaz", idMesa));
-        votantes.add(new Ciudadano(6, "67890123", "Pedro", "Hernandez Silva", idMesa));
-        votantes.add(new Ciudadano(7, "1058932648", "Juan David", "Quintero Peña", idMesa));
-        votantes.add(new Ciudadano(8, "1109663632", "Mariana", "De La Cruz Posso", idMesa));
-        votantes.add(new Ciudadano(9, "89012345", "Miguel", "Castro Vargas", idMesa));
-        votantes.add(new Ciudadano(10, "90123456", "Elena", "Ruiz Mendoza", idMesa));
-        votantes.add(new Ciudadano(11, "01234567", "Diego", "Jimenez Ortega", idMesa));
+        if (directorio == null) {
+            return "./"; // Directorio actual si no hay parent
+        }
         
-        return votantes;
+        // Asegurar que termine con separador de archivo
+        if (!directorio.endsWith(java.io.File.separator)) {
+            directorio += java.io.File.separator;
+        }
+        
+        return directorio;
     }
     
     /**
@@ -190,5 +194,14 @@ public class SistemaPrecarga {
      */
     public RepositorioMesaVotacion getRepositorio() {
         return repositorio;
+    }
+    
+    /**    /**
+     * Obtiene el cargador de ciudadanos para acceso directo O(1).
+     * 
+     * @return Cargador de ciudadanos con HashMap interno
+     */
+    public CargadorCiudadanos getCargadorCiudadanos() {
+        return cargadorCiudadanos;
     }
 }
