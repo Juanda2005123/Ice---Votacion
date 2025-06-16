@@ -88,7 +88,7 @@ public class ServicioComunicacionIce {
         try {
             return brokerProxy.recibirValidacionVotante(documento, candidatoId);
         } catch (Exception e) {
-            return 3; // Error de conexión se considera como "no existe"
+            return 4; // Error de conexión se considera como "no existe"
         }
     }
     

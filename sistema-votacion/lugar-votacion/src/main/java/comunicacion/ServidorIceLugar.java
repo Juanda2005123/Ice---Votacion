@@ -80,7 +80,7 @@ public class ServidorIceLugar implements ReceptorVotos {
             return controller.validarVoto(documento, candidatoId);
         } catch (Exception e) {
             System.err.println("Error procesando validacion en lugar de votacion: " + e.getMessage());
-            return 3; // Error de procesamiento
+            return 4; // Error de procesamiento
         }
     }
     

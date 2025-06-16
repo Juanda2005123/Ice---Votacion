@@ -61,11 +61,6 @@ public class VotacionUI {
         System.out.print("Ingrese numero de documento: ");
         String documento = scanner.nextLine().trim();
         
-        // Validacion basica
-        if (documento.length() < 6 || documento.length() > 15) {
-            throw new IllegalArgumentException("El documento debe tener entre 6 y 15 digitos");
-        }
-        
         // Verificar que contenga solo numeros
         if (!documento.matches("\\d+")) {
             throw new IllegalArgumentException("El documento debe contener solo numeros");
@@ -165,12 +160,23 @@ public class VotacionUI {
     public void mostrarMensajeInfo(String mensaje) {
         System.out.println("Info: " + mensaje);
     }
-    
-    /**
-     * Pausa la ejecucion hasta que el usuario presione Enter.
+      /**
+     * Pausa la ejecucion por un breve momento sin requerir entrada del usuario.
      * Se usa para permitir que los usuarios lean los mensajes antes de continuar.
      */
     public void pausarEjecucion() {
+        try {
+            Thread.sleep(2000); // Pausa de 2 segundos
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+    
+    /**
+     * Pausa la ejecucion hasta que el usuario presione Enter (version original).
+     * Se usa solo cuando realmente se necesita interaccion del usuario.
+     */
+    public void pausarEjecucionConEnter() {
         System.out.print("Presione Enter para continuar...");
         scanner.nextLine();
     }

@@ -67,7 +67,7 @@ public class ServidorIceProxy implements ReceptorVotos {
     @Override
     public int recibirValidacionVotante(String documento, int candidatoId, com.zeroc.Ice.Current current) {
         try {
-            return controller.validarVoto(documento, candidatoId);
+            return controller.validarCiudadano(documento, candidatoId);
         } catch (Exception e) {
             System.err.println("Error procesando validacion en proxy: " + e.getMessage());
             return 3; // Error de procesamiento

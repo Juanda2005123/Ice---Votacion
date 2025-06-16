@@ -39,7 +39,7 @@ public class CoordinadorEnvioVotos {
      * @param votante El votante que emitio el voto (para marcar como votado)
      * @throws IllegalArgumentException si los datos son invalidos
      * @throws RuntimeException si hay error en el procesamiento
-     */
+     */    
     public void procesarVoto(Voto voto, Ciudadano votante) {
         if (voto == null) {
             throw new IllegalArgumentException("El voto no puede ser null");
@@ -49,7 +49,7 @@ public class CoordinadorEnvioVotos {
         }
         
         try {
-            // 1. Marcar votante como votado (operacion local)
+            // 1. Marcar votante como votado (operacion local) - PERMANENTE
             votante.marcarComoVotado();
             
             // 2. Registrar voto en repositorio EN MEMORIA
@@ -59,11 +59,13 @@ public class CoordinadorEnvioVotos {
             enviarVoto(voto);
             
         } catch (IllegalArgumentException e) {
+            // En caso de error, deshacer el marcado de votado
+            votante.setYaVoto(false);
             throw e;
         } catch (Exception e) {            
-            throw new RuntimeException("Error procesando voto: " + e.getMessage());
-        } finally {
+            // En caso de error, deshacer el marcado de votado
             votante.setYaVoto(false);
+            throw new RuntimeException("Error procesando voto: " + e.getMessage());
         }
     }
       /**

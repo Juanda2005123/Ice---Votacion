@@ -8,6 +8,7 @@ import model.Ciudadano;
 import ui.VotacionUI;
 import votos.CoordinadorEnvioVotos;
 import votos.RepositorioMesaVotacion;
+import votos.VerificacionVoto;
 import comunicacion.ServicioComunicacionIce;
 
 import java.util.*;
@@ -38,6 +39,7 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
     private CoordinadorEnvioVotos coordinadorEnvio;     // Encargado de coordinar envio de votos
     private int contadorSecuencialVotos;                // Contador secuencial para generar IDs de votos
     private config.ConfiguracionMesa configProperties; // Configuracion cargada desde archivo .properties
+    private VerificacionVoto verificacionVoto;          // Encargado de validar votos antes de enviar
     
     // ===== CONSTRUCTOR =====
     /**
@@ -45,7 +47,8 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
      * Inicializa UI, estructuras de datos de votacion y carga votantes elegibles.
      * 
      * @param idMesaVotacion Identificador unico para esta mesa de votacion
-     */    public ControllerVotacion() {
+     */    
+    public ControllerVotacion() {
         this.ui = new VotacionUI();
         this.contadorSecuencialVotos = 1;  // Inicializar contador en 1
         
@@ -59,6 +62,7 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
         this.repositorio = new RepositorioMesaVotacion(this.idMesaVotacion);
         ServicioComunicacionIce servicioIce = new ServicioComunicacionIce();
         this.coordinadorEnvio = new CoordinadorEnvioVotos(repositorio, servicioIce);
+        this.verificacionVoto = new VerificacionVoto(repositorio, servicioIce);
 
         // Cargar datos iniciales
         SistemaPrecarga sistemaPrecarga = new SistemaPrecarga(repositorio);
@@ -139,15 +143,11 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
                     case 2:
                         ui.mostrarMensajeInfo("Cerrando sistema de votacion...");
                         continuarEjecutando = false;
-                        break;
-                    default:
+                        break;                    default:
                         ui.mostrarMensajeError("Opcion invalida. Por favor seleccione 1 o 2.");
-                        ui.pausarEjecucion();
                         ui.limpiarPantalla();
-                }
-            } catch (Exception e) {
+                }            } catch (Exception e) {
                 ui.mostrarMensajeError("Error inesperado: " + e.getMessage());
-                ui.pausarEjecucion();
                 ui.limpiarPantalla();
             }
         }
@@ -169,16 +169,7 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
         return repositorio.obtenerVotantePorDocumento(documento);
     }
     
-    /**
-     * Valida el estado de votacion de un votante.
-     * Verifica si el votante ya ha emitido su voto.
-     * 
-     * @param votante El votante a validar
-     * @return true si el votante puede votar, false si ya voto
-     */
-    private boolean validarEstadoVotacion(Ciudadano votante) {
-        return !votante.isYaVoto();
-    }
+    
       /**
      * Confirma y procesa el voto completo.
      * Delega toda la responsabilidad al coordinador de envio.
@@ -214,27 +205,6 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
             // 1. Capturar documento
             String documento = ui.capturarDocumento();
             
-            // 2. Validar elegibilidad del votante
-            Ciudadano votante = validarElegibilidadVotante(documento);
-            if (votante == null) {
-                ui.mostrarMensajeError("El documento " + documento + " no es elegible para votar en esta mesa de votacion.");
-                ui.pausarEjecucion();
-                ui.limpiarPantalla();
-                return;
-            }
-            
-            // 3. Validar estado de votacion
-            if (!validarEstadoVotacion(votante)) {
-                ui.mostrarMensajeError("El votante " + votante.getNombre() + " " + votante.getApellido() + " ya ha ejercido su derecho al voto.");
-                ui.pausarEjecucion();
-                ui.limpiarPantalla();
-                return;
-            }
-            
-            // 4. Mostrar informacion del votante
-            ui.mostrarMensajeInfo("Votante elegible: " + votante.getNombre() + " " + votante.getApellido());
-            ui.mostrarMensajeInfo("Mesa asignada: " + votante.getMesaId());
-            
             // 5. Mostrar candidatos disponibles (desde repositorio)
             ui.mostrarCandidatos(repositorio.getCandidatosDisponibles());
             
@@ -243,36 +213,58 @@ public class ControllerVotacion {    // ===== VARIABLES DE INSTANCIA =====
             
             // 7. Obtener candidato seleccionado
             Candidato candidatoSeleccionado = repositorio.getCandidatosDisponibles().get(seleccion - 1);
-            
-            // 8. Confirmar voto con informacion completa
-            if (!ui.confirmarVoto(candidatoSeleccionado, votante)) {
-                ui.mostrarMensajeInfo("Voto cancelado.");
-                ui.pausarEjecucion();
-                ui.limpiarPantalla();
-                return;
-            }
-              // 9. Registrar voto con ID secuencial
-            Integer votoId = generarIdVotoSecuencial();
-            Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);
+            int valid = validarVoto(documento, candidatoSeleccionado.getId());
+            switch (valid) {
+                case 0:
+                    // Puede votar - proceder con el registro
 
-            confirmarVoto(votante, nuevoVoto);
-            
-            // 10. Mostrar confirmacion de exito
-            ui.mostrarMensajeExito("Voto registrado exitosamente.");
-            ui.mostrarMensajeInfo("Votante: " + votante.getNombre() + " " + votante.getApellido());
-            ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombre());
+                    Ciudadano votante = validarElegibilidadVotante(documento);
+
+                    Integer votoId = generarIdVotoSecuencial();
+                    Voto nuevoVoto = new Voto(votoId, candidatoSeleccionado);
+
+                    confirmarVoto(votante, nuevoVoto);
+                    
+                    // Mostrar confirmacion de exito
+                    ui.mostrarMensajeExito("Voto registrado exitosamente.");
+                    ui.mostrarMensajeInfo("Votante: " + votante.getNombre() + " " + votante.getApellido());
+                    ui.mostrarMensajeInfo("Candidato: " + candidatoSeleccionado.getNombre());
+                    break;                case 1:
+                    // No es su mesa de votacion
+                    ui.mostrarMensajeError("Este documento no corresponde a esta mesa de votacion.");
+                    ui.mostrarMensajeInfo("Por favor, dirijase a la mesa de votacion que le corresponde.");
+                    break;
+                case 2:
+                    // Ya voto
+                    ui.mostrarMensajeError("Este ciudadano ya ha ejercido su derecho al voto.");
+                    ui.mostrarMensajeInfo("Cada ciudadano solo puede votar una vez.");
+                    break;case 3: 
+                    // No existe en la base de datos
+                    ui.mostrarMensajeError("El documento ingresado no se encuentra registrado en el sistema.");
+                    ui.mostrarMensajeInfo("Verifique que el numero de documento sea correcto.");
+                    ui.mostrarMensajeInfo("Si el problema persiste, consulte con el personal electoral.");
+                    break;
+                default:
+                    // Codigo de error no reconocido
+                    ui.mostrarMensajeError("Error inesperado en la validacion del voto (codigo: " + valid + ").");
+                    ui.mostrarMensajeInfo("Por favor, consulte con el personal electoral.");
+                    break;
+            }
             
         } catch (IllegalArgumentException e) {
             ui.mostrarMensajeError(e.getMessage());
         } catch (RuntimeException e) {
             ui.mostrarMensajeError("Error durante el proceso de votacion: " + e.getMessage());
         } catch (Exception e) {
-            ui.mostrarMensajeError("Error inesperado durante el proceso de votacion: " + e.getMessage());
-        }
+            ui.mostrarMensajeError("Error inesperado durante el proceso de votacion: " + e.getMessage());        }
         
-        ui.pausarEjecucion();
-        ui.limpiarPantalla();    }
+        ui.limpiarPantalla();
+    }
     
+    private Integer validarVoto(String documento, Integer candidatoId) {
+        return verificacionVoto.validarVoto(documento, candidatoId);
+    }
+
     // ===== METODOS DE UTILIDAD =====
     
     /**

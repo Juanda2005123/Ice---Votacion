@@ -57,12 +57,12 @@ public class ServicioComunicacionLugar {
             BrokerServicePrx brokerPrx = BrokerServicePrx.checkedCast(proxy);
             
             if (brokerPrx == null) {
-                return 3; // No se pudo conectar
+                return 4; // No se pudo conectar
             }
             
             return brokerPrx.recibirValidacionVotante(documento, candidatoId);
         } catch (Exception e) {
-            return 3; // Error de conexión
+            return 4; // Error de conexión
         }
     }
     

@@ -87,34 +87,123 @@ public class ConfiguracionProxy {
      */
     public int getTimeout() {
         return Integer.parseInt(properties.getProperty("proxy.timeout", "5000"));
-    }    
-    // Configuracion del nodo destino (donde se reenvian las validaciones)
+    }      // Configuracion de la Base de Datos PostgreSQL
     
     /**
-     * Obtiene el host del nodo destino para reenvio de validaciones.
+     * Obtiene el host de la base de datos PostgreSQL.
      * 
-     * @return Host del nodo destino
+     * @return Host de la base de datos
      */
-    public String getNodoDestinoHost() {
-        return properties.getProperty("nodo.destino.host", "localhost");
+    public String getDbHost() {
+        return properties.getProperty("db.host", "localhost");
     }
     
     /**
-     * Obtiene el puerto del nodo destino para reenvio de validaciones.
+     * Obtiene el puerto de la base de datos PostgreSQL.
      * 
-     * @return Puerto del nodo destino
+     * @return Puerto de la base de datos
      */
-    public int getNodoDestinoPuerto() {
-        return Integer.parseInt(properties.getProperty("nodo.destino.puerto", "9001"));
+    public int getDbPuerto() {
+        return Integer.parseInt(properties.getProperty("db.puerto", "5432"));
     }
     
     /**
-     * Obtiene el timeout especifico para comunicacion con nodo destino.
+     * Obtiene el nombre de la base de datos.
      * 
-     * @return Timeout para nodo destino en milisegundos
+     * @return Nombre de la base de datos
      */
-    public int getNodoDestinoTimeout() {
-        return Integer.parseInt(properties.getProperty("nodo.destino.timeout", "5000"));
+    public String getDbNombre() {
+        return properties.getProperty("db.nombre", "votacion_db");
+    }
+    
+    /**
+     * Obtiene el usuario de la base de datos.
+     * 
+     * @return Usuario de la base de datos
+     */
+    public String getDbUsuario() {
+        return properties.getProperty("db.usuario", "postgres");
+    }
+    
+    /**
+     * Obtiene la contraseña de la base de datos.
+     * 
+     * @return Contraseña de la base de datos
+     */
+    public String getDbPassword() {
+        return properties.getProperty("db.password", "admin123");
+    }
+    
+    /**
+     * Obtiene el esquema de la base de datos.
+     * 
+     * @return Esquema de la base de datos
+     */
+    public String getDbEsquema() {
+        return properties.getProperty("db.esquema", "public");
+    }
+      /**
+     * Obtiene el nombre de la tabla de ciudadanos.
+     * 
+     * @return Nombre de la tabla de ciudadanos
+     */
+    public String getDbTablaCiudadanos() {
+        return properties.getProperty("db.tabla.ciudadanos", "personas");
+    }
+    
+    /**
+     * Obtiene el nombre de la columna documento.
+     * 
+     * @return Nombre de la columna documento
+     */
+    public String getDbColumnaDocumento() {
+        return properties.getProperty("db.columna.documento", "documento");
+    }
+    
+    /**
+     * Obtiene el tamaño minimo del pool de conexiones.
+     * 
+     * @return Tamaño minimo del pool
+     */
+    public int getDbPoolMinimo() {
+        return Integer.parseInt(properties.getProperty("db.pool.minimo", "2"));
+    }
+    
+    /**
+     * Obtiene el tamaño maximo del pool de conexiones.
+     * 
+     * @return Tamaño maximo del pool
+     */
+    public int getDbPoolMaximo() {
+        return Integer.parseInt(properties.getProperty("db.pool.maximo", "10"));
+    }
+    
+    /**
+     * Obtiene el timeout para conexiones a la base de datos.
+     * 
+     * @return Timeout de conexion en milisegundos
+     */
+    public int getDbTimeoutConexion() {
+        return Integer.parseInt(properties.getProperty("db.timeout.conexion", "30000"));
+    }
+    
+    /**
+     * Obtiene el timeout para queries a la base de datos.
+     * 
+     * @return Timeout de query en milisegundos
+     */
+    public int getDbTimeoutQuery() {
+        return Integer.parseInt(properties.getProperty("db.timeout.query", "15000"));
+    }
+    
+    /**
+     * Construye la URL de conexion JDBC para PostgreSQL.
+     * 
+     * @return URL de conexion JDBC completa
+     */
+    public String getDbUrl() {
+        return String.format("jdbc:postgresql://%s:%d/%s", 
+                           getDbHost(), getDbPuerto(), getDbNombre());
     }
     
     /**

@@ -28,6 +28,7 @@ del /q "jar\mesa-votacion1\*.jar" 2>nul
 del /q "jar\lugar-votacion1\*.jar" 2>nul
 del /q "jar\departamento1\*.jar" 2>nul
 del /q "jar\servidor-central1\*.jar" 2>nul
+del /q "jar\proxy1\*.jar" 2>nul
 
 echo [OK] JAR anteriores eliminados
 
@@ -89,6 +90,15 @@ if !errorlevel! equ 0 (
     echo [ERROR] Fallo al copiar servidor-central-fat.jar
 )
 
+REM Proxy
+echo Copiando proxy...
+copy "proxy\build\libs\proxy-fat.jar" "jar\proxy1\" >nul 2>&1
+if !errorlevel! equ 0 (
+    echo [OK] proxy-fat.jar copiado a 'proxy1'
+) else (
+    echo [ERROR] Fallo al copiar proxy-fat.jar
+)
+
 echo.
 echo ==========================================
 echo DESPLIEGUE COMPLETADO
@@ -100,7 +110,8 @@ echo ├── jar\broker lugar-votacion a departamento\broker-fat.jar
 echo ├── jar\mesa-votacion1\mesa-votacion-fat.jar
 echo ├── jar\lugar-votacion1\lugar-votacion-fat.jar
 echo ├── jar\departamento1\departamento-fat.jar
-echo └── jar\servidor-central1\servidor-central-fat.jar
+echo ├── jar\servidor-central1\servidor-central-fat.jar
+echo └── jar\proxy1\proxy-fat.jar
 echo.
 echo Listo para ejecutar!
 echo.

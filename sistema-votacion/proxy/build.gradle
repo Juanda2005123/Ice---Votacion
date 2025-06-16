@@ -1,0 +1,20 @@
+// Este build.gradle es específico para el módulo proxy
+// Solo define configuraciones particulares de este módulo
+
+// Dependencias específicas del proxy
+dependencies {
+    // Driver PostgreSQL JDBC
+    implementation 'org.postgresql:postgresql:42.7.1'
+}
+
+jar {
+    manifest {        
+        attributes(
+            "Main-Class": "ProxyApp"
+        )
+    }
+}
+
+// Plugin de aplicación para poder ejecutar con 'gradle run'
+apply plugin: 'application'
+mainClassName = 'ProxyApp'

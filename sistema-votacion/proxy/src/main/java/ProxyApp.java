@@ -79,18 +79,17 @@ public class ProxyApp {
             
             // Activar el adaptador para comenzar a recibir peticiones
             adapter.activate();
-            
-            // Mensaje de inicio del proxy
+              // Mensaje de inicio del proxy
             System.out.println("=== PROXY " + config.getProxyId() + " INICIADO ===");
             System.out.println("- ID: " + config.getProxyId());
             System.out.println("- Nombre: " + config.getProxyNombre());
             System.out.println("- Puerto: " + config.getPuerto());
-            System.out.println("- Nodo Destino: " + config.getNodoDestinoHost() + ":" + config.getNodoDestinoPuerto());
+            System.out.println("- Base de Datos: " + config.getDbHost() + ":" + config.getDbPuerto() + "/" + config.getDbNombre());
             
-            // Verificar conectividad con el nodo destino configurado
+            // Verificar conectividad con la base de datos configurada
             controller.verificarConectividadInicial();
             
-            System.out.println("Proxy listo para procesar validaciones...");
+            System.out.println("Proxy listo para validar ciudadanos contra base de datos...");
             
             // Configurar shutdown hook para cierre limpio
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

@@ -94,3 +94,9 @@ project(':broker') {
         implementation project(':common')
     }
 }
+
+project(':proxy') {
+    dependencies {
+        implementation project(':common')
+    }
+}
